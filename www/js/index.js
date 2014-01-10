@@ -1,49 +1,167 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 var app = {
     // Application Constructor
     initialize: function() {
-        this.bindEvents();
+      this.bindEvents();
     },
     // Bind Event Listeners
     //
     // Bind any events that are required on startup. Common events are:
     // 'load', 'deviceready', 'offline', and 'online'.
     bindEvents: function() {
-        document.addEventListener('deviceready', this.onDeviceReady, false);
+      document.addEventListener('deviceready', this.onDeviceReady, false);
+      
+      app.loginStatus();
+      $("#loginForm").validate();
+
+      $('#page_login_submit').bind("click", function(event, ui) {
+        if($("#page_login_name").valid() && $("#page_login_pass").valid()) {
+          app.login($('#page_login_name').val(), $('#page_login_pass').val()); 
+        }
+      });
+
+      $('#page_logout_submit').bind("click", function(event, ui) {
+        app.logout();
+      });
     },
     // deviceready Event Handler
     //
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicity call 'app.receivedEvent(...);'
     onDeviceReady: function() {
-        app.receivedEvent('deviceready');
+
     },
-    // Update DOM on a Received Event
-    receivedEvent: function(id) {
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
 
-        listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:block;');
+    //check if user is logged in
+    loginStatus: function() {
+      var d = $.Deferred();
+      var user = $('#page_login_submit').val(),
+      pass = $('#page_logout_submit').val();
 
-        console.log('Received Event: ' + id);
+      // Obtain session token.
+      $.ajax({
+        url:"http://10.0.2.2/dt6/?q=services/session/token",
+        type:"get",
+        dataType:"text",
+        error:function (jqXHR, textStatus, errorThrown) {
+          alert('Session Error '+errorThrown);
+        },
+        success: function (token) {
+          // Call system logout with session token.
+          $.ajax({
+            url : "http://10.0.2.2/dt6/?q=api/system/connect.json",
+            type : 'post',
+            dataType : 'json',
+            headers: {'X-CSRF-Token': token},
+            error : function(XMLHttpRequest, textStatus, errorThrown) {
+
+              alert('Cannot Connect to Devtrac Site Now. Check your internet connection is working '+errorThrown);
+            },
+            success : function(data) {
+
+              var drupal_user = data.user;
+              if (drupal_user.uid == 0)
+              {
+                //user is not logged in
+                $('#logoutdiv').hide();
+                $('#logindiv').show();
+                
+                d.reject();
+              } else
+              { 
+                //user is logged in
+                $('#logindiv').hide();
+                $('#logoutdiv').show();
+                
+                d.resolve();
+
+              }
+            }
+          });
+        }
+      });
+      return d;
+    },
+
+    //login
+    login: function(name, pass) {
+      var d = $.Deferred();
+
+      // Obtain session token.
+      $.ajax({
+        url:"http://10.0.2.2/dt6/?q=services/session/token",
+        type:"get",
+        dataType:"text",
+        error:function (jqXHR, textStatus, errorThrown) {
+          alert(errorThrown);
+        },
+        success: function (token) {
+          // Call system login with session token.
+          $.ajax({
+            url : "http://10.0.2.2/dt6/?q=api/user/login.json",
+            type : 'post',
+            data : 'username=' + encodeURIComponent(name) + '&password=' + encodeURIComponent(pass),
+            dataType : 'json',
+            headers: {'X-CSRF-Token': token},
+            error : function(XMLHttpRequest, textStatus, errorThrown) {
+              alert(errorThrown);
+              $('#logoutdiv').hide();
+              $('#logindiv').show();
+            },
+            success : function(data) {
+              $('#logindiv').hide();
+              $('#logoutdiv').show();
+              
+              //save username and passwords on sdcard
+              window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, savePasswords, failsavePass);
+
+            }
+          });
+
+        }
+      });
+
+      return d;
+
+    },
+
+    //logout
+    logout: function() {
+      // Obtain session token.
+      $.ajax({
+        url:"http://10.0.2.2/dt6/?q=services/session/token",
+        type:"get",
+        dataType:"text",
+        error:function (jqXHR, textStatus, errorThrown) {
+          alert(errorThrown);
+        },
+        success: function (token) {
+          // Call system logout with session token.
+          $.ajax({
+            url : "http://10.0.2.2/dt6/?q=api/user/logout.json",
+            type : 'post',
+            dataType : 'json',
+            headers: {'X-CSRF-Token': token},
+            error : function(XMLHttpRequest, textStatus, errorThrown) {
+
+              alert('Failed to logout ' + errorThrown);
+              $('#logindiv').hide();
+              $('#logoutdiv').show();
+            },
+            success : function(data) {
+
+              alert("Logged out.");
+              $('#logoutdiv').hide();
+              $('#logindiv').show();
+
+              $("#page_login_name").val('');
+              $("#page_login_pass").val('');
+              
+              //clear passwords from file
+              window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, clearPasswords, failclearPass);
+            }
+          });
+        }
+      });
     }
+
 };

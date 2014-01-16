@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="format-detection" content="telephone=no" />
+<!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+<meta name="viewport"
+  content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+<link rel="stylesheet" href="../assets/www/css/jquery.mobile-1.1.0.min.css" />
+<link rel="stylesheet"
+  href="../assets/www/css/jquery.mobile.theme-1.1.0.min.css" />
+</head>
+<body>
+  <div data-role="page" id="page_login">
+    <div data-role="header">
+      <h1>Login</h1>
+    </div>
+    <!-- /header -->
+
+    <div data-role="content" class='content'>
+      <form class="cmxform" id="loginForm" method="" action="">
+        <p>
+          <label for="page_login_name">Username</label> <input type="text"
+            id="page_login_name" minlength="2" required />
+        </p>
+        <br>
+        <p>
+          <label for="page_login_pass">Password</label> <input type="password"
+            id="page_login_pass" required />
+        </p>
+        <br>
+        <div id='logindiv'>
+          <button type="button" data-theme="b" id="page_login_submit">Login</button>
+        </div>
+        <div id='logoutdiv'>
+          <button type="button" data-theme="b" id="page_logout_submit">Logout</button>
+        </div>
+      </form>
+    </div>
+    <!-- /content -->
+
+  </div>
+  <!-- /page -->
+
+  <div data-role="page" id="page_devtrac_content">
+    <div data-role="header">
+      <h1>Devtrac Data</h1>
+    </div>
+    <!-- /header -->
+
+    <div data-role="content" class='content'>
+      <ul data-role="listview" id="devtrac">
+
+      </ul>
+    </div>
+    <!-- /content -->
+
+  </div>
+  <!-- /page -->
+
+  <script src="../assets/www/libs/jquery-1.7.2.min.js"></script>
+  <script src="../assets/www/libs/jquery.mobile-1.1.0.min.js"></script>
+  <script src="../assets/www/libs/jquery.validate.min.js"></script>
+  <script src="../assets/www/libs/additional-methods.min.js"></script>
+  <script type="text/javascript" src="../assets/www/js/model/websql-store.js"></script>
+  <script type="text/javascript" src="../assets/www/js/vocabularies.js"></script>
+  <script type="text/javascript" src="../assets/www/js/controller/controller.js"></script>
+
+  <script type="text/javascript">
+            controller.initialize();
+        </script>
+</body>
+</html>

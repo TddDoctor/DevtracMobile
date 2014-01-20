@@ -8,7 +8,7 @@
   content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
 <link rel="stylesheet" type="text/css" href="css/index.css" />
 
-<link rel="stylesheet" href="css/jquery.mobile-1.4.0.min.css" />
+<link rel="stylesheet" href="css/jquery.mobile-1.4.0.css" />
 <link rel="stylesheet" href="css/jquery.mobile.theme-1.4.0.css" />
 </head>
 <body>
@@ -47,13 +47,12 @@
   <div data-role="page" id="home_page">
     <div data-role="panel" id="navpanel" data-theme="b" data-display="push"
       data-position="left">
-      <div data-role="controlgroup" data-corners="false">
-        <a href="#setup_urls_page" data-role="button" data-rel="dialog">Setup URLS</a> <a href="#" data-role="button">OECD Terms</a>
+      <div data-role="controlgroup" data-corners="true">
+        <a href="#setup_urls_page" data-role="button" data-rel="dialog" id="setup_urls">Setup URLS</a>
+        <a href="#" data-role="button">OECD Terms</a>
         <a href="#" data-role="button">Placetype Terms</a>
-        <a href="#page_login" id="panel_login"
-          data-role="button" data-rel="dialog">Login</a>
-        <a href="#" id="panel_logout"
-          data-role="button">Logout</a>
+        <a href="#page_login" id="panel_login" data-role="button" data-rel="dialog">Login</a>
+        <a href="#" id="panel_logout" data-role="button">Logout</a>
 
       </div>
     </div>

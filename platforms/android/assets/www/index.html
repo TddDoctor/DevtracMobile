@@ -6,44 +6,14 @@
 <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
 <meta name="viewport"
   content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
-<link rel="stylesheet" href="../assets/www/css/jquery.mobile-1.4.0.min.css" />
-<link rel="stylesheet"
-  href="../assets/www/css/jquery.mobile.theme-1.4.0.min.css" />
+<link rel="stylesheet" type="text/css" href="css/index.css" />
+
+<link rel="stylesheet" href="css/jquery.mobile-1.4.0.min.css" />
+<link rel="stylesheet" href="css/jquery.mobile.theme-1.4.0.css" />
 </head>
 <body>
-
-<div data-role="page" id="home_page">
-    <div data-role="panel" id="navpanel" data-theme="b" data-display="reveal"
-      data-position="left">
-      <div data-role="controlgroup" data-corners="false">
-        <a href="#setup_urls_page" data-role="button" data-rel="dialog" id="setup_urls">Setup URLS</a> <a href="#" data-role="button">OECD Terms</a>
-        <a href="#" data-role="button">Placetype Terms</a>
-        <a href="#page_login" id="panel_login"
-          data-role="button" data-rel="dialog">Login</a>
-        <a href="#" id="panel_logout"
-          data-role="button">Logout</a>
-
-      </div>
-    </div>
-    <div data-role="header">
-      <a id="bars-button" data-icon="bars" class="ui-btn-left"
-       style="margin-top:2.5px;" href="#navpanel">Menu</a>
-      <h1>Home</h1>
-    </div>
-    <!-- /header -->
-
-    <div data-role="content" class='content'>
-      <form class="cmxform" id="homeForm" method="" action="">
-        <p>Welcome</p>
-        <p id='oecdcontent'></p>
-      </form>
-    </div>
-    <!-- /content -->
-
-  </div>
-  <!-- /page -->
-
   <div data-role="page" id="page_login">
+    
     <div data-role="header">
       <h1>Login</h1>
     </div>
@@ -74,6 +44,37 @@
   </div>
   <!-- /page -->
 
+  <div data-role="page" id="home_page">
+    <div data-role="panel" id="navpanel" data-theme="b" data-display="push"
+      data-position="left">
+      <div data-role="controlgroup" data-corners="false">
+        <a href="#setup_urls_page" data-role="button" data-rel="dialog">Setup URLS</a> <a href="#" data-role="button">OECD Terms</a>
+        <a href="#" data-role="button">Placetype Terms</a>
+        <a href="#page_login" id="panel_login"
+          data-role="button" data-rel="dialog">Login</a>
+        <a href="#" id="panel_logout"
+          data-role="button">Logout</a>
+
+      </div>
+    </div>
+    <div data-role="header">
+      <a id="bars-button" data-icon="bars" class="ui-btn-left"
+       style="margin-top:5px;" href="#navpanel">Menu</a>
+      <h1>Home</h1>
+    </div>
+    <!-- /header -->
+
+    <div data-role="content" class='content'>
+      <form class="cmxform" id="homeForm" method="" action="">
+        <p>Welcome</p>
+        <p id='oecdcontent'></p>
+      </form>
+    </div>
+    <!-- /content -->
+
+  </div>
+  <!-- /page -->
+
     <div data-role="page" id="setup_urls_page">
         <div data-role="header">
       <h1>Set Url</h1>
@@ -83,8 +84,8 @@
     <div data-role="content" class='content'>
       <form class="cmxform" id="urlForm" method="" action="">
         <p>
-          <label for="url">Application Url</label> <input type="text"
-            id="url" name="url" minlength="2" required />
+          <label for="page_login_name">Application Url</label> <input type="text"
+            id="url" minlength="2" required />
         </p>
         <br>
         <div id='urldiv'>
@@ -97,18 +98,20 @@
 
   </div>
   <!-- /page -->
-  
 
-  <script src="../assets/www/libs/jquery-1.7.2.min.js"></script>
-  <script src="../assets/www/libs/jquery.mobile-1.4.0.min.js"></script>
-  
-  <script src="../assets/www/libs/jquery.validate.min.js"></script>
-  <script src="../assets/www/libs/additional-methods.min.js"></script>
-  <script src="../assets/www/libs/jquery.blockUI.min.js"></script>
-  
-  <script type="text/javascript" src="../assets/www/js/model/websql-store.js"></script>
-  <script type="text/javascript" src="../assets/www/js/vocabularies.js"></script>
-  <script type="text/javascript" src="../assets/www/js/controller/controller.js"></script>
+
+  <script src="libs/jquery-1.7.2.min.js"></script>
+  <script src="libs/jquery.mobile-1.4.0.min.js"></script>
+  <script src="libs/jquery.validate.min.js"></script>
+  <script src="libs/additional-methods.min.js"></script>
+  <script src="libs/jquery.blockUI.min.js"></script>
+
+  <script type="text/javascript" src="cordova.js"></script>
+  <script src="js/FileAccess.js"></script>
+
+  <script type="text/javascript" src="js/model/websql-store.js"></script>
+  <script type="text/javascript" src="js/vocabularies.js"></script>
+  <script type="text/javascript" src="js/controller/controller.js"></script>
 
   <script type="text/javascript">
             controller.initialize();

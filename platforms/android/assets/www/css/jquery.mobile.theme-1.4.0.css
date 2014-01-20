@@ -234,7 +234,6 @@ html body .ui-group-theme-a .ui-bar-inherit {
 .ui-overlay-a,
 .ui-page-theme-a,
 .ui-page-theme-a .ui-panel-wrapper {
-    padding: 0px;
 	background: 			#f9f9f9 /*{a-page-background-color}*/;
 	border-color:	 		#bbb /*{a-page-border}*/;
 	color: 					#333 /*{a-page-color}*/;
@@ -575,16 +574,3 @@ button[disabled],
 	outline-width: 1px;
 	outline-style: auto;
 }
-
-ui-panel-inner {
-     padding:0px;
- }
- .ui-controlgroup {
-     margin:0;
- }
- #home_header {
-     height:54px;
- }
- #bars-button {
-     margin:7px;
- }

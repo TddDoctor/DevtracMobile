@@ -36,6 +36,12 @@ var controller = {
       
       //cancel url dialog
       $('#cancel_url').bind("click", function(event, ui) {
+        var urlvalue = $('#url').val();
+        if(urlvalue.charAt(urlvalue.length-1) == '/'){
+          localStorage.appurl = urlvalue.substr(0, urlvalue.length - 2);
+        }else {
+          localstorage.appurl = $('#url').val();
+        }
         $.mobile.changePage("#home_page", "slide", true, false);
       });
       
@@ -250,7 +256,7 @@ var controller = {
                 $('#panel_logout').show();
                 
                 $('#setup_urls').hide();
-                //$.mobile.changePage("#home_page", "slide", true, false);
+                $.mobile.changePage("#home_page", "slide", true, false);
 
                 d.resolve();
 

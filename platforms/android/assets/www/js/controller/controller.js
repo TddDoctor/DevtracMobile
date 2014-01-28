@@ -1,19 +1,34 @@
-var controller = {    
+var controller = {   
+    "onlinestate":null,
+  
     // Application Constructor
     initialize: function() {
-      
       //set application url if its not set
       if(!localStorage.appurl) {
         localStorage.appurl = "http://192.168.38.114/dt6";
+	
       }
       
-      this.store = new WebSqlStore();
-      this.bindEvents(this.store);
+      devtrac.indexedDB.open(function(db) {
+	vocabularies.loadOecds(db);
+	vocabularies.loadPlacetypes(db);
+      });
+      
+      this.bindEvents();
     },
 
     //Bind any events that are required on startup.
-    bindEvents: function(dbObject) {
+    bindEvents: function() {
       document.addEventListener('deviceready', this.onDeviceReady, false);
+      
+      controller.loginStatus().then(function() {
+	this.loginstate = true;
+        $.unblockUI();
+      }).fail(function(){
+	
+	this.loginstate = false;
+        $.unblockUI();
+      });
 
       //validate set url field for annonymous users
       var form = $("#urlForm");
@@ -26,8 +41,14 @@ var controller = {
           }    
       });
       
+      $("#setup_urls_page").live("pagebeforeshow", function(event) {
+	$("#url").val(localStorage.appurl);
+	
+      });
+      
       //save annonymous user's url
       $('#save_url').bind("click", function(event, ui) {
+	//validate url textfield
         if(form.valid()) {
           localStorage.appurl = $('#url').val();
           $.mobile.changePage("#home_page", "slide", true, false);
@@ -39,8 +60,6 @@ var controller = {
         var urlvalue = $('#url').val();
         if(urlvalue.charAt(urlvalue.length-1) == '/'){
           localStorage.appurl = urlvalue.substr(0, urlvalue.length - 2);
-        }else {
-          localstorage.appurl = $('#url').val();
         }
         $.mobile.changePage("#home_page", "slide", true, false);
       });
@@ -51,29 +70,60 @@ var controller = {
       //handle login click event from dialog
       $('#page_login_submit').bind("click", function(event, ui) {
         if($("#page_login_name").valid() && $("#page_login_pass").valid()) {
-          controller.login($('#page_login_name').val(), $('#page_login_pass').val()); 
+	  if(controller.onlinestate){
+	    controller.login($('#page_login_name').val(), $('#page_login_pass').val()); 
+	  }else {
+	    alert("You must be online to login");
+	  }
         }
       });
 
       //handle logout click event from dialog
       $('#page_logout_submit').bind("click", function(event, ui) {
-        controller.logout();
+	if(controller.onlinestate) {
+	  controller.logout();
+	}else {
+	  alert("You must be online to logout");
+	}
+        
       });
       
       //handle logout click from panel menu
       $('#panel_logout').bind("click", function(event, ui) {
-        controller.logout();
+        if(controller.onlinestate) {
+	  controller.logout();
+	}else {
+	  alert("You must be online to logout");
+	}
       });
       
+      //handle oecd click from panel menu
+      $('#panel_oecd').bind("click", function(event, ui) {
+        $("#terms").empty();
+        controller.showMessage('Loading OECD Terms');
+	devtrac.indexedDB.open(function(dbObject) {
+	  devtrac.indexedDB.getAllOecdItems(dbObject, function(categoryValues, categories) {
+	    controller.buildSelect(categoryValues, categories);
+	});
+	});
+        $.mobile.changePage("#taxonomy_terms_page", "slide", true, false);
+      });
+      
+      $('#panel_placetype').bind("click", function(event, ui) {
+	$("#terms").empty();
+        controller.showMessage('Loading Placetypes Terms');
+	devtrac.indexedDB.open(function(dbObject) {
+	  devtrac.indexedDB.getAllPlacetypesItems(dbObject, function(categoryValues, categories) {
+	    controller.buildSelect(categoryValues, categories);
+	});
+	});
+        $.mobile.changePage("#taxonomy_terms_page", "slide", true, false);
+      });
     },
     
     // device ready event handler
     onDeviceReady: function() {
-          controller.loginStatus().then(function(){
-            $.unblockUI();
-          }).fail(function(){
-            $.unblockUI();
-          });
+          
     },
     
     // onOnline event handler
@@ -106,7 +156,7 @@ var controller = {
     //show loading message
     showMessage: function(msg) {
       $.blockUI({
-        message : '<h4><img src="css/images/ajax-loader.gif" /><br/>'+msg+'</h4>',
+        message : '<h4><img src="../assets/www/css/images/ajax-loader.gif" /><br/>'+msg+'</h4>',
         css : {
           top : ($(window).height()) / 3 + 'px',
           left : ($(window).width() - 200) / 2 + 'px',
@@ -123,35 +173,6 @@ var controller = {
     //hide loading message
     hideMessage: function() {
       $.unblockUI();
-    },
-
-    //download placetypes from devtrac
-    loadPlacetypes: function() {
-      var categories = [];
-      var categoryValues = {}; 
-      var category = "";
-      var htid;
-
-      vocabularies.getPlacetypeVocabularies().then(function(dbObject) {
-        dbObject.getAllPlacetypes(function(results) {
-
-          for(var i = 0; i < results.rows.length; i++) {
-            if(category != results.rows.item(i).hname) {
-              category = results.rows.item(i).hname;
-              categories[results.rows.item(i).htid] = results.rows.item(i).hname;
-              htid = results.rows.item(i).htid;
-              categoryValues[htid] = [];
-            }
-            categoryValues[htid][i] = results.rows.item(i).dname;
-          }
-          controller.buildSelect(categoryValues, categories);
-
-        });
-      }).fail(function(err) {
-        console.log(err);
-
-      });
-
     },
     
     //build select from downloaded values
@@ -183,7 +204,8 @@ var controller = {
       }
       optgroup = optgroup + options +"</optgroup>";
       select = select + optgroup + "</select>";
-      document.getElementById('oecdcontent').innerHTML = select;
+      $('#terms').html(select);
+      $.unblockUI();
 
     },
     
@@ -227,11 +249,12 @@ var controller = {
               
               $('#panel_login').show();
               $('#panel_logout').hide();
-              
+              controller.onlinestate = false;
               alert('Cannot Connect to Devtrac Site Now. Check your internet connection is working '+errorThrown);
             },
             success : function(data) {
               $.unblockUI();
+	      controller.onlinestate = true;
               
               var drupal_user = data.user;
               if (drupal_user.uid == 0)
@@ -244,7 +267,7 @@ var controller = {
                 $('#panel_login').show();
                 
                 $('#setup_urls').show();
-                
+		
                 d.reject();
               } else
               { 
@@ -256,6 +279,7 @@ var controller = {
                 $('#panel_logout').show();
                 
                 $('#setup_urls').hide();
+
                 $.mobile.changePage("#home_page", "slide", true, false);
 
                 d.resolve();
@@ -310,7 +334,7 @@ var controller = {
               $.mobile.changePage("#home_page", "slide", true, false);
               
               //save username and passwords on sdcard
-              window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, savePasswords, failsavePass);
+             // window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, savePasswords, failsavePass);
 
             }
           });
@@ -366,7 +390,7 @@ var controller = {
               $("#navpanel").panel( "close" );
               
               //clear passwords from file
-              window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, clearPasswords, failclearPass);
+              //window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, clearPasswords, failclearPass);
             }
           });
         }

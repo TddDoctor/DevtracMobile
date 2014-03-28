@@ -706,50 +706,61 @@ devtrac.indexedDB.getActionitem = function(db, anid, callback) {
 
 };
 
-//edit site visit
-devtrac.indexedDB.editSitevisit = function(db, snid, updates, callback) {
-  var trans = db.transaction(["sitevisitsobj"], "readwrite");
-  var store = trans.objectStore("sitevisitsobj");
+//get fieldtrip item from database
+devtrac.indexedDB.getFieldtrip = function(db, fnid, callback) {
+  var d = $.Deferred();
+  
+  var trans = db.transaction(["fieldtripobj"], "readonly");
+  var store = trans.objectStore("fieldtripobj");
 
-  var request = store.get(snid);
+  var index = store.index("nid");
+  index.get(fnid).onsuccess = function(event) {
+    callback(event.target.result);
+    d.resolve();
+  };
+  
+  return d;
+
+};
+
+//edit fieldtrip
+devtrac.indexedDB.editFieldtrip = function(db, fnid, updates) {
+  var d = $.Deferred();
+  var trans = db.transaction(["fieldtripobj"], "readwrite");
+  var store = trans.objectStore("fieldtripobj");
+
+  var request = store.get(fnid);
   request.onerror = function(event) {
     // Handle errors!
-    console.log("Error getting site visit to update "+snid);
+    console.log("Error getting fieldtrip to update "+fnid);
   };
+  
   request.onsuccess = function(event) {
     var timestamp = new Date().getTime();
 
     // Get the old value that we want to update
     var data = request.result;
-    data.title = updates['title']
-    data.field_ftritem_date_visited.und[0].value = updates['date'];
-    if(!(data.editsitetime && data.editflag)) {
-      data.editsitetime = timestamp;
-      data.editflag = 1;
-    }
-    if(data.field_ftritem_public_summary.length > 0){
-      data.field_ftritem_public_summary.und[0].value = updates['summary'];
-    }else{
-      data.field_ftritem_public_summary = {};
-      data.field_ftritem_public_summary.und = [];
-      data.field_ftritem_public_summary.und[0] = {};
-      data.field_ftritem_public_summary.und[0].value = updates['summary'];
-    }
-
+    data.title = updates['title'];
+    data.editflag = updates['editflag'];
     // update the value(s) in the object that you want to change
 
     // Put this updated object back into the database.
     var requestUpdate = store.put(data);
+    
     requestUpdate.onerror = function(event) {
       // Do something with the error
-      console.log("Sitevisit update failed");
+      console.log("Fieldtrip update failed");
+      d.resolve();
     };
+    
     requestUpdate.onsuccess = function(event) {
       // Success - the data is updated!
-      console.log("Sitevisit update success");
-      callback();
+      console.log("Fieldtrip update success");
+      //callback();
+      d.resolve();
     };
   };
+  return d;
 };
 
 //edit actionitem information
@@ -812,6 +823,39 @@ devtrac.indexedDB.editPlace = function(db, pnid, updates) {
     requestUpdate.onsuccess = function(event) {
       // Success - the data is updated!
       console.log("Place update success");
+      d.resolve();
+    };
+  };
+  return d;
+};
+
+//edit site visit
+devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
+  var d = $.Deferred();
+  
+  var trans = db.transaction(["sitevisitsobj"], "readwrite");
+  var store = trans.objectStore("sitevisitsobj");
+
+  var request = store.get(snid);
+  request.onerror = function(event) {
+    // Handle errors!
+    console.log("Error getting site visit to update "+snid);
+  };
+  request.onsuccess = function(event) {
+      // Get the old value that we want to update
+      var data = request.result;
+      data.submit = updates['submit'];
+
+    // Put this updated object back into the database.
+    var requestUpdate = store.put(data);
+    requestUpdate.onerror = function(event) {
+      // Do something with the error
+      console.log("Site visit update failed");
+      d.reject();
+    };
+    requestUpdate.onsuccess = function(event) {
+      // Success - the data is updated!
+      console.log("Site visit update success");
       d.resolve();
     };
   };

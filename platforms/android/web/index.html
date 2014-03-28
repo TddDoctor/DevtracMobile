@@ -198,18 +198,27 @@
 
     <div data-role="content" class='content'>
       <form id="form_fieldtrip_details" method="" action="">
-        <label for="fieldtrip_details_title"><b>Title</b></label>
-        <p id="fieldtrip_details_title" required></p>
 
-        <label for="fieldtrip_details_status"><b>Statu</b>s</label>
-        <p id="fieldtrip_details_status" required></p>
+        <fieldset class="ui-grid-a">
+          <div class="ui-block-a">
+            <label for="fieldtrip_details_title"><b>Title</b></label>
+            <p id="fieldtrip_details_title" required></p>
 
-        <label for="fieldtrip_details_start"><b>Start</b></label>
-        <p id="fieldtrip_details_start" required></p>
+            <label for="fieldtrip_details_status"><b>Status</b></label>
+            <p id="fieldtrip_details_status" required></p>
+
+            <label for="fieldtrip_details_start"><b>Start</b></label>
+            <p id="fieldtrip_details_start" required></p>
 
 
-        <label for="fieldtrip_details_end"><b>End</b></label>
-        <p id="fieldtrip_details_end" required></p>
+            <label for="fieldtrip_details_end"><b>End</b></label>
+            <p id="fieldtrip_details_end" required></p>
+
+          </div>
+          <div class="ui-block-b">
+          <a data-role="button" id="edit_fieldtrip" href="#page_fieldtrip_edit" data-icon="edit" data-rel="dialog">Edit title</a>
+          </div>
+        </fieldset>
 
         <h4 align="center">Site Reports</h4>
         <ul data-role="listview" id="list_sitevisits" data-filter="true">
@@ -226,8 +235,8 @@
   <!-- Site visits details -->
   <div data-role="page" id="page_sitevisits_details">
     <div data-role="header">
-      <a id="" href="#page_fieldtrip_details" data-role="button" data-icon="back"
-        data-iconpos="notext"></a>
+      <a id="" href="#page_fieldtrip_details" data-role="button"
+        data-icon="back" data-iconpos="notext"></a>
       <h3>Site Report</h3>
     </div>
     <!-- /header -->
@@ -261,14 +270,15 @@
                 <li><a href="#page_sitevisit_edits" data-role="button"
                   data-mini="true" data-icon="edit" id="editsitevisit"
                   data-rel="dialog">Edit</a></li>
-                  <li><a href="#page_sitevisit_add" data-role="button"
+                <li><a href="#page_sitevisit_add" data-role="button"
                   data-mini="true" data-icon="edit" id="addsitevisit"
                   data-rel="dialog">Add</a></li>
                 <li><a href="#page_add_actionitems" data-role="button"
                   data-mini="true" data-icon="arrow-u" id="addactionitem"
                   data-rel="dialog">Add action item</a></li>
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" id="addquestionnaire" href="#page_add_questionnaire">Questionnaire</a></li>
+                  data-icon="arrow-u" id="addquestionnaire"
+                  href="#page_add_questionnaire">Questionnaire</a></li>
               </ul>
 
             </div>
@@ -291,7 +301,10 @@
             <div data-role="collapsible" data-theme="b">
               <h4>Uploads</h4>
               <ul data-role="listview" id="uploads_listview">
-                <li><a data-role="button" data-mini="true" data-icon="arrow-u" onclick="devtracnodes.uploadsitevisits();">Site Visits</a><div id="sitevisit_count" class="ui-li-count"></div></li>
+                <li><a data-role="button" data-mini="true"
+                  data-icon="arrow-u" onclick="devtracnodes.uploadsitevisits();">Site
+                    Visits</a>
+                <div id="sitevisit_count" class="ui-li-count"></div></li>
                 <li><a data-role="button" data-mini="true"
                   data-icon="arrow-u" onclick="devtracnodes.uploadLocations()">Locations</a>
                   <div id="location_count" class="ui-li-count"></div></li>
@@ -300,6 +313,9 @@
                   data-icon="arrow-u" onclick="devtracnodes.uploadActionItems()">Action
                     Items</a>
                   <div id="actionitem_count" class="ui-li-count"></div></li>
+                  <li><a data-role="button" data-mini="true"
+                  data-icon="arrow-u" onclick="devtracnodes.uploadFieldtrips()">Fieldtrips</a>
+                  <div id="fieldtrip_count" class="ui-li-count"></div></li>
 
               </ul>
             </div>
@@ -335,6 +351,22 @@
   </div>
   <!-- /page -->
   
+  <!-- Edit fieldtrips details -->
+  <div data-role="page" id="page_fieldtrip_edit">
+    <div data-role="header">
+      <h3>Edit Fieldtrip</h3>
+    </div>
+    <!-- /header -->
+
+    <div data-role="content" class='content'>
+      <form id="form_fieldtrip_edits" method="" action=""></form>
+
+    </div>
+    <!-- /content -->
+
+  </div>
+  <!-- /page -->
+
   <!-- Add site visit details -->
   <div data-role="page" id="page_sitevisit_add">
     <div data-role="header">
@@ -344,44 +376,37 @@
 
     <div data-role="content" class='content'>
       <form id="form_sitevisit_add" method="" action="">
-      
-          <label for="sitevisit_add_title">Title</label> <input type='text' value=''
-          id='sitevisit_add_title' name='sitevisit_add_title' required />
-          
-          <label for='sitevisit_add_districts'>Missing Districts</label><input type='text' value=''
-          id='sitevisit_add_districts' name='sitevisit_add_districts' disabled=disabled required />
 
-          <label for='sitevisit_add_oecds'>Missing Oecds</label><input type='text' value=''
-          id='sitevisit_add_oecds' name='sitevisit_add_oecds' disabled=disabled required />
-        
-        <label for='sitevisit_add_type'>Site Visit Type</label>
-        <select
-            name="sitevisit_add_type" id="sitevisit_add_type" data-mini="true"
-            required>
-            <option value="211">Human Interest Story</option>
-            <option value="210">Roadside Observation
-</option>
-            <option value="209">Site Visit
- </option>
-          </select>
-        
-        <label for="sitevisit_add_date">Date</label> <input type='text'
+        <label for="sitevisit_add_title">Title</label> <input type='text'
+          value='' id='sitevisit_add_title' name='sitevisit_add_title' required />
+
+        <label for='sitevisit_add_districts'>Missing Districts</label><input
+          type='text' value='' id='sitevisit_add_districts'
+          name='sitevisit_add_districts' disabled=disabled required /> <label
+          for='sitevisit_add_oecds'>Missing Oecds</label><input type='text'
+          value='' id='sitevisit_add_oecds' name='sitevisit_add_oecds'
+          disabled=disabled required /> <label for='sitevisit_add_type'>Site
+          Visit Type</label> <select name="sitevisit_add_type" id="sitevisit_add_type"
+          data-mini="true" required>
+          <option value="211">Human Interest Story</option>
+          <option value="210">Roadside Observation</option>
+          <option value="209">Site Visit</option>
+        </select> <label for="sitevisit_add_date">Date</label> <input type='text'
           value='' id='sitevisit_add_date' name='sitevisit_add_date'
-          placeholder='yyyy/mm/dd' required /> 
-          
-          <label
+          placeholder='yyyy/mm/dd' required /> <label
           for="sitevisit_add_public_summary">Public Summary</label>
-        <textarea rows="8" type='text' value='' id='sitevisit_add_public_summary'
-          name='sitevisit_add_public_summary' required></textarea>
-          
-          <label
-          for="sitevisit_add_report">Full Report</label>
+        <textarea rows="8" type='text' value=''
+          id='sitevisit_add_public_summary' name='sitevisit_add_public_summary'
+          required></textarea>
+
+        <label for="sitevisit_add_report">Full Report</label>
         <textarea rows="8" type='text' value='' id='sitevisit_add_report'
           name='sitevisit_add_report' required></textarea>
-          
-          <div class="ui-btn ui-icon-plus ui-btn-icon-left ui-corner-all fileinput-button">
-          <span>Image: </span>
-          <input type="file" name="file" id="file" data-clear-btn="true" multiple="" class="ui-input-text ui-body-c">
+
+        <div
+          class="ui-btn ui-icon-plus ui-btn-icon-left ui-corner-all fileinput-button">
+          <span>Image: </span> <input type="file" name="file" id="file"
+            data-clear-btn="true" multiple="" class="ui-input-text ui-body-c">
         </div>
 
         <input data-inline="true" type="button"
@@ -447,8 +472,8 @@
           id='actionitem_tags' /> <input data-inline="true" type="button"
           onclick="controller.onSaveactionitem();" value='Save' data-theme='b'
           data-mini="true" id='action_item_save' /><input type="button"
-          onclick="" value='Cancel' data-theme='b'
-          data-mini="true" data-inline="true" id='action_item_cancel' />
+          onclick="" value='Cancel' data-theme='b' data-mini="true"
+          data-inline="true" id='action_item_cancel' />
       </form>
 
     </div>
@@ -569,7 +594,7 @@
 
         <label for="location_district">District</label> <input type='text'
           value='' id='location_district' name='location_district' required />
-        <a data-role="button" href="#mappage" 
+        <a data-role="button" href="#mappage"
           onclick="var state=true; mapctlr.initMap(null, null, state); mapctlr.resizeMapIfVisible();"
           data-theme='b'>Map District</a> <label for="location_contact">Contact</label>
         <input type='text' value='' id='location_contact' /> <label
@@ -594,8 +619,10 @@
   <!-- Map page -->
   <div data-role="page" id="mappage">
     <div data-role="header">
-      <a id="addlocation_back" data-icon="back" data-rel="dialog" class="ui-btn-left" href="#page_add_location" data-iconpos="notext"></a>
-      <a id="viewlocation_back" data-icon="back" data-rel="back" class="ui-btn-left" data-iconpos="notext"></a>
+      <a id="addlocation_back" data-icon="back" data-rel="dialog"
+        class="ui-btn-left" href="#page_add_location" data-iconpos="notext"></a>
+      <a id="viewlocation_back" data-icon="back" data-rel="back"
+        class="ui-btn-left" data-iconpos="notext"></a>
       <h3 id="mapheader">State of the Map</h3>
     </div>
     <!-- /header -->
@@ -608,7 +635,7 @@
 
   </div>
   <!-- /page -->
-  
+
   <script src="../assets/www/libs/jquery-1.7.2.min.js"></script>
   <script src="../assets/www/libs/jquery.mobile-1.4.0.min.js"></script>
 

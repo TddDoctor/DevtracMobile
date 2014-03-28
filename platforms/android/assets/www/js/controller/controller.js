@@ -223,7 +223,7 @@ var controller = {
         editform.empty();
         var snid = localStorage.snid;
         
-        if(localStorage.user == "true"){
+        if(localStorage.user == "true") {
           snid = parseInt(snid);
         } 
         
@@ -260,6 +260,35 @@ var controller = {
 
       });
 
+      //handle edit fieldtrip click event
+      $("#edit_fieldtrip").bind("click", function (event) {
+        var editform = $('#form_fieldtrip_edits');
+        editform.empty();
+
+        var fnid = localStorage.fnid;
+        
+        devtrac.indexedDB.open(function (db) {
+          devtrac.indexedDB.getFieldtrip(db, fnid, function (fieldtripObject) {
+            var fieldset = $("<fieldset ></fieldset>");
+
+            var titlelabel = $("<label for='sitevisit_title' >Title</label>");
+            var titletextffield = $("<input type='text' value='" + fieldtripObject['title'] + "' id='fieldtrip_title_edit'>");
+
+            var savesitevisitedits = $('<input type="button" data-inline="true" data-theme="b" id="save_fieldtrip_edits" onclick="controller.onFieldtripsave();" value="Save" />');
+
+            var cancelsitevisitedits = $('<a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="a" id="cancel_fieldtrip_edits">Cancel</a>');
+
+            fieldset.append(
+                titlelabel).append(
+                    titletextffield).append(
+                                        savesitevisitedits).append(
+                                            cancelsitevisitedits);
+
+            editform.append(fieldset).trigger('create');
+          });
+        });
+
+      });
 
       //handle edit location click event
       $("#editlocation").bind("click", function (event) {
@@ -510,10 +539,15 @@ var controller = {
 
           if (data.length > 1) {
             var sdate;
+            var count = 0;
             $('.panel_home').show();
             for (var i = 0, len = data.length; i < len; i++) {
               var fieldtrip = data[i];
-
+              
+              if(fieldtrip['editflag'] == 1) {
+                count = count + 1;
+              }
+              
               fieldtrip['field_fieldtrip_start_end_date'].length > 0 ? sdate = fieldtrip['field_fieldtrip_start_end_date']['und'][0]['value'] : sdate = "";
 
               var li = $("<li></li>");
@@ -529,12 +563,23 @@ var controller = {
             }
 
             fieldtripList.listview('refresh');
+            $("#fieldtrip_count").html(count+" left");
+            
+             //home_page
+            $.mobile.changePage("#home_page", "slide", true, false);
             auth.hideMessage();
           } else if (data.length == 1) {
             $('.panel_home').hide();
+            var count = 0;
             var fObject = data[0];
+            
+            if(fObject['editflag'] == 1) {
+              count = count + 1;
+            }
+            
             localStorage.pnid = fObject['field_fieldtrip_places']['und'][0]['target_id'];
             localStorage.ftitle = fObject['title'];
+            localStorage.fnid = fObject['nid'];
             
             var sitevisitList = $('#list_sitevisits');
             sitevisitList.empty();
@@ -560,10 +605,15 @@ var controller = {
             $("#fieldtrip_details_start").html(formatedstartdate);
             $("#fieldtrip_details_end").html(formatedenddate);
 
+            var sitevisitcount = 0;
             devtrac.indexedDB.open(function (db) {
               devtrac.indexedDB.getAllSitevisits(db, function (sitevisit) {
                 for (var i in sitevisit) {
                   if (sitevisit[i]['field_ftritem_field_trip']['und'][0]['target_id'] == fObject['nid']) {
+                    if(sitevisit[i]['user-added'] && sitevisit[i]['submit'] == 0) {
+                      sitevisitcount = sitevisitcount + 1;
+                    }
+                    
                     var sitevisits = sitevisit[i];
                     var li = $("<li></li>");
                     var a = null;
@@ -584,6 +634,8 @@ var controller = {
                   }
                 }
 
+                $("#fieldtrip_count").html(count+" left");
+                $("#sitevisit_count").html(sitevisitcount+" left");
                 $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
 
               });
@@ -592,7 +644,6 @@ var controller = {
             auth.hideMessage();
           } else {
             //load field trip details from the database if its one and the list if there's more.
-            //controller.loadFieldTripList();
             auth.hideMessage();
           }
         });
@@ -685,13 +736,14 @@ var controller = {
       var state = false;
       var anchor_id = $(anchor).attr('id');
       var index = 0;
+      var snid = 0;
 
       if(anchor_id.indexOf('d') != -1){
-        var snid = anchor_id.substring(anchor_id.indexOf('d') + 1);
+        snid = anchor_id.substring(anchor_id.indexOf('d') + 1);
         localStorage.snid = snid;
         localStorage.user = false;
       }else if(anchor_id.indexOf('r') != -1){
-        var snid = parseInt(anchor_id.substring(anchor_id.indexOf('r') + 1));
+        snid = parseInt(anchor_id.substring(anchor_id.indexOf('r') + 1));
         localStorage.snid = snid;
         localStorage.user = true;
       }
@@ -973,6 +1025,25 @@ var controller = {
         });    
       }
     },
+    
+    onFieldtripsave: function() {
+      var updates = {};
+      updates['title'] = $('#fieldtrip_title_edit').val();
+      updates['editflag'] = 1;
+      
+      devtrac.indexedDB.open(function (db) {
+        devtrac.indexedDB.editFieldtrip(db, localStorage.fnid, updates).then(function() {
+          var count_container = $("#actionitem_count").html().split(" ");
+          var updated_count = parseInt(count_container[0]) - 1;
+          $("#actionitem_count").html(updated_count+" left");
+          
+          $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
+          
+          auth.hideMessage();
+        });      
+      });
+
+    },
 
     onActionitemclick: function (anchor) {
       var action_id = $(anchor).attr('id');
@@ -986,7 +1057,7 @@ var controller = {
       list_comment.empty();
 
       devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getActionItem(db, localStorage.anid, function (fObject) {
+        devtrac.indexedDB.getActionItem(db, parseInt(localStorage.anid), function (fObject) {
           $("#actionitem_resp_location").html(localStorage.respplacetitle);          
           
           var sitedate = fObject['field_actionitem_due_date']['und'][0]['value'];

@@ -178,7 +178,7 @@ var auth = {
 	    },
 	    success : function(data) {
 	      
-	      localStorage.user = name;
+	      localStorage.username = name;
 	      localStorage.pass = pass;
 	      localStorage.uid = data.user.uid;
 	      localStorage.realname = data.user.realname
@@ -189,7 +189,7 @@ var auth = {
 		localStorage.usertoken = token;
 		
 		//set welcome message
-		$("#username").html("Welcome "+localStorage.user);
+		$("#username").html("Welcome "+localStorage.username);
 		
 		//show panel options
 		$('.panel_oecd').show();
@@ -270,7 +270,7 @@ var auth = {
             $('.refresh-button').hide();
             
             //set closing message
-            $("#username").html("Goodbye, "+localStorage.user+" !");
+            $("#username").html("Goodbye, "+localStorage.username+" !");
 
             $.mobile.changePage("#home_page", "slide", true, false);
             //clear passwords from file

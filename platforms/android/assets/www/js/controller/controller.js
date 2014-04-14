@@ -22,7 +22,7 @@ var controller = {
           controller.uploadCounter();
           
           //set welcome message
-          $("#username").html("Welcome " + localStorage.user);
+          $("#username").html("Welcome " + localStorage.username);
         });
 
 
@@ -288,15 +288,13 @@ var controller = {
 
       //handle edit location click event
       $("#editlocation").bind("click", function (event) {
-        var snid = $('#sitevisitId').val();
+        var snid = localStorage.snid;
         var locationcontent = $("#locationcontent");
         locationcontent.empty();
 
         devtrac.indexedDB.open(function (db) {
-          devtrac.indexedDB.getAllSitevisits(db, function (sitevisitObject) {
-
-            for (var k in sitevisitObject) {
-              devtrac.indexedDB.getPlace(db, sitevisitObject[k]['field_ftritem_place']['und'][0]['target_id'], function (placeObject) {
+          devtrac.indexedDB.getSitevisit(db, snid, function (sitevisitObject) {
+              devtrac.indexedDB.getPlace(db, sitevisitObject['field_ftritem_place']['und'][0]['target_id'], function (placeObject) {
                 if (placeObject != undefined) {
                   var editform = $('<form id="form' + placeObject['nid'] + '"></form>');
                   editform.empty();
@@ -337,7 +335,6 @@ var controller = {
                   locationcontent.append(editform).trigger('create');
                 }
               });
-            }
           });
         });
 

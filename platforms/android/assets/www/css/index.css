@@ -17,3 +17,9 @@ body .ui-footer .ui-title {
 #endqtntitle{
   margin: 20px 0 0 25px;
 }
+
+#owl-demo .item div{
+    display: block;
+    width: 100%;
+    height: auto;
+}

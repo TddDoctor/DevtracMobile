@@ -45,6 +45,8 @@ var devtracnodes = {
         },
         success: function (data) {         
           updates['submit'] = 1;
+          updates['nid'] = data['nid'];
+          
           d.resolve(updates);
 
         }

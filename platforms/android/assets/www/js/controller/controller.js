@@ -223,10 +223,6 @@ var controller = {
         editform.empty();
         var snid = localStorage.snid;
         
-        if(localStorage.user == "true") {
-          snid = parseInt(snid);
-        } 
-        
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getSitevisit(db, snid, function (sitevisitObject) {
             var sitefieldset = $("<fieldset ></fieldset>");
@@ -743,7 +739,7 @@ var controller = {
         localStorage.snid = snid;
         localStorage.user = false;
       }else if(anchor_id.indexOf('r') != -1){
-        snid = parseInt(anchor_id.substring(anchor_id.indexOf('r') + 1));
+        snid = anchor_id.substring(anchor_id.indexOf('r') + 1);
         localStorage.snid = snid;
         localStorage.user = true;
       }
@@ -872,7 +868,7 @@ var controller = {
 
         });
 
-        devtrac.indexedDB.editSitevisit(db, localStorage.snid, updates, function () {
+        devtrac.indexedDB.editSitevisit(db, localStorage.snid, updates).then(function () {
           $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
         });
       });

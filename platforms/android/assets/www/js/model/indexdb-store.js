@@ -5,8 +5,8 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDB.open = function(callback) {
-  var version = 27;
-  var request = indexedDB.open("d3", version);
+  var version = 6;
+  var request = indexedDB.open("d4", version);
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
     callback(devtrac.indexedDB.db);
@@ -17,8 +17,8 @@ devtrac.indexedDB.open = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 27;
-  var request = indexedDB.open("d3", version);
+  var version = 6;
+  var request = indexedDB.open("d4", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -845,7 +845,8 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
       // Get the old value that we want to update
       var data = request.result;
       data.submit = updates['submit'];
-
+      data.nid = updates['nid'];
+      
     // Put this updated object back into the database.
     var requestUpdate = store.put(data);
     requestUpdate.onerror = function(event) {
@@ -856,9 +857,12 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
     requestUpdate.onsuccess = function(event) {
       // Success - the data is updated!
       console.log("Site visit update success");
+      
+      store.delete(snid);
       d.resolve();
     };
   };
+
   return d;
 };
 

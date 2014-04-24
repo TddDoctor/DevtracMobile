@@ -5,21 +5,7 @@ var auth = {
       notifications.deleteNotification(notification);
 
     },
-  
-    //show loading message
-    showMessage: function(msg) {
-      $.msg({ 
-	content: msg,
-	autoUnblock : false,
-	bgPath : '../assets/www/img/',
-      });
-    },
 
-    //hide loading message
-    hideMessage: function() {
-      $.msg( 'unblock');
-    },
-    
     //get site token
     getToken: function() {
       var d = $.Deferred();
@@ -30,7 +16,7 @@ var auth = {
 	type:"get",
 	dataType:"text",
 	error:function (jqXHR, textStatus, errorThrown) {
-	  auth.hideMessage();
+
 	  //hide and show dialog auth buttons
 	  $('#logoutdiv').hide();
 	  $('#logindiv').show();
@@ -69,9 +55,9 @@ var auth = {
     },
   
   //check if user is logged in
-    loginStatus: function(token) {
+    loginStatus: function() {
       var d = $.Deferred();
-      auth.showMessage("Please Wait..");
+      controller.loadingMsg("Please Wait..", 0);
       auth.checkToken().then(function(token){
 	 // Call system connect with session token.
 	  $.ajax({
@@ -80,7 +66,7 @@ var auth = {
 	    dataType : 'json',
 	    headers: {'X-CSRF-Token': token},
 	    error : function(XMLHttpRequest, textStatus, errorThrown) {
-	      auth.hideMessage();
+	      $.unblockUI();
 	      
 	      //hide and show dialog auth buttons
 	      $('#logoutdiv').hide();
@@ -99,7 +85,7 @@ var auth = {
 	      if (drupal_user.uid == 0)
 	      {
 		//user is not logged in
-		auth.hideMessage();
+	        $.unblockUI();
 		//hide panel options
 		$('.panel_oecd').hide();
 		$('.panel_placetype').hide();
@@ -153,7 +139,6 @@ var auth = {
 
     //login to devtrac
     login: function(name, pass) {
-      console.log("On login, the url is "+localStorage.appurl);
       var d = $.Deferred();
        // Obtain session token.
       auth.getToken().then(function (token) {
@@ -165,10 +150,11 @@ var auth = {
 	    dataType : 'json',
 	    headers: {'X-CSRF-Token': token},
 	    beforeSend: function( xhr ) {
-	      auth.showMessage('Please wait...');
+	      controller.loadingMsg("Logging In ...", 0);
+
 	    },
 	    error : function(XMLHttpRequest, textStatus, errorThrown) {
-	      auth.hideMessage();
+	      $.unblockUI();
 	      alert(errorThrown);	     
 	      //hide and show dialog auth buttons
 	      $('#logoutdiv').hide();
@@ -185,7 +171,6 @@ var auth = {
 	      
 	      // Obtain session token.
 	      auth.getToken().then(function (token) {
-		//auth.hideMessage();
 		localStorage.usertoken = token;
 		
 		//set welcome message
@@ -225,8 +210,7 @@ var auth = {
 
     //logout
     logout: function() {
-      console.log("On logout, the url is "+localStorage.appurl);
-      auth.showMessage("Please Wait, Logging out...");
+      controller.loadingMsg("Logging out...", 0);
       // Obtain session token.
       auth.getToken().then(function (token) {
         // Call system logout with session token.
@@ -236,7 +220,7 @@ var auth = {
           dataType : 'json',
           headers: {'X-CSRF-Token': token},
           error : function(XMLHttpRequest, textStatus, errorThrown) {
-            auth.hideMessage();
+            $.unblockUI();
 
             alert(errorThrown);
             //hide and show dialog auth buttons
@@ -244,7 +228,7 @@ var auth = {
             $('#logoutdiv').show();
           },
           success : function(data) {
-            auth.hideMessage();
+            $.unblockUI();
             localStorage.token = null;
             localStorage.pass = null;
             

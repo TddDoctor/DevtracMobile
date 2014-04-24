@@ -37,13 +37,33 @@ var controller = {
     },
 
     fetchAllData: function () {
-      var d = $.Deferred();    
+      var d = $.Deferred();   
+      
       $('#refreshme').initBubble();
       devtrac.indexedDB.open(function (db) {
         devtracnodes.getFieldtrips(db).then(function () {
-          devtracnodes.getSiteVisits(db).then(function(){
-            d.resolve();
+          vocabularies.getPlacetypeVocabularies(db).then(function(){
+            devtracnodes.getSiteVisits(db).then(function(){
+              devtracnodes.getQuestions(db).then(function() {
+                devtracnodes.getActionItems(db);
+                devtracnodes.getPlaces(db);
+              }).fail(function(e) {
+                $.unblockUI();
+
+              });
+
+              d.resolve();
+            }).fail(function(error){
+              $.unblockUI();
+              alert(error+". Try Later");
+            });
+            vocabularies.getOecdVocabularies(db).then(function(){
+            });
           });
+          
+        }).fail(function(error){
+          $.unblockUI();
+          alert(error+". Try Later");
         });
       });
 
@@ -54,11 +74,15 @@ var controller = {
     bindEvents: function () {
 
       document.addEventListener("deviceready", controller.onDeviceReady, false);
+      $("#actionitem_date").datepicker({ dateFormat: "yy/mm/dd" });
+      $("#sitevisit_add_date").datepicker({ dateFormat: "yy/mm/dd" });
+
+      $("#sitevisit_add_save").bind('click', function(){
+        controller.onSavesitevisit();
+      });
       
-    //on add site visit click
-      $('#addsitevisit').bind('click', function () { 
-        //$.mobile.changePage("#page_sitevisits_details", "slide", true, false);
-        
+      $("#page_fieldtrip_details").bind('pagebeforeshow', function(){
+        $("#page_fieldtrip_details").trigger("create");
       });
       
       //on cancel location click
@@ -96,13 +120,9 @@ var controller = {
       
       //On Questionnaire button click
       $('#addquestionnaire').bind('click', function () { 
-        //Insert title to the start page for the questionnnaire.
-        $('#qtntitle').html('Swipe To Start');		
-
-        //recreate the html elements with jquery mobile styles
-        $("fieldset.qtions").each(function(){
-          $(this).trigger('create');
-        });
+        
+        $.mobile.changePage("#page_add_questionnaire", "slide", true, false);
+        
       }); 
 
       //hide the notification button if there are no notifcations and its been clicked.
@@ -114,7 +134,7 @@ var controller = {
 
       //redownload the devtrac data
       $('.refresh-button').bind('click', function () {
-        auth.showMessage("Downloading Data ...");
+        controller.loadingMsg("Downloading Data ...", 0);
         //get all bubbles and delete them to create room for new ones.
         for (var notify in $('#refreshme').getNotifications()) {
           $(this).deleteBubble($('#refreshme').getNotifications()[notify]);
@@ -222,6 +242,11 @@ var controller = {
         var editform = $('#form_sitevisit_edits');
         editform.empty();
         var snid = localStorage.snid;
+        if(localStorage.user == true){
+          snid = parseInt(snid);
+        }else{
+          snid = snid.toString();
+        }
         
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getSitevisit(db, snid, function (sitevisitObject) {
@@ -292,7 +317,13 @@ var controller = {
         var locationcontent = $("#locationcontent");
         locationcontent.empty();
 
+        if(localStorage.user == true){
+          snid = parseInt(snid);
+        }else{
+          snid = snid.toString();
+        }
         devtrac.indexedDB.open(function (db) {
+
           devtrac.indexedDB.getSitevisit(db, snid, function (sitevisitObject) {
               devtrac.indexedDB.getPlace(db, sitevisitObject['field_ftritem_place']['und'][0]['target_id'], function (placeObject) {
                 if (placeObject != undefined) {
@@ -389,7 +420,7 @@ var controller = {
               controller.loadFieldTripList();          
             });
           }).fail(function (errorThrown) {
-
+              $.unblockUI();
           });
         }
       });
@@ -484,13 +515,8 @@ var controller = {
       if(controller.sizeme(questionnaire.answers) > 0) {
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.addSavedQuestions(db, questionnaire).then(function() {
-            $.msg({ 
-              content: "Saved",
-              bgPath : '../assets/www/img/',
-              timeOut : 3000,
-     
-            });
-
+            controller.loadingMsg("Saved", 2000);
+            
             $(':input','.qtions')
             .not(':button, :submit, :reset, :hidden')
             .val('')
@@ -503,23 +529,13 @@ var controller = {
 
           }).fail(function() {
             //todo: check if we can answer numerous questions for one site visit
-            $.msg({ 
-              content: "Already Saved",
-              bgPath : '../assets/www/img/',
-              timeOut : 3000,
-              afterBlock : function(){
-                //$.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
-
-              }        
-            });
+            controller.loadingMsg("Already Saved", 2000);
+            
           });      
         });
       }else {
-        $.msg({ 
-          content: "Please Answer Atleast Once",
-          bgPath : '../assets/www/img/',
-          timeOut : 3000 
-        });  		
+        controller.loadingMsg("Please Answer Atleast Once", 2000);
+        		
       }
     },
 
@@ -556,11 +572,11 @@ var controller = {
             }
 
             fieldtripList.listview('refresh');
-            $("#fieldtrip_count").html(count+" left");
+            $("#fieldtrip_count").html(count);
             
              //home_page
             $.mobile.changePage("#home_page", "slide", true, false);
-            auth.hideMessage();
+            $.unblockUI();
           } else if (data.length == 1) {
             $('.panel_home').hide();
             var count = 0;
@@ -602,6 +618,7 @@ var controller = {
             devtrac.indexedDB.open(function (db) {
               devtrac.indexedDB.getAllSitevisits(db, function (sitevisit) {
                 for (var i in sitevisit) {
+                if(sitevisit[i]['field_ftritem_field_trip'] != undefined){
                   if (sitevisit[i]['field_ftritem_field_trip']['und'][0]['target_id'] == fObject['nid']) {
                     if(sitevisit[i]['user-added'] && sitevisit[i]['submit'] == 0) {
                       sitevisitcount = sitevisitcount + 1;
@@ -623,21 +640,25 @@ var controller = {
                     a.append(p);
                     li.append(a);
                     sitevisitList.append(li);
-                    sitevisitList.trigger('create');
-                  }
+                    
+                  }    
+                }
+              
                 }
 
-                $("#fieldtrip_count").html(count+" left");
-                $("#sitevisit_count").html(sitevisitcount+" left");
+                $("#fieldtrip_count").html(count);
+                $("#sitevisit_count").html(sitevisitcount);
+                sitevisitList.trigger('create');
+               
                 $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
 
               });
 
             });
-            auth.hideMessage();
+            $.unblockUI();
           } else {
             //load field trip details from the database if its one and the list if there's more.
-            auth.hideMessage();
+            $.unblockUI();
           }
         });
 
@@ -684,7 +705,13 @@ var controller = {
             if (sitevisit[i]['field_ftritem_field_trip']['und'][0]['target_id'] == fnid) {
               var sitevisits = sitevisit[i];
               var li = $("<li></li>");
-              var a = $("<a href='#page_sitevisits_details' id='snid" + sitevisits['nid'] + "' onclick='controller.onSitevisitClick(this)'></a>");
+              
+              if(sitevisit[i]['user-added']) {
+                a = $("<a href='#page_sitevisits_details' id='user" + sitevisits['nid'] + "' onclick='controller.onSitevisitClick(this)'></a>");  
+              }else{
+                a = $("<a href='#page_sitevisits_details' id='snid" + sitevisits['nid'] + "' onclick='controller.onSitevisitClick(this)'></a>");
+              }
+              
               var h1 = $("<h1 class='heada1'>" + sitevisits['title'] + "</h1>");
               var p = $("<p class='para1'>Narrative: " + sitevisits['field_ftritem_narrative']['und'][0]['value'] + "</p>");
 
@@ -709,7 +736,13 @@ var controller = {
             if (sitevisit[i]['field_ftritem_field_trip']['und'][0]['target_id'] == localStorage.fnid) {
               var sitevisits = sitevisit[i];
               var li = $("<li></li>");
-              var a = $("<a href='#page_sitevisits_details' id='snid" + sitevisits['nid'] + "' onclick='controller.onSitevisitClick(this)'></a>");
+              
+              if(sitevisit[i]['user-added']) {
+                a = $("<a href='#page_sitevisits_details' id='user" + sitevisits['nid'] + "' onclick='controller.onSitevisitClick(this)'></a>");  
+              }else{
+                a = $("<a href='#page_sitevisits_details' id='snid" + sitevisits['nid'] + "' onclick='controller.onSitevisitClick(this)'></a>");
+              }
+              
               var h1 = $("<h1 class='heada1'>" + sitevisits['title'] + "</h1>");
               var p = $("<p class='para1'>Narrative: " + sitevisits['field_ftritem_narrative']['und'][0]['value'] + "</p>");
 
@@ -731,14 +764,16 @@ var controller = {
       var index = 0;
       var snid = 0;
 
-      if(anchor_id.indexOf('d') != -1){
+      if(anchor_id.indexOf('d') != -1) {
         snid = anchor_id.substring(anchor_id.indexOf('d') + 1);
         localStorage.snid = snid;
         localStorage.user = false;
-      }else if(anchor_id.indexOf('r') != -1){
+      }
+      else if(anchor_id.indexOf('r') != -1) {
         snid = anchor_id.substring(anchor_id.indexOf('r') + 1);
         localStorage.snid = snid;
         localStorage.user = true;
+        snid = parseInt(snid);
       }
     
       localStorage.sitevisitname = $(anchor).children('.heada1').html();
@@ -815,37 +850,41 @@ var controller = {
             if(actionitem[i]['user-added'] == true && actionitem[i]['submit'] == 0) {
               actionitemcount = actionitemcount + 1;
             }
-            var siteid = actionitem[i]['field_actionitem_ftreportitem']['und'][0]['target_id'];
-            var sitevisitid = siteid.substring(siteid.indexOf('(')+1, siteid.length-1);
-            if (actionitem[i]['field_actionitem_ftreportitem']['und'][0]['target_id'] == snid || sitevisitid == snid) {
-              var aItem = actionitem[i];
-              var li = $("<li></li>");
-              var a = $("<a href='#' id='" + aItem['nid'] + "' onclick='controller.onActionitemclick(this)'></a>");
-              var h1 = $("<h1 class='heada2'>" + aItem['title'] + "</h1>");
-              var p = $("<p class='para2'></p>");
+            if(actionitem[i]['field_actionitem_ftreportitem'] != undefined) {
+              var siteid = actionitem[i]['field_actionitem_ftreportitem']['und'][0]['target_id'];
+              var sitevisitid = siteid.substring(siteid.indexOf('(')+1, siteid.length-1);
+              
+              if (actionitem[i]['field_actionitem_ftreportitem']['und'][0]['target_id'] == snid || sitevisitid == snid) {
+                var aItem = actionitem[i];
+                var li = $("<li></li>");
+                var a = $("<a href='#' id='" + aItem['nid'] + "' onclick='controller.onActionitemclick(this)'></a>");
+                var h1 = $("<h1 class='heada2'>" + aItem['title'] + "</h1>");
+                var p = $("<p class='para2'></p>");
 
-              switch (aItem['field_actionitem_status']['und'][0]['value']) {
-              case '1':
-                p.html("Status: Open");
-                break;
-              case '2':
-                p.html("Status: Rejected");
-                break;
-              case '3':
-                p.html("Status: Closed");
-                break;
-              default:
-                break;
+                switch (aItem['field_actionitem_status']['und'][0]['value']) {
+                case '1':
+                  p.html("Status: Open");
+                  break;
+                case '2':
+                  p.html("Status: Rejected");
+                  break;
+                case '3':
+                  p.html("Status: Closed");
+                  break;
+                default:
+                  break;
+                }
+
+                a.append(h1);
+                a.append(p);
+                li.append(a);
+                actionitemList.append(li);
               }
-
-              a.append(h1);
-              a.append(p);
-              li.append(a);
-              actionitemList.append(li);
             }
+
           }
           
-          $("#actionitem_count").html(actionitemcount+" left");
+          $("#actionitem_count").html(actionitemcount);
           $("#uploads_listview").listview('refresh');
           actionitemList.listview('refresh');
         });
@@ -856,15 +895,17 @@ var controller = {
     onSitevisitsave: function () {
       //save site visit edits
       var updates = {};
+      $('#form_sitevisit_edits *').filter(':input').each(function () {
+        var key = $(this).attr('id').substring($(this).attr('id').indexOf('_') + 1);
+        if (key.indexOf('_') == -1) {
+          updates[key] = $(this).val();
+        }
+
+      });
+      
       devtrac.indexedDB.open(function (db) {
-        $('#form_sitevisit_edits *').filter(':input').each(function () {
-          var key = $(this).attr('id').substring($(this).attr('id').indexOf('_') + 1);
-          if (key.indexOf('_') == -1) {
-            updates[key] = $(this).val();
-          }
-
-        });
-
+        console.log("siite visit is "+localStorage.snid);
+        
         devtrac.indexedDB.editSitevisit(db, localStorage.snid, updates).then(function () {
           $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
         });
@@ -893,14 +934,10 @@ var controller = {
 
         });
 
-        devtrac.indexedDB.editPlace(db, formId, updates, function (location) {
-          $.msg({
-            content: 'Saved ' + location,
-            fadeIn: 500,
-            fadeOut: 200,
-            timeOut: 2000,
-            bgPath: '../img/'
-          });
+        devtrac.indexedDB.editPlace(db, formId, updates).then(function () {
+          controller.loadingMsg('Saved ' + updates['title'], 2000);
+          
+          $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
         });
       });
 
@@ -979,7 +1016,7 @@ var controller = {
                 actionitemcount = actionitemcount + 1;
               }
             }
-            devtrac.indexedDB.addActionItemsData(db, updates);
+            devtrac.indexedDB.addActionItemsData(db, updates[0]);
 
             var actionitemList = $('#list_actionitems');
 
@@ -1007,7 +1044,7 @@ var controller = {
             li.append(a);
             actionitemList.append(li);
             
-            $("#actionitem_count").html(actionitemcount+" left");
+            $("#actionitem_count").html(actionitemcount);
             $("#uploads_listview").listview('refresh');
             
             actionitemList.listview('refresh');
@@ -1028,11 +1065,11 @@ var controller = {
         devtrac.indexedDB.editFieldtrip(db, localStorage.fnid, updates).then(function() {
           var count_container = $("#actionitem_count").html().split(" ");
           var updated_count = parseInt(count_container[0]) - 1;
-          $("#actionitem_count").html(updated_count+" left");
-          
+      
+          $("#actionitem_count").html(updated_count);
+          $('#fieldtrip_details_title').html(updates['title']);
           $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
-          
-          auth.hideMessage();
+
         });      
       });
 
@@ -1045,20 +1082,30 @@ var controller = {
       localStorage.anid = anid;
       var form = $("#form_actionitems_details");
 
+      if(localStorage.anid) {
+        anid = parseInt(anid);
+      }
       var list_comment = $('#list_comments');
       
       list_comment.empty();
 
       devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getActionItem(db, parseInt(localStorage.anid), function (fObject) {
+        devtrac.indexedDB.getActionItem(db, anid, function (fObject) {
           $("#actionitem_resp_location").html(localStorage.respplacetitle);          
           
           var sitedate = fObject['field_actionitem_due_date']['und'][0]['value'];
-          var sitedatestring = JSON.stringify(sitedate);
-          var sitedateonly = sitedatestring.substring(1, sitedatestring.indexOf('T'));
-          var sitedatearray = sitedateonly.split("-");
+          
+          if(sitedate.date.charAt(4) != "/") {
+            var sitedatestring = JSON.stringify(sitedate);
+            var sitedateonly = sitedatestring.substring(1, sitedatestring.indexOf('T'));
+            var sitedatearray = sitedateonly.split("-");
 
-          var formatedsitedate = sitedatearray[2] + "/" + sitedatearray[1] + "/" + sitedatearray[0];
+            var formatedsitedate = sitedatearray[2] + "/" + sitedatearray[1] + "/" + sitedatearray[0];
+  
+          }
+          else{
+            var formatedsitedate = sitedate.date;
+          }
           
           $("#actionitem_due_date").html(formatedsitedate);
 
@@ -1228,7 +1275,7 @@ var controller = {
 
             devtrac.indexedDB.addPlacesData(db, updates);
             locationcount = locationcount + 1;
-            $("#location_count").html(locationcount+" left");
+            $("#location_count").html(locationcount);
             $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
           });
 
@@ -1242,60 +1289,64 @@ var controller = {
         //save added site visits
     
         var updates = {};
-        updates[0] = [];
-        updates[0]['user-added'] = true;
-        updates[0]['nid'] = 1;
         
-        updates[0]['title'] = $('#sitevisit_add_title').val();
-        updates[0]['status'] = 1;
-        updates[0]['type'] = 'ftritem';
-        updates[0]['submit'] = 0;
-        updates[0]['uid'] = localStorage.uid;
+        updates['user-added'] = true;
+        updates['nid'] = 1;
+        
+        updates['title'] = $('#sitevisit_add_title').val();
+        updates['status'] = 1;
+        updates['type'] = 'ftritem';
+        updates['submit'] = 0;
+        updates['uid'] = localStorage.uid;
         
         //get site visit type
-        updates[0]['taxonomy_vocabulary_7'] = {};
-        updates[0]['taxonomy_vocabulary_7']['und'] = [];
-        updates[0]['taxonomy_vocabulary_7']['und'][0] = {};
-        updates[0]['taxonomy_vocabulary_7']['und'][0]['tid'] = $('#sitevisit_add_type').val();
+        updates['taxonomy_vocabulary_7'] = {};
+        updates['taxonomy_vocabulary_7']['und'] = [];
+        updates['taxonomy_vocabulary_7']['und'][0] = {};
+        updates['taxonomy_vocabulary_7']['und'][0]['tid'] = $('#sitevisit_add_type').val();
         
-        updates[0]['field_ftritem_date_visited'] = {};
-        updates[0]['field_ftritem_date_visited']['und'] = [];
-        updates[0]['field_ftritem_date_visited']['und'][0] = {};
-        updates[0]['field_ftritem_date_visited']['und'][0]['value'] = $('#sitevisit_add_date').val();
+        updates['field_ftritem_date_visited'] = {};
+        updates['field_ftritem_date_visited']['und'] = [];
+        updates['field_ftritem_date_visited']['und'][0] = {};
+        updates['field_ftritem_date_visited']['und'][0]['value'] = $('#sitevisit_add_date').val();
         
-        updates[0]['field_ftritem_public_summary'] = {};
-        updates[0]['field_ftritem_public_summary']['und'] = [];
-        updates[0]['field_ftritem_public_summary']['und'][0] = {};
-        updates[0]['field_ftritem_public_summary']['und'][0]['value'] = $('#sitevisit_add_public_summary').val();
+        updates['field_ftritem_public_summary'] = {};
+        updates['field_ftritem_public_summary']['und'] = [];
+        updates['field_ftritem_public_summary']['und'][0] = {};
+        updates['field_ftritem_public_summary']['und'][0]['value'] = $('#sitevisit_add_public_summary').val();
 
-        updates[0]['field_ftritem_narrative'] = {};
-        updates[0]['field_ftritem_narrative']['und'] = [];
-        updates[0]['field_ftritem_narrative']['und'][0] = {};
-        updates[0]['field_ftritem_narrative']['und'][0]['value'] =  $('#sitevisit_add_report').val();
+        updates['field_ftritem_narrative'] = {};
+        updates['field_ftritem_narrative']['und'] = [];
+        updates['field_ftritem_narrative']['und'][0] = {};
+        updates['field_ftritem_narrative']['und'][0]['value'] =  $('#sitevisit_add_report').val();
 
-        updates[0]['field_ftritem_field_trip'] = {};
-        updates[0]['field_ftritem_field_trip']['und'] = [];
-        updates[0]['field_ftritem_field_trip']['und'][0] = {};
-        updates[0]['field_ftritem_field_trip']['und'][0]['target_id'] = localStorage.fnid;
+        updates['field_ftritem_field_trip'] = {};
+        updates['field_ftritem_field_trip']['und'] = [];
+        updates['field_ftritem_field_trip']['und'][0] = {};
+        updates['field_ftritem_field_trip']['und'][0]['target_id'] = localStorage.fnid;
         
-        updates[0]['field_ftritem_place'] = {};
-        updates[0]['field_ftritem_place']['und'] = [];
-        updates[0]['field_ftritem_place']['und'][0] = {};
-        updates[0]['field_ftritem_place']['und'][0]['target_id'] = localStorage.pnid;
+        updates['field_ftritem_place'] = {};
+        updates['field_ftritem_place']['und'] = [];
+        updates['field_ftritem_place']['und'][0] = {};
+        updates['field_ftritem_place']['und'][0]['target_id'] = localStorage.pnid;
         
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getAllSitevisits(db, function (sitevisits) {
             for (var k in sitevisits) {
-              if (sitevisits[k]['user-added'] && sitevisits[k]['nid'] == updates[0]['nid']) {
-                updates[0]['nid'] = sitevisits[k]['nid'] + 1;
+              if (sitevisits[k]['user-added'] && sitevisits[k]['nid'] == updates['nid']) {
+                updates['nid'] = sitevisits[k]['nid'] + 1;
                 sitevisitscount = sitevisitscount + 1;
               }
             }
 
-            devtrac.indexedDB.addSiteVisitsData(db, updates);
+            devtrac.indexedDB.addSiteVisitsData(db, updates).then(function(){
+              controller.refreshSitevisits();
+              $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);  
+            });
+            
             sitevisitscount = sitevisitscount + 1;
-            $("#sitevisit_count").html(sitevisitscount+" left");
-            $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
+            $("#sitevisit_count").html(sitevisitscount);
+            
           });
 
         });  
@@ -1338,14 +1389,9 @@ var controller = {
               }
               list_comment.listview('refresh');
               
-              $.msg({ 
-                content: "Saved",
-                bgPath : '../assets/www/img/',
-                timeOut : 3000,
-                afterBlock : function(){
-                  $('#actionitem_comment').val("");
-                }
-              });
+              controller.loadingMsg("Saved", 2000);
+
+              $('#actionitem_comment').val("");
             });
 
           }); 	
@@ -1455,7 +1501,6 @@ var controller = {
         
       }
 
-      auth.hideMessage();
     },
 
     sizeme : function(obj) {
@@ -1476,11 +1521,35 @@ var controller = {
             }
           }
           
-          $("#location_count").html(locationcount+" left");
+          $("#location_count").html(locationcount);
 
         });
 
       });  
+    },
+    
+    loadingMsg: function(msg, t){
+      $.blockUI({ 
+        message: msg, 
+        fadeIn: 700, 
+        fadeOut: 700,
+        timeout: t,
+        
+        css: { 
+            width: '250px', 
+            top : ($(window).height()) / 2 + 'px',
+            left : ($(window).width() - 225) / 2 + 'px',
+            right: '10px', 
+            border: 'none', 
+            padding: '5px', 
+            backgroundColor: '#000', 
+            '-webkit-border-radius': '10px', 
+            '-moz-border-radius': '10px', 
+            opacity: .6, 
+            color: '#fff' 
+        } 
+    }); 
+      
     }
 
 };

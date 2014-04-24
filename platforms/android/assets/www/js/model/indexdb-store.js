@@ -5,8 +5,8 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDB.open = function(callback) {
-  var version = 6;
-  var request = indexedDB.open("d4", version);
+  var version = 2;
+  var request = indexedDB.open("d9", version);
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
     callback(devtrac.indexedDB.db);
@@ -17,8 +17,8 @@ devtrac.indexedDB.open = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 6;
-  var request = indexedDB.open("d4", version);
+  var version = 2;
+  var request = indexedDB.open("d9", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -29,11 +29,11 @@ devtrac.indexedDB.open = function(callback) {
     if(db.objectStoreNames.contains("oecdobj")){
       db.deleteObjectStore("oecdobj");
     }
-    if(db.objectStoreNames.contains("placetypesobj")){
-      db.deleteObjectStore("placetypesobj");
+    if(db.objectStoreNames.contains("placetype")){
+      db.deleteObjectStore("placetype");
     }
-    if(db.objectStoreNames.contains("sitevisitsobj")){
-      db.deleteObjectStore("sitevisitsobj");
+    if(db.objectStoreNames.contains("sitevisit")){
+      db.deleteObjectStore("sitevisit");
     }
     if(db.objectStoreNames.contains("actionitemsobj")){
       db.deleteObjectStore("actionitemsobj");
@@ -55,12 +55,12 @@ devtrac.indexedDB.open = function(callback) {
     }
 
     var store = db.createObjectStore("oecdobj", {autoIncrement: true});
-    var placetypesstore = db.createObjectStore("placetypesobj", {autoIncrement: true});
+    var placetypesstore = db.createObjectStore("placetype", {autoIncrement: true});
 
     var fieldtripstore = db.createObjectStore("fieldtripobj", {keyPath: "nid"});
     fieldtripstore.createIndex('nid', 'nid', { unique: true });
 
-    var sitevisitstore = db.createObjectStore("sitevisitsobj", {keyPath: "nid"});
+    var sitevisitstore = db.createObjectStore("sitevisit", {keyPath: "nid"});
     sitevisitstore.createIndex('nid', 'nid', { unique: true });
 
     var actionitemstore = db.createObjectStore("actionitemsobj", {keyPath: "nid"});
@@ -127,8 +127,8 @@ devtrac.indexedDB.addOecdData = function(db, oecdObj) {
 //adding placetypes data to object store
 devtrac.indexedDB.addPlacetypesData = function(db, pObj) {
   var d = $.Deferred();
-  var trans = db.transaction("placetypesobj", "readwrite");
-  var store = trans.objectStore("placetypesobj");
+  var trans = db.transaction("placetype", "readwrite");
+  var store = trans.objectStore("placetype");
   var request;
 
   if(pObj.length > 0) {
@@ -216,12 +216,12 @@ devtrac.indexedDB.addQuestionsData = function(db, qObj) {
 //adding sitevisits data to object store
 devtrac.indexedDB.addSiteVisitsData = function(db, sObj) {
   var d = $.Deferred();
-  var trans = db.transaction("sitevisitsobj", "readwrite");
-  var sitevisitstore = trans.objectStore("sitevisitsobj");
+  var trans = db.transaction("sitevisit", "readwrite");
+  var sitevisitstore = trans.objectStore("sitevisit");
   var sitevisitrequest;
   var timestamp = new Date().getTime();
 
-  if(controller.sizeme(sObj) > 0){
+  if(controller.sizeme(sObj) > 0 && sObj['title'] == undefined){
     for (var i in sObj) {
       if(!(sObj[i]['dbsavetime'] && sObj[i]['editflag'])){
         sObj[i]['dbsavetime'] = timestamp;
@@ -241,7 +241,25 @@ devtrac.indexedDB.addSiteVisitsData = function(db, sObj) {
       d.reject(e);
     };
   }else{
-    d.reject('No site visits returned');
+    console.log("title is "+sObj['title']);
+    console.log("nid is "+sObj['nid']);
+    
+    if(!(sObj['dbsavetime'] && sObj['editflag'])){
+      sObj['dbsavetime'] = timestamp;
+      sObj['editflag'] = 0;
+    }
+    sitevisitrequest = sitevisitstore.add(sObj);
+
+    sitevisitrequest.onsuccess = function(e) {
+      console.log("added site visits");
+      d.resolve();
+    };
+
+    sitevisitrequest.onerror = function(e) {
+      console.log("error adding site visits "+e.target.error.message);
+      d.reject(e);
+    };
+
   }
 
 
@@ -253,23 +271,18 @@ devtrac.indexedDB.addActionItemsData = function(db, aObj) {
   var d = $.Deferred();
   var trans = db.transaction("actionitemsobj", "readwrite");
   var store = trans.objectStore("actionitemsobj");
-  var request;
 
-  if(controller.sizeme(aObj) > 0) {
-    for (var i in aObj) {
-      request = store.add(aObj[i]);
-    }
+  request = store.add(aObj);
 
-    request.onsuccess = function(e) {
-      d.resolve();
-    };
+  request.onsuccess = function(e) {
+    devtracnodes.notify("Action Items Saved");
+    d.resolve();
+  };
 
-    request.onerror = function(e) {
-      d.reject(e);
-    };
-  }else {
-    d.reject("No action items returned");
-  }
+  request.onerror = function(e) {
+    devtracnodes.notify("Action Items Not Saved");
+    d.resolve(e);
+  };
 
   return d;
 };
@@ -394,7 +407,7 @@ devtrac.indexedDB.getAllOecdItems = function(db, callback) {
       categoryValues[htid][htid] = title;
     }
 
-    result.continue();
+    result["continue"]();
   };
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
@@ -403,8 +416,8 @@ devtrac.indexedDB.getAllOecdItems = function(db, callback) {
 
 //query placetypes data from datastore
 devtrac.indexedDB.getAllPlacetypesItems = function(db, callback) {
-  var trans = db.transaction(["placetypesobj"], "readonly");
-  var store = trans.objectStore("placetypesobj");
+  var trans = db.transaction(["placetype"], "readonly");
+  var store = trans.objectStore("placetype");
 
   var categories = [];
   var categoryValues = {}; 
@@ -462,7 +475,7 @@ devtrac.indexedDB.getAllPlacetypesItems = function(db, callback) {
       categoryValues[htid][htid] = title;
     }
 
-    result.continue();
+    result["continue"]();
   };
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
@@ -487,7 +500,7 @@ devtrac.indexedDB.getAllFieldtripItems = function(db, callback) {
 
     fieldtrips.push(result.value);
 
-    result.continue();
+    result["continue"]();
   };
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
@@ -511,9 +524,9 @@ devtrac.indexedDB.getAllQuestionItems = function(db, ftritems, callback) {
     }
     //check for question to retrieve
     //if(result.value.status === 1 && ftritems[0]['taxonomy_vocabulary_1']['und'][0]['tid'] === result.value.taxonomy_vocabulary_1.und[0].tid) {
-      qtns.push(result.value);
+    qtns.push(result.value);
     //}
-    result.continue();
+    result["continue"]();
   };
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
@@ -535,8 +548,8 @@ devtrac.indexedDB.getFieldtrip = function(db, fnid, callback) {
 //get all sitevisits in database
 devtrac.indexedDB.getAllSitevisits = function(db, callback) {
   var sitevisits = [];
-  var trans = db.transaction(["sitevisitsobj"], "readonly");
-  var store = trans.objectStore("sitevisitsobj");
+  var trans = db.transaction(["sitevisit"], "readonly");
+  var store = trans.objectStore("sitevisit");
 
   // Get everything in the store;
   var keyRange = IDBKeyRange.lowerBound(0);
@@ -551,7 +564,7 @@ devtrac.indexedDB.getAllSitevisits = function(db, callback) {
 
     sitevisits.push(result.value);
 
-    result.continue();
+    result["continue"]();
   };
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
@@ -559,8 +572,8 @@ devtrac.indexedDB.getAllSitevisits = function(db, callback) {
 
 //search sitevisits using index of nid
 devtrac.indexedDB.getSitevisit = function(db, snid, callback) {
-  var trans = db.transaction(["sitevisitsobj"], "readonly");
-  var store = trans.objectStore("sitevisitsobj");
+  var trans = db.transaction(["sitevisit"], "readonly");
+  var store = trans.objectStore("sitevisit");
 
   var index = store.index("nid");
   index.get(snid).onsuccess = function(event) {
@@ -601,7 +614,7 @@ devtrac.indexedDB.getAllActionitems = function(db, callback) {
 
     actionitems.push(result.value);
 
-    result.continue();
+    result["continue"]();
   };
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
@@ -626,7 +639,7 @@ devtrac.indexedDB.getAllSavedAnswers = function(db, callback) {
 
     answers.push(result.value);
 
-    result.continue();
+    result["continue"]();
   };
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
@@ -651,7 +664,7 @@ devtrac.indexedDB.getAllplaces = function(db, callback) {
 
     places.push(result.value);
 
-    result.continue();
+    result["continue"]();
   };
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
@@ -676,7 +689,7 @@ devtrac.indexedDB.getAllComments = function(db, callback) {
 
     comments.push(result.value);
 
-    result.continue();
+    result["continue"]();
   };
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
@@ -709,7 +722,7 @@ devtrac.indexedDB.getActionitem = function(db, anid, callback) {
 //get fieldtrip item from database
 devtrac.indexedDB.getFieldtrip = function(db, fnid, callback) {
   var d = $.Deferred();
-  
+
   var trans = db.transaction(["fieldtripobj"], "readonly");
   var store = trans.objectStore("fieldtripobj");
 
@@ -718,7 +731,7 @@ devtrac.indexedDB.getFieldtrip = function(db, fnid, callback) {
     callback(event.target.result);
     d.resolve();
   };
-  
+
   return d;
 
 };
@@ -734,7 +747,7 @@ devtrac.indexedDB.editFieldtrip = function(db, fnid, updates) {
     // Handle errors!
     console.log("Error getting fieldtrip to update "+fnid);
   };
-  
+
   request.onsuccess = function(event) {
     var timestamp = new Date().getTime();
 
@@ -746,13 +759,13 @@ devtrac.indexedDB.editFieldtrip = function(db, fnid, updates) {
 
     // Put this updated object back into the database.
     var requestUpdate = store.put(data);
-    
+
     requestUpdate.onerror = function(event) {
       // Do something with the error
       console.log("Fieldtrip update failed");
       d.resolve();
     };
-    
+
     requestUpdate.onsuccess = function(event) {
       // Success - the data is updated!
       console.log("Fieldtrip update success");
@@ -766,7 +779,7 @@ devtrac.indexedDB.editFieldtrip = function(db, fnid, updates) {
 //edit actionitem information
 devtrac.indexedDB.editActionitem = function(db, anid, updates) {
   var d = $.Deferred();
-  
+
   var trans = db.transaction(["actionitemsobj"], "readwrite");
   var store = trans.objectStore("actionitemsobj");
 
@@ -776,9 +789,9 @@ devtrac.indexedDB.editActionitem = function(db, anid, updates) {
     console.log("Error getting action items to update "+anid);
   };
   request.onsuccess = function(event) {
-      // Get the old value that we want to update
-      var data = request.result;
-      data.submit = updates['submit'];
+    // Get the old value that we want to update
+    var data = request.result;
+    data.submit = updates['submit'];
 
     // Put this updated object back into the database.
     var requestUpdate = store.put(data);
@@ -789,6 +802,7 @@ devtrac.indexedDB.editActionitem = function(db, anid, updates) {
     };
     requestUpdate.onsuccess = function(event) {
       // Success - the data is updated!
+      store['delete'](anid);
       console.log("Action item update success");
       d.resolve();
     };
@@ -799,7 +813,7 @@ devtrac.indexedDB.editActionitem = function(db, anid, updates) {
 //edit place
 devtrac.indexedDB.editPlace = function(db, pnid, updates) {
   var d = $.Deferred();
-  
+
   var trans = db.transaction(["placesitemsobj"], "readwrite");
   var store = trans.objectStore("placesitemsobj");
 
@@ -809,9 +823,9 @@ devtrac.indexedDB.editPlace = function(db, pnid, updates) {
     console.log("Error getting place to update "+pnid);
   };
   request.onsuccess = function(event) {
-      // Get the old value that we want to update
-      var data = request.result;
-      data.submit = updates['submit'];
+    // Get the old value that we want to update
+    var data = request.result;
+    data.submit = updates['submit'];
 
     // Put this updated object back into the database.
     var requestUpdate = store.put(data);
@@ -832,9 +846,9 @@ devtrac.indexedDB.editPlace = function(db, pnid, updates) {
 //edit site visit
 devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
   var d = $.Deferred();
-  
-  var trans = db.transaction(["sitevisitsobj"], "readwrite");
-  var store = trans.objectStore("sitevisitsobj");
+
+  var trans = db.transaction(["sitevisit"], "readwrite");
+  var store = trans.objectStore("sitevisit");
 
   var request = store.get(snid);
   request.onerror = function(event) {
@@ -842,11 +856,11 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
     console.log("Error getting site visit to update "+snid);
   };
   request.onsuccess = function(event) {
-      // Get the old value that we want to update
-      var data = request.result;
-      data.submit = updates['submit'];
-      data.nid = updates['nid'];
-      
+    // Get the old value that we want to update
+    var data = request.result;
+    data.submit = updates['submit'];
+    //data.nid = updates['nid'];
+
     // Put this updated object back into the database.
     var requestUpdate = store.put(data);
     requestUpdate.onerror = function(event) {
@@ -857,8 +871,8 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
     requestUpdate.onsuccess = function(event) {
       // Success - the data is updated!
       console.log("Site visit update success");
-      
-      store.delete(snid);
+
+      store['delete'](snid);
       d.resolve();
     };
   };
@@ -871,7 +885,7 @@ devtrac.indexedDB.deleteActionitem = function(db, id) {
   var trans = db.transaction(["actionitemsobj"], "readwrite");
   var store = trans.objectStore("actionitemsobj");
 
-  var request = store.delete(id);
+  var request = store['delete'](id);
 
   request.onsuccess = function(e) {
     console.log("deleted action item "+id);

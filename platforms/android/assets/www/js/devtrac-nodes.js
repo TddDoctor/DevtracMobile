@@ -3,7 +3,7 @@ var devtracnodes = {
     updateNode: function(nid, node) {
       var d = $.Deferred();
       $.ajax({
-        url: "http://localhost/dt11/api/node/" + encodeURIComponent(nid) + ".json",
+        url: localStorage.appurl+"/api/node/" + encodeURIComponent(nid) + ".json",
         type: 'put',
         data: node,
         dataType: 'json',
@@ -29,10 +29,9 @@ var devtracnodes = {
     postNode: function(node){
       var d = $.Deferred();
       var updates = [];
-      updates['submit'] = 1;
 
       $.ajax({
-        url: "http://localhost/dt11/api/node.json",
+        url: localStorage.appurl+"/api/node.json",
         type: 'post',
         data: node,
         dataType: 'json',
@@ -46,7 +45,7 @@ var devtracnodes = {
         success: function (data) {         
           updates['submit'] = 1;
           updates['nid'] = data['nid'];
-          
+
           d.resolve(updates);
 
         }
@@ -62,7 +61,7 @@ var devtracnodes = {
 
           for (var ans in answers) {
             $.ajax({
-              url: "http://localhost/dt11/api/questionnaire/submit",
+              url: localStorage.appurl+"/api/questionnaire/submit",
               type: 'post',
               data: JSON.stringify(answers[ans]),
               headers: {'X-CSRF-Token': localStorage.token},
@@ -90,7 +89,7 @@ var devtracnodes = {
         devtrac.indexedDB.getAllComments(db, function (comments) {
           for (var comment in comments) {
             $.ajax({
-              url: "http://localhost/dt11/api/comment",
+              url: localStorage.appurl+"/api/comment",
               type: 'post',
               data: JSON.stringify(comments[comment]),
               headers: {'X-CSRF-Token': localStorage.token},
@@ -113,7 +112,8 @@ var devtracnodes = {
 
     //upload action items
     uploadActionItems: function(){
-      auth.showMessage("Uploading..");
+
+      var d = $.Deferred();
       var nodestring = {};
       var jsonstring;
       devtrac.indexedDB.open(function (db) {
@@ -131,25 +131,30 @@ var devtracnodes = {
                   devtrac.indexedDB.editActionitem(db, parseInt(localStorage.currentanid), updates).then(function() {
                     var count_container = $("#actionitem_count").html().split(" ");
                     var updated_count = parseInt(count_container[0]) - 1;
-                    $("#actionitem_count").html(updated_count+" left");
-                    auth.hideMessage();
+                    $("#actionitem_count").html(updated_count);
+                    devtracnodes.postComments().then(function() {
+                      d.resolve();
+                      
+                    });
                   });
-                  devtracnodes.postComments().then(function(){
-
-                  });
-                });  
+                  
+                }).fail(function() {
+                  d.reject();
+                });   
               });
             }
           }
         });  
-        auth.hideMessage();
       });
+      
+      return d;
     },
 
 
     //upload locations
     uploadLocations: function(){
-      auth.showMessage("Uploading..");
+
+      var d = $.Deferred();
       var nodestring = {};
       var jsonstring;
       devtrac.indexedDB.open(function (db) {
@@ -169,21 +174,26 @@ var devtracnodes = {
                   devtrac.indexedDB.editPlace(db, parseInt(localStorage.currentpnid), updates).then(function() {
                     var count_container = $("#location_count").html().split(" ");
                     var updated_count = parseInt(count_container[0]) - 1;
-                    $("#location_count").html(updated_count+" left");
-                    auth.hideMessage();
+                    $("#location_count").html(updated_count);
+
+                    d.resolve();
                   });
-                });  
+                }).fail(function() {
+                  d.reject();
+                });   
               });
             }
           }
         });  
-        auth.hideMessage();
+
       });
+      return d;
     },
 
     //upload sitevisits
     uploadsitevisits: function(){
-      auth.showMessage("Uploading..");
+
+      var d = $.Deferred();
       var nodestring = {};
       var jsonstring;
       devtrac.indexedDB.open(function (db) {
@@ -206,23 +216,27 @@ var devtracnodes = {
                   devtrac.indexedDB.editSitevisit(db, parseInt(localStorage.currentsnid), updates).then(function() {
                     var count_container = $("#sitevisit_count").html().split(" ");
                     var updated_count = parseInt(count_container[0]) - 1;
-                    $("#sitevisit_count").html(updated_count+" left");
-                    auth.hideMessage();
+                    $("#sitevisit_count").html(updated_count);
+
+                    d.resolve();
                   });
                 });  
               });
             }
           }
         });  
-        auth.hideMessage();
+
       });
+      
+      return d;
     },
 
     //upload fieldtrips
     uploadFieldtrips: function(){
-      auth.showMessage("Uploading..");
+      var d = $.Deferred();
+
       var nodestring = {};
-      
+
       var jsonstring;
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.getAllFieldtripItems(db, function(fieldtrips) {
@@ -236,24 +250,60 @@ var devtracnodes = {
               devtracnodes.getFieldtripString(fieldtrips[k]).then(function(jsonstring) {
 
                 devtracnodes.updateNode(localStorage.currentfnid, jsonstring).then(function(updates) {
-                   var updates = {};
-                   updates['editflag'] = 0;
-                   updates['title'] = localStorage.title;
-                   
-                   devtrac.indexedDB.editFieldtrip(db, localStorage.currentfnid, updates).then(function() {
-                      var count_container = $("#fieldtrip_count").html().split(" ");
-                      var updated_count = parseInt(count_container[0]) - 1;
-                      $("#fieldtrip_count").html(updated_count+" left");
-                      auth.hideMessage();
-                   });
-                   
-                });  
+                  var updates = {};
+                  updates['editflag'] = 0;
+                  updates['title'] = localStorage.title;
+
+                  devtrac.indexedDB.editFieldtrip(db, localStorage.currentfnid, updates).then(function() {
+                    var count_container = $("#fieldtrip_count").html().split(" ");
+                    var updated_count = parseInt(count_container[0]) - 1;
+                    $("#fieldtrip_count").html(updated_count);
+
+                    d.resolve();
+                  });
+
+                }).fail(function() {
+                  d.reject();
+                }); 
               });
             }
           }
         });  
-        auth.hideMessage();
+        
       });
+      
+      return d;
+    },
+    
+    syncAll: function(){
+      
+      if(parseInt($("#sitevisit_count").html()) > 0 || parseInt($("#location_count").html()) > 0 || parseInt($("#actionitem_count").html()) > 0 || parseInt($("#fieldtrip_count").html()) > 0) {
+        controller.loadingMsg("Syncing...", 0);
+        devtracnodes.uploadFieldtrips().then(function() {
+          $.unblockUI();
+        }).fail(function(){
+          $.unblockUI();
+        });
+        devtracnodes.uploadsitevisits().then(function() {
+          devtracnodes.uploadActionItems().then(function() {
+            $.unblockUI();
+          }).fail(function(){
+            $.unblockUI();
+          });
+          $.unblockUI();
+        }).fail(function(){
+          $.unblockUI();
+        });
+        devtracnodes.uploadLocations().then(function() {
+          $.unblockUI();
+        }).fail(function(){
+          $.unblockUI();
+        });
+      }
+      else {
+        controller.loadingMsg("No Updates", 2000);
+      }
+
     },
 
     //return site visit string
@@ -328,7 +378,7 @@ var devtracnodes = {
           case 'field_fieldtrip_start_end_date':
             var sitedate = aObj[a]['und'][0]['value'];
             var sitedate2 = aObj[a]['und'][0]['value2'];
-            
+
             var sitedatestring = JSON.stringify(sitedate);
             var sitedateonly = sitedatestring.substring(1, sitedatestring.indexOf('T'));
             var sitedatearray = sitedateonly.split("-");
@@ -344,7 +394,7 @@ var devtracnodes = {
             nodestring = nodestring + 'node['+a+'][und][0][value][date]='+formatedsitedate+'&';
             nodestring = nodestring + 'node['+a+'][und][0][value2][date]='+formatedsitedate2+'&';
             break;
-          
+
           default :
             break
           }
@@ -495,31 +545,27 @@ var devtracnodes = {
         error : function(XMLHttpRequest, textStatus, errorThrown) { 
           //creating bubble notification
           devtracnodes.notify("Fieldtrips. "+errorThrown);
-          auth.hideMessage();
+
           d.reject(errorThrown);
         },
         success : function(data) {
           //create bubble notification
           if(data.length <= 0) {
             devtracnodes.notify("Fieldtrips Data Unavailable");
-          }else{
+            $.unblockUI();
 
+            controller.loadingMsg("Please Create Fieldtrips in Devtrac",2000);
+          }
+          else {
             devtrac.indexedDB.addFieldtripsData(db, data).then(function() {
               devtracnodes.notify("Fieldtrips Saved");
-
-              vocabularies.getPlacetypeVocabularies(db).then(function(){
-                vocabularies.getOecdVocabularies(db).then(function(){
-
-                });
-              });
-
               d.resolve();
             }).fail(function() {
               console.log("Error saving fieldtrips");
               d.resolve();
             });
-
           }
+          
         }
       });
 
@@ -541,24 +587,23 @@ var devtracnodes = {
               error : function(XMLHttpRequest, textStatus, errorThrown) { 
                 //create bubble notification
                 devtracnodes.notify("Sitevisits. "+errorThrown);
-                auth.hideMessage();
                 d.reject(errorThrown);
               },
               success : function(data) {
                 //create bubble notification
                 if(data.length <= 0) {
                   devtracnodes.notify("Sitevisits Data Unavailable");
+                  d.resolve();
                 }else{
 
-                  devtrac.indexedDB.addSiteVisitsData(db, data).then(function(){
+                  devtracnodes.saveSiteVisit(db, data, 0).then(function(){
                     devtracnodes.notify("Sitevisits Saved");
-                    d.resolve();
-                    devtracnodes.getPlaces(db);
 
                   }).fail(function(e){
-                    devtracnodes.getPlaces(db);
-                    d.resolve();
+                    devtracnodes.notify("Sitevisits Not Saved, Reload Data");
                   });
+                  
+                  d.resolve();
                 }
 
               }
@@ -594,12 +639,7 @@ var devtracnodes = {
                 devtracnodes.notify("Action items Unavailable");
               }else{
                 data[0]['submit'] = 0;
-
-                devtrac.indexedDB.addActionItemsData(db, data).then(function() {
-                  devtracnodes.notify("Action Items Saved");
-
-                  d.resolve();
-                }).fail(function(e){
+                devtracnodes.saveActionItems(db, data, 0).then(function(){
                   d.resolve();
                 });
               }
@@ -609,6 +649,38 @@ var devtracnodes = {
       });
       return d;
 
+    },
+    
+    saveActionItems: function(db, data, count) {
+      var d = $.Deferred();
+      var arrlength = data.length;
+      var counter = count;
+      
+      if(counter != arrlength) {
+        devtrac.indexedDB.addActionItemsData(db, data[counter]);
+        counter = counter + 1;
+        devtracnodes.saveActionItems(db, data, counter); 
+      }
+      else {
+        d.resolve();
+      }
+      return d;
+    },
+    
+    saveSiteVisit: function(db, data, count) {
+      var d = $.Deferred();
+      var arrlength = data.length;
+      var counter = count;
+      
+      if(counter != arrlength) {
+        devtrac.indexedDB.addSiteVisitsData(db, data[counter]);
+        counter = counter + 1;
+        devtracnodes.saveSiteVisit(db, data, counter); 
+      }
+      else {
+        d.resolve();
+      }
+      return d;
     },
 
     //Returns devtrac places json list 
@@ -623,9 +695,11 @@ var devtracnodes = {
               error : function(XMLHttpRequest, textStatus, errorThrown) { 
                 //create bubble notification
                 devtracnodes.notify("Places. "+errorThrown);
-                auth.hideMessage();
+
+                $.unblockUI();
               },
               success : function(data) {
+
                 //create bubble notification
                 if(data.length <= 0) {
                   devtracnodes.notify("Places Data Unavailable");
@@ -634,11 +708,9 @@ var devtracnodes = {
                   devtrac.indexedDB.addPlacesData(db, data).then(function(){
                     devtracnodes.notify("Places Saved");
 
-                    devtracnodes.getActionItems(db).then(function() {
-                      devtracnodes.getQuestions(db);
-                    });
                   }).fail(function(e) {
 
+                    devtracnodes.notify("Places Not Saved, Reload Data");
                   });
                 }
 

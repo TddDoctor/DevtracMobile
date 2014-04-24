@@ -18,18 +18,19 @@ $(document).ready(function() {
 });
 
 var owlhandler = {
-
-    populateOwl: function(owl){
-      var firstslide = '<div class="item"><h1>Swipe to Start</h1></div>';   
-      owl.data('owlCarousel').addItem(firstslide);
+    
+    populateOwl: function(owl) {
       
       localStorage.numbercount = 0;
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.getAllSitevisits(db, function (ftritems) {
+          
           devtrac.indexedDB.getAllQuestionItems(db, ftritems, function (qtns) {
             if(qtns.length > 0) {
+              var firstslide = '<div class="item"><h1>Swipe to Start</h1></div>';   
+              owl.data('owlCarousel').addItem(firstslide);
               
-              for (var qtn = 0; qtn <= 50; qtn++) {
+              for (var qtn in qtns) {
 
                 switch (qtns[qtn].questionnaire_question_type.und[0].value) {
                 case "radios":
@@ -107,7 +108,7 @@ var owlhandler = {
               owl.data('owlCarousel').addItem(lastslide);
               
             }else {
-              var noqtnscontent = '<div class="item"><div><h1 id="endqtntitle">No questions available</h1></div></div>';   
+              var noqtnscontent = '<div class="item"><div><h1 id="endqtntitle">No Questions Available</h1></div></div>';   
               
               owl.data('owlCarousel').addItem(noqtnscontent);
             }

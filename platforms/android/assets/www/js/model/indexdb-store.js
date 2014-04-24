@@ -5,7 +5,7 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDB.open = function(callback) {
-  var version = 2;
+  var version = 6;
   var request = indexedDB.open("d9", version);
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -17,7 +17,7 @@ devtrac.indexedDB.open = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 2;
+  var version = 6;
   var request = indexedDB.open("d9", version);
 
   // We can only create Object stores in a versionchange transaction.
@@ -523,9 +523,9 @@ devtrac.indexedDB.getAllQuestionItems = function(db, ftritems, callback) {
       return;
     }
     //check for question to retrieve
-    //if(result.value.status === 1 && ftritems[0]['taxonomy_vocabulary_1']['und'][0]['tid'] === result.value.taxonomy_vocabulary_1.und[0].tid) {
+    if(result.value.status === 1 && ftritems[0]['taxonomy_vocabulary_1']['und'][0]['tid'] === result.value.taxonomy_vocabulary_1.und[0].tid) {
     qtns.push(result.value);
-    //}
+    }
     result["continue"]();
   };
 

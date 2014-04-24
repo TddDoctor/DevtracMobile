@@ -831,6 +831,7 @@ var controller = {
               $("#sitevisists_details_location").html(place['title']);
               localStorage.respplaceid = place['nid'];
               localStorage.respplacetitle = place['title'];
+              localStorage.point = place['field_place_lat_long']['und'][0]['geom'];
               
               mapctlr.initMap(place['field_place_lat_long']['und'][0]['lat'], place['field_place_lat_long']['und'][0]['lon'], state);
               mapctlr.resizeMapIfVisible(); 
@@ -1329,6 +1330,13 @@ var controller = {
         updates['field_ftritem_place']['und'] = [];
         updates['field_ftritem_place']['und'][0] = {};
         updates['field_ftritem_place']['und'][0]['target_id'] = localStorage.pnid;
+        
+        if($('#sitevisit_add_type').val() == "210") {
+          updates['field_ftritem_lat_long'] = {};
+          updates['field_ftritem_lat_long']['und'] = [];
+          updates['field_ftritem_lat_long']['und'][0] = {};
+          updates['field_ftritem_lat_long']['und'][0]['geom'] = localStorage.point;
+        }
         
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getAllSitevisits(db, function (sitevisits) {

@@ -348,6 +348,9 @@ var devtracnodes = {
             nodestring = nodestring + 'node['+a+'][und][0][target_id]='+localStorage.ptitle+"("+aObj[a]['und'][0]['target_id']+")"+'&';
             break;
 
+          case 'field_ftritem_lat_long':
+            nodestring = nodestring + 'node['+a+'][und][0][geom]='+aObj[a]['und'][0]['geom']+'&';
+            break;
           default :
             break
           }

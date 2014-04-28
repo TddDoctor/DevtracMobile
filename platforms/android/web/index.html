@@ -254,9 +254,11 @@
             <div data-role="collapsible" data-theme="b">
               <h4>Places</h4>
               <ul data-role="listview">
-                <li><a href="#page_location_edits" data-role="button"
-                  data-mini="true" data-icon="edit" data-rel="dialog"
-                  id="editlocation">Edit</a></li>
+              
+                <li><a href="#page_location_list" data-role="button"
+                  data-mini="true" onclick="controller.listlocations();" data-icon="eye"
+                  id="listlocation">List</a></li>
+                  
                 <li><a href="#mappage" data-role="button" class="panel_map"
                   data-icon="location"
                   onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);">Map</a></li>
@@ -305,6 +307,31 @@
   </div>
   <!-- /page -->
 
+<!-- List locations -->
+  <div data-role="page" id="page_location_list">
+    <div data-role="header">
+    <a id="" href="#page_sitevisits_details" data-role="button"
+        data-icon="back" data-iconpos="notext"></a>
+      <h3>Locations</h3>
+    </div>
+    <!-- /header -->
+
+    <div data-role="content" class='content'>
+      <form id="form_location_list" method="" action="">
+      <ul data-role="listview" id="locationslist" data-split-icon="gear" data-split-theme="d">
+                
+      </ul>
+      
+      </form>
+
+    </div>
+    <!-- /content -->
+
+  </div>
+  <!-- /page -->
+
+
+
   <!-- Edit site visit details -->
   <div data-role="page" id="page_sitevisit_edits">
     <div data-role="header">
@@ -350,9 +377,11 @@
         <label for="sitevisit_add_title">Title</label> <input type='text'
           value='' id='sitevisit_add_title' name='sitevisit_add_title' required />
 
-        <label for='sitevisit_add_districts'>Missing Districts</label><input
+        <!-- <label for='sitevisit_add_districts'>Missing Districts</label><input
           type='text' value='' id='sitevisit_add_districts'
-          name='sitevisit_add_districts' disabled=disabled required /> <label
+          name='sitevisit_add_districts' disabled=disabled required /> --> 
+          
+          <label
           for='sitevisit_add_oecds'>Missing Oecds</label><input type='text'
           value='' id='sitevisit_add_oecds' name='sitevisit_add_oecds'
           disabled=disabled required /> <label for='sitevisit_add_type'>Site
@@ -375,9 +404,11 @@
 
         <div
           class="ui-btn ui-icon-plus ui-btn-icon-left ui-corner-all fileinput-button">
-          <span>Image: </span> <input type="file" name="file" id="file" value="">
+          <span>Image: </span> <input type="file" name="file" id="file" multiple="multiple" required>
         </div>
-
+        <br>
+        <div id="uploadPreview"></div>
+        <br>
         <a data-inline="true" data-role="button"
           data-theme='b'
           data-mini="true" id='sitevisit_add_save'>Save</a>
@@ -542,11 +573,7 @@
 
   <!-- page -->
   <div data-role="page" id="page_add_location">
-    <style>
-.ui-dialog  .ui-header .ui-btn-icon-notext {
-  display: none;
-}
-</style>
+    
     <div data-role="header">
 
       <h3>Add Location</h3>

@@ -24,6 +24,7 @@ var vocabularies = {
           }
 
           devtrac.indexedDB.addOecdData(db, data).then(function(){
+            //devtracnodes.notify("Oecds data saved.");
             d.resolve();
           }).fail(function(err) {
             d.resolve();

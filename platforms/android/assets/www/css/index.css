@@ -23,3 +23,7 @@ body .ui-footer .ui-title {
     width: 100%;
     height: auto;
 }
+
+#uploadPreview img{
+  height:32px;
+}

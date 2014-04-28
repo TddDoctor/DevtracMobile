@@ -5,7 +5,7 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDB.open = function(callback) {
-  var version = 6;
+  var version = 15;
   var request = indexedDB.open("d9", version);
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -17,7 +17,7 @@ devtrac.indexedDB.open = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 6;
+  var version = 15;
   var request = indexedDB.open("d9", version);
 
   // We can only create Object stores in a versionchange transaction.
@@ -53,6 +53,9 @@ devtrac.indexedDB.open = function(callback) {
     if(db.objectStoreNames.contains("commentsitemsobj")){
       db.deleteObjectStore("commentsitemsobj");
     }
+    if(db.objectStoreNames.contains("images")){
+      db.deleteObjectStore("images");
+    }
 
     var store = db.createObjectStore("oecdobj", {autoIncrement: true});
     var placetypesstore = db.createObjectStore("placetype", {autoIncrement: true});
@@ -77,6 +80,9 @@ devtrac.indexedDB.open = function(callback) {
 
     var commentsitemstore = db.createObjectStore("commentsitemsobj", {autoIncrement: true});
     commentsitemstore.createIndex('nid', 'nid', { unique: false });
+    
+    var images = db.createObjectStore("images", {autoIncrement: true, keyPath: "nid"});
+    images.createIndex('nid', 'nid', { unique: true });
   };
 
   request.onsuccess = function(e) {
@@ -266,6 +272,27 @@ devtrac.indexedDB.addSiteVisitsData = function(db, sObj) {
   return d;
 };
 
+//adding site visit images to object store
+devtrac.indexedDB.addImages = function(db, iObj) {
+  var d = $.Deferred();
+  var trans = db.transaction("images", "readwrite");
+  var store = trans.objectStore("images");
+
+  var request = store.add(iObj);
+
+  request.onsuccess = function(e) {
+    devtracnodes.notify("Images Saved");
+    d.resolve();
+  };
+
+  request.onerror = function(e) {
+    devtracnodes.notify("Images Not Saved");
+    d.resolve(e);
+  };
+
+  return d;
+};
+
 //adding action items data to object store
 devtrac.indexedDB.addActionItemsData = function(db, aObj) {
   var d = $.Deferred();
@@ -280,7 +307,10 @@ devtrac.indexedDB.addActionItemsData = function(db, aObj) {
   };
 
   request.onerror = function(e) {
-    devtracnodes.notify("Action Items Not Saved");
+    if(e.target.error.message != "Key already exists in the object store.") {
+      devtracnodes.notify("Action Items Error: "+e.target.error.message);
+    }
+    
     d.resolve(e);
   };
 
@@ -582,6 +612,19 @@ devtrac.indexedDB.getSitevisit = function(db, snid, callback) {
 
 };
 
+//search images using index of nid
+devtrac.indexedDB.getImage = function(db, inid) {
+  var d = $.Deferred();
+  var trans = db.transaction(["images"], "readonly");
+  var store = trans.objectStore("images");
+
+  var index = store.index("nid");
+  index.get(inid).onsuccess = function(event) {
+    d.resolve(event.target.result);
+  };
+  return d;
+};
+
 //search action items 
 devtrac.indexedDB.getActionItem = function(db, anid, callback) {
   var trans = db.transaction(["actionitemsobj"], "readonly");
@@ -878,6 +921,22 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
   };
 
   return d;
+};
+
+//delete image
+devtrac.indexedDB.deleteImage = function(db, id) {
+  var trans = db.transaction(["images"], "readwrite");
+  var store = trans.objectStore("images");
+
+  var request = store['delete'](id);
+
+  request.onsuccess = function(e) {
+    console.log("Deleted image "+id);
+  };
+
+  request.onerror = function(e) {
+    console.log(e);
+  };
 };
 
 //delete action item

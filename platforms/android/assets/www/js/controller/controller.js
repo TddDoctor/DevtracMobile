@@ -453,6 +453,7 @@ var controller = {
 
     //read from files
     readImage: function(file) {
+      var di = {};
       var reader = new FileReader();
       var image  = new Image();
       
@@ -463,10 +464,13 @@ var controller = {
         image.onload = function() {
           var n = file.name,
           s = ~~(file.size/1024) +'KB';
+          di.height = this.height;
+          di.width = this.width;
           
           controller.filenames.push(n);
           controller.base64Images.push(image.src);
           controller.filesizes.push(~~(file.size/1024));
+          controller.filedimensions.push(di);
           
           $('#uploadPreview').append('<img src="'+ this.src +'"> '+s+' '+n+'<br>');
           
@@ -1020,85 +1024,84 @@ var controller = {
       if ($("#form_add_actionitems").valid()) {
         //save added action items
         var updates = {};
-        updates[0] = [];
-        updates[0]['user-added'] = true;
-        updates[0]['nid'] = 1;
-        updates[0]['field_actionitem_ftreportitem'] = {};
-        updates[0]['field_actionitem_ftreportitem']['und'] = [];
-        updates[0]['field_actionitem_ftreportitem']['und'][0] = {};
 
-        updates[0]['field_actionitem_due_date'] = {};
-        updates[0]['field_actionitem_due_date']['und'] = [];
-        updates[0]['field_actionitem_due_date']['und'][0] = {};
-        updates[0]['field_actionitem_due_date']['und'][0]['value'] = {};
+        updates['user-added'] = true;
+        updates['nid'] = 1;
+        updates['field_actionitem_ftreportitem'] = {};
+        updates['field_actionitem_ftreportitem']['und'] = [];
+        updates['field_actionitem_ftreportitem']['und'][0] = {};
 
-        //todo: get value from database or server
-        updates[0]['taxonomy_vocabulary_8'] = {};
-        updates[0]['taxonomy_vocabulary_8']['und'] = [];
-        updates[0]['taxonomy_vocabulary_8']['und'][0] = {};
+        updates['field_actionitem_due_date'] = {};
+        updates['field_actionitem_due_date']['und'] = [];
+        updates['field_actionitem_due_date']['und'][0] = {};
+        updates['field_actionitem_due_date']['und'][0]['value'] = {};
 
         //todo: get value from database or server
-        updates[0]['taxonomy_vocabulary_6'] = {};
-        updates[0]['taxonomy_vocabulary_6']['und'] = [];
-        updates[0]['taxonomy_vocabulary_6']['und'][0] = {};
+        updates['taxonomy_vocabulary_8'] = {};
+        updates['taxonomy_vocabulary_8']['und'] = [];
+        updates['taxonomy_vocabulary_8']['und'][0] = {};
 
-        updates[0]['field_actionitem_followuptask'] = {};
-        updates[0]['field_actionitem_followuptask']['und'] = [];
-        updates[0]['field_actionitem_followuptask']['und'][0] = {};
+        //todo: get value from database or server
+        updates['taxonomy_vocabulary_6'] = {};
+        updates['taxonomy_vocabulary_6']['und'] = [];
+        updates['taxonomy_vocabulary_6']['und'][0] = {};
 
-        updates[0]['field_actionitem_severity'] = {};
-        updates[0]['field_actionitem_severity']['und'] = [];
-        updates[0]['field_actionitem_severity']['und'][0] = {};
+        updates['field_actionitem_followuptask'] = {};
+        updates['field_actionitem_followuptask']['und'] = [];
+        updates['field_actionitem_followuptask']['und'][0] = {};
 
-        updates[0]['field_actionitem_status'] = {};
-        updates[0]['field_actionitem_status']['und'] = [];
-        updates[0]['field_actionitem_status']['und'][0] = {};
+        updates['field_actionitem_severity'] = {};
+        updates['field_actionitem_severity']['und'] = [];
+        updates['field_actionitem_severity']['und'][0] = {};
 
-        updates[0]['field_actionitem_responsible'] = {};
-        updates[0]['field_actionitem_responsible']['und'] = [];
-        updates[0]['field_actionitem_responsible']['und'][0] = {};
+        updates['field_actionitem_status'] = {};
+        updates['field_actionitem_status']['und'] = [];
+        updates['field_actionitem_status']['und'][0] = {};
+        updates['field_actionitem_responsible'] = {};
+        updates['field_actionitem_responsible']['und'] = [];
+        updates['field_actionitem_responsible']['und'][0] = {};
 
-        updates[0]['field_actionitem_resp_place'] = {};
-        updates[0]['field_actionitem_resp_place']['und'] = [];
-        updates[0]['field_actionitem_resp_place']['und'][0] = {};
+        updates['field_actionitem_resp_place'] = {};
+        updates['field_actionitem_resp_place']['und'] = [];
+        updates['field_actionitem_resp_place']['und'][0] = {};
 
-        updates[0]['uid'] = localStorage.uid;
-        updates[0]['submit'] = 0;
-        updates[0]['comment'] = 1;
-        updates[0]['type'] = 'actionitem';
-        updates[0]['status'] = 1;
-        updates[0]['title'] = $("#actionitem_title").val();
-        updates[0]['field_actionitem_due_date']['und'][0]['value']['date'] = $("#actionitem_date").val();
-        updates[0]['field_actionitem_followuptask']['und'][0]['value'] = $("#actionitem_followuptask").val();
-        updates[0]['field_actionitem_status']['und'][0]['value'] = $("#actionitem_status").val();
-        updates[0]['field_actionitem_severity']['und'][0]['value'] = $("#actionitem_priority").val();
-        updates[0]['field_actionitem_responsible']['und'][0]['target_id'] = localStorage.realname+" ("+localStorage.uid+")";
-        updates[0]['taxonomy_vocabulary_8']['und'][0]['tid'] = '328';
-        updates[0]['taxonomy_vocabulary_6']['und'][0]['tid'] = '100';
-        updates[0]['field_actionitem_ftreportitem']['und'][0]['target_id'] = localStorage.sitevisitname+" ("+localStorage.snid+")";
-        updates[0]['field_actionitem_resp_place']['und'][0]['target_id'] = localStorage.respplacetitle+" ("+localStorage.respplaceid+")";
+        updates['uid'] = localStorage.uid;
+        updates['submit'] = 0;
+        updates['comment'] = 1;
+        updates['type'] = 'actionitem';
+        updates['status'] = 1;
+        updates['title'] = $("#actionitem_title").val();
+        updates['field_actionitem_due_date']['und'][0]['value']['date'] = $("#actionitem_date").val();
+        updates['field_actionitem_followuptask']['und'][0]['value'] = $("#actionitem_followuptask").val();
+        updates['field_actionitem_status']['und'][0]['value'] = $("#actionitem_status").val();
+        updates['field_actionitem_severity']['und'][0]['value'] = $("#actionitem_priority").val();
+        updates['field_actionitem_responsible']['und'][0]['target_id'] = localStorage.realname+" ("+localStorage.uid+")";
+        updates['taxonomy_vocabulary_8']['und'][0]['tid'] = '328';
+        updates['taxonomy_vocabulary_6']['und'][0]['tid'] = '100';
+        updates['field_actionitem_ftreportitem']['und'][0]['target_id'] = localStorage.sitevisitname+" ("+localStorage.snid+")";
+        updates['field_actionitem_resp_place']['und'][0]['target_id'] = localStorage.respplacetitle+" ("+localStorage.respplaceid+")";
 
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getAllActionitems(db, function (actionitems) {
             var actionitemcount = 1;
             for (var k in actionitems) {
-              if (actionitems[k]['user-added'] && actionitems[k]['nid'] == updates[0]['nid']) {
-                updates[0]['nid'] = actionitems[k]['nid'] + 1;
+              if (actionitems[k]['user-added'] && actionitems[k]['nid'] == updates['nid']) {
+                updates['nid'] = actionitems[k]['nid'] + 1;
               }
               if(actionitems[k]['user-added'] == true && actionitems[k]['submit'] == 0) {
                 actionitemcount = actionitemcount + 1;
               }
             }
-            devtrac.indexedDB.addActionItemsData(db, updates[0]);
+            devtrac.indexedDB.addActionItemsData(db, updates);
 
             var actionitemList = $('#list_actionitems');
 
             var li = $("<li></li>");
-            var a = $("<a href='#' id='action" + updates[0]['nid'] + "' onclick='controller.onActionitemclick(this)'></a>");
-            var h1 = $("<h1 class='heada2'>" + updates[0]['title'] + "</h1>");
+            var a = $("<a href='#' id='user" + updates['nid'] + "' onclick='controller.onActionitemclick(this)'></a>");
+            var h1 = $("<h1 class='heada2'>" + updates['title'] + "</h1>");
             var p = $("<p class='para2'></p>");
 
-            switch (updates[0]['status']) {
+            switch (updates['status']) {
             case 1:
               p.html("Status: Open");
               break;
@@ -1150,34 +1153,47 @@ var controller = {
 
     onActionitemclick: function (anchor) {
       var action_id = $(anchor).attr('id');
-      var anid = action_id.substring(action_id.indexOf('n') + 1);
-
-      localStorage.anid = anid;
-      var form = $("#form_actionitems_details");
-
-      if(localStorage.anid) {
+      var anid = 0;
+      if(action_id.indexOf('r') != -1) {
+        anid = action_id .substring(action_id .indexOf('r') + 1);
+        localStorage.anid = anid;
         anid = parseInt(anid);
-      }
-      var list_comment = $('#list_comments');
 
+      }
+      else {
+        anid = action_id;
+        localStorage.anid = anid;
+        
+      }
+
+      var form = $("#form_actionitems_details");
+      var list_comment = $('#list_comments');
       list_comment.empty();
 
       devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getActionItem(db, anid, function (fObject) {
+        devtrac.indexedDB.getActionItem(db, anid).then(function (fObject) {
           $("#actionitem_resp_location").html(localStorage.respplacetitle);          
 
           var sitedate = fObject['field_actionitem_due_date']['und'][0]['value'];
 
-          if(sitedate.date.charAt(4) != "/") {
-            var sitedatestring = JSON.stringify(sitedate);
-            var sitedateonly = sitedatestring.substring(1, sitedatestring.indexOf('T'));
-            var sitedatearray = sitedateonly.split("-");
+          var formatedsitedate = "";
+          
+          console.log("action item title is "+fObject['title']);
+          if(typeof sitedate == 'object') {
+            if(sitedate.date.charAt(4) != "/") {
+              var sitedatestring = JSON.stringify(sitedate);
+              var sitedateonly = sitedatestring.substring(1, sitedatestring.indexOf('T'));
+              var sitedatearray = sitedateonly.split("-");
 
-            var formatedsitedate = sitedatearray[2] + "/" + sitedatearray[1] + "/" + sitedatearray[0];
+              formatedsitedate = sitedatearray[2] + "/" + sitedatearray[1] + "/" + sitedatearray[0];
 
+            }else
+              {
+                formatedsitedate = sitedate.date;
+              }
           }
-          else{
-            var formatedsitedate = sitedate.date;
+          else {
+            formatedsitedate = sitedate;
           }
 
           $("#actionitem_due_date").html(formatedsitedate);
@@ -1349,6 +1365,7 @@ var controller = {
             devtrac.indexedDB.addPlacesData(db, updates);
             locationcount = locationcount + 1;
             $("#location_count").html(locationcount);
+            
             $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
           });
 
@@ -1427,13 +1444,19 @@ var controller = {
               }
             }
 
+            images['nid'] = updates['nid'];
+            images['width'] = controller.filedimensions[0].width;
+            images['height'] = controller.filedimensions[0].height;
+            
             devtrac.indexedDB.addSiteVisitsData(db, updates).then(function() {
               controller.refreshSitevisits();
               devtrac.indexedDB.addImages(db, images).then(function() {
                 controller.base64Images = [];
                 controller.filenames = [];
                 controller.filesizes = [];
+                controller.filedimensions = [];
               });
+              controller.resetForm($('#form_sitevisit_add'));
               $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);  
             });
 

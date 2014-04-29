@@ -33,7 +33,8 @@ var devtracnodes = {
       $.ajax({
         url: localStorage.appurl+"/api/node.json",
         type: 'post',
-        data: node,
+        //data: node,
+        data: "node[title]=Site visit at pokot&node[status]=1&node[type]=ftritem&node[uid]=314&node[taxonomy_vocabulary_7][und][tid]=209&node[field_ftritem_date_visited][und][0][value][date]=29/04/2014&node[field_ftritem_public_summary][und][0][value]=Check for sanitation and hygiene at food service points&node[field_ftritem_narrative][und][0][value]=Compile statistics of cleanliness&node[field_ftritem_field_trip][und][0][target_id]=Inspect the Warehouses(14065)&node[field_ftritem_place][und][0][target_id]=Amuru(14066)&node[field_ftritem_images][0][fid]=7895&node[field_ftritem_images][0][display]=1&node[field_ftritem_images][0][width]=403&node[field_ftritem_images][0][height]=362",
         dataType: 'json',
         headers: {
           'X-CSRF-Token': localStorage.usertoken
@@ -239,6 +240,7 @@ var devtracnodes = {
                       var updated_count = parseInt(count_container[0]) - 1;
                       $("#sitevisit_count").html(updated_count);
 
+                      controller.refreshSitevisits();
                       d.resolve();
                     });
                   });  
@@ -328,12 +330,16 @@ var devtracnodes = {
               "filename":imageObj['names'][0],
               "filepath":"public://"+imageObj['names'][0],
               "mimeType":"image/"+imageObj['names'][0].split(".")[1],
+              "filesize":  imageObj['sizes'][0],
             }
         };
 
         devtracnodes.postImageFile(filedata).then(function(data) {
           devtrac.indexedDB.deleteImage(db, inid);
           data['title'] = imageObj['names'][0].split(".")[0];
+          data['height'] = imageObj['height'];
+          data['width'] = imageObj['width'];
+          
           d.resolve(data, inid, currentIndex);
         }).fail(function(e){
           d.reject(e);
@@ -389,16 +395,16 @@ var devtracnodes = {
         if(typeof aObj[a] == 'object') {
           switch(a) {
           case 'taxonomy_vocabulary_7': 
-            nodestring = nodestring + 'node['+a+'][und][tid]='+aObj[a]['und'][0]['tid']+'&';
+            nodestring = nodestring + a+'[und][tid]='+aObj[a]['und'][0]['tid']+'&';
             break;
           case 'field_ftritem_public_summary': 
-            nodestring = nodestring + 'node['+a+'][und][0][value]='+aObj[a]['und'][0]['value']+'&';
+            nodestring = nodestring +a+'[und][0][value]='+aObj[a]['und'][0]['value']+'&';
             break;
           case 'field_ftritem_narrative':
-            nodestring = nodestring + 'node['+a+'][und][0][value]='+aObj[a]['und'][0]['value']+'&';
+            nodestring = nodestring +a+'[und][0][value]='+aObj[a]['und'][0]['value']+'&';
             break;
           case 'field_ftritem_field_trip':
-            nodestring = nodestring + 'node['+a+'][und][0][target_id]='+localStorage.ftitle+"("+aObj[a]['und'][0]['target_id']+")"+'&';
+            nodestring = nodestring +a+'[und][0][target_id]='+localStorage.ftitle+"("+aObj[a]['und'][0]['target_id']+")"+'&';
             break;
           case 'field_ftritem_date_visited':
             var duedate = null;
@@ -415,19 +421,19 @@ var devtracnodes = {
 
             }
 
-            nodestring = nodestring + 'node['+a+'][und][0][value][date]='+duedate+'&';
+            nodestring = nodestring +a+'[und][0][value][date]='+duedate+'&';
 
             break;
           case 'field_ftritem_place':
-            nodestring = nodestring + 'node['+a+'][und][0][target_id]='+localStorage.ptitle+"("+aObj[a]['und'][0]['target_id']+")"+'&';
+            nodestring = nodestring +a+'[und][0][target_id]='+localStorage.ptitle+"("+aObj[a]['und'][0]['target_id']+")"+'&';
             break;
 
           case 'field_ftritem_lat_long':
-            nodestring = nodestring + 'node['+a+'][und][0][geom]='+aObj[a]['und'][0]['geom']+'&';
+            nodestring = nodestring +a+'[und][0][geom]='+aObj[a]['und'][0]['geom']+'&';
             break;
 
           case 'field_ftritem_images':
-            nodestring = nodestring + 'node['+a+'][und][0][fid]='+imageObj['fid']+'&node['+a+'][und][0][title]='+imageObj['title']+'&';
+            nodestring = nodestring + a+'[und][0][fid]='+imageObj['fid']+'&node['+a+'][und][0][title]='+imageObj['title']+'&node['+a+'][und][0][metadata][height]='+imageObj['height']+'&node['+a+'][und][0][metadata][width]='+imageObj['width']+'&';
             break;
 
           default :
@@ -436,7 +442,7 @@ var devtracnodes = {
         }
         else {
           if(a != 'user-added' && a != 'image' && a != "nid") {
-            nodestring = nodestring + 'node['+a+']='+aObj[a]+"&";  
+            nodestring = nodestring +a+'='+aObj[a]+"&";  
           }
         }
       }
@@ -787,7 +793,7 @@ var devtracnodes = {
               devtracnodes.notify("Places Saved");
 
             }).fail(function(e) {
-              if(e.target.error.message != "Key already exists in the object store.") {
+              if(e.target.error.message != "Key already exists in the object store." && e.target.error.message != undefined) {
                 devtracnodes.notify("Places Error: "+e.target.error.message);
               }
 

@@ -5,8 +5,8 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDB.open = function(callback) {
-  var version = 15;
-  var request = indexedDB.open("d9", version);
+  var version = 1;
+  var request = indexedDB.open("a1", version);
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
     callback(devtrac.indexedDB.db);
@@ -17,8 +17,8 @@ devtrac.indexedDB.open = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 15;
-  var request = indexedDB.open("d9", version);
+  var version = 1;
+  var request = indexedDB.open("a1", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -81,7 +81,7 @@ devtrac.indexedDB.open = function(callback) {
     var commentsitemstore = db.createObjectStore("commentsitemsobj", {autoIncrement: true});
     commentsitemstore.createIndex('nid', 'nid', { unique: false });
     
-    var images = db.createObjectStore("images", {autoIncrement: true, keyPath: "nid"});
+    var images = db.createObjectStore("images", {keyPath: "nid"});
     images.createIndex('nid', 'nid', { unique: true });
   };
 
@@ -307,7 +307,7 @@ devtrac.indexedDB.addActionItemsData = function(db, aObj) {
   };
 
   request.onerror = function(e) {
-    if(e.target.error.message != "Key already exists in the object store.") {
+    if(e.target.error.message != "Key already exists in the object store." && e.target.error.message != undefined) {
       devtracnodes.notify("Action Items Error: "+e.target.error.message);
     }
     
@@ -626,15 +626,17 @@ devtrac.indexedDB.getImage = function(db, inid) {
 };
 
 //search action items 
-devtrac.indexedDB.getActionItem = function(db, anid, callback) {
+devtrac.indexedDB.getActionItem = function(db, anid) {
+  var d = $.Deferred();
   var trans = db.transaction(["actionitemsobj"], "readonly");
   var store = trans.objectStore("actionitemsobj");
 
   var index = store.index("nid");
   index.get(anid).onsuccess = function(event) {
-    callback(event.target.result);
+    d.resolve(event.target.result);
   };
 
+  return d;
 };
 
 

@@ -115,6 +115,9 @@
           <label for="ug">Devtrac Uganda</label> <input type="radio" name="url"
             id="localhost" class="url" value="localhost"> <label
             for="localhost">Change URL to localhost</label>
+            <input type="radio" name="url"
+            id="android" class="url" value="android"> <label
+            for="android">Change URL to Android</label>
         </fieldset>
         <div id='urldiv'>
           <a href="#" data-role="button" data-inline="true" data-theme="b"
@@ -253,9 +256,10 @@
             <div data-role="collapsible" data-theme="b">
               <h4>Places</h4>
               <ul data-role="listview">
-                <li><a href="#page_location_edits" data-role="button"
-                  data-mini="true" data-icon="edit" data-rel="dialog"
-                  id="editlocation">Edit</a></li>
+                <li><a href="#page_location_list" data-role="button"
+                  data-mini="true" onclick="controller.listlocations();" data-icon="eye"
+                  id="listlocation">List</a></li>
+                  
                 <li><a href="#mappage" data-role="button" class="panel_map"
                   data-icon="location"
                   onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);">Map</a></li>
@@ -266,7 +270,7 @@
             </div>
 
             <div data-role="collapsible" data-theme="b">
-              <h4>Upload Status</h4>
+              <h4>Uploads</h4>
               <ul data-role="listview" id="uploads_listview">
                 <li><a data-role="button" data-mini="true"
                   data-icon="arrow-u" onclick="devtracnodes.uploadsitevisits();">Site
@@ -297,6 +301,29 @@
         <ul data-role="listview" id="list_actionitems" data-filter="true">
 
         </ul>
+      </form>
+
+    </div>
+    <!-- /content -->
+
+  </div>
+  <!-- /page -->
+  
+  <!-- List locations -->
+  <div data-role="page" id="page_location_list">
+    <div data-role="header">
+    <a id="" href="#page_sitevisits_details" data-role="button"
+        data-icon="back" data-iconpos="notext"></a>
+      <h3>Locations</h3>
+    </div>
+    <!-- /header -->
+
+    <div data-role="content" class='content'>
+      <form id="form_location_list" method="" action="">
+      <ul data-role="listview" id="locationslist" data-split-icon="gear" data-split-theme="d">
+                
+      </ul>
+      
       </form>
 
     </div>
@@ -428,8 +455,8 @@
         </div>
 
         <label for="actionitem_date">Due Date</label> <input type='text'
-          id='actionitem_date' name='actionitem_date'
-          data-role="date" class="date-input" data-inline="false" required /> <label
+          id='actionitem_date' name='actionitem_date' data-role="date"
+          data-inline="false" required /> <label
           for="actionitem_followuptask">Follow up task</label>
         <textarea rows="8" type='text' value='' id='actionitem_followuptask'
           name='actionitem_followuptask' required></textarea>

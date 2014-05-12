@@ -5,7 +5,7 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDB.open = function(callback) {
-  var version = 5;
+  var version = 8;
   var request = indexedDB.open("a1", version);
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -17,7 +17,7 @@ devtrac.indexedDB.open = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 5;
+  var version = 8;
   var request = indexedDB.open("a1", version);
 
   // We can only create Object stores in a versionchange transaction.
@@ -955,4 +955,24 @@ devtrac.indexedDB.deleteActionitem = function(db, id) {
   request.onerror = function(e) {
     console.log(e);
   };
+};
+
+//delete all tables in database
+devtrac.indexedDB.deleteAllTables = function(db, objectstore) {
+  var d = $.Deferred();
+  var trans = db.transaction([objectstore], "readwrite");
+  var store = trans.objectStore(objectstore);
+
+  cursorRequest.onsuccess = function(e) {
+    var result = e.target.result;
+    if(!!result == false) {
+      d.resolve();
+      return;
+    }
+    
+    store['delete'](result.key);
+    result["continue"]();
+  };
+  
+  return d;
 };

@@ -30,7 +30,7 @@ var auth = {
 	  d.reject();
 	},
 	success: function (token) {
-	
+	  console.log("token "+ " from "+localStorage.appurl);
 	  d.resolve(token);
 	}
       });

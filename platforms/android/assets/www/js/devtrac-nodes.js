@@ -33,8 +33,8 @@ var devtracnodes = {
       $.ajax({
         url: localStorage.appurl+"/api/node.json",
         type: 'post',
-        //data: node,
-        data: "node[title]=Site visit at pokot&node[status]=1&node[type]=ftritem&node[uid]=314&node[taxonomy_vocabulary_7][und][tid]=209&node[field_ftritem_date_visited][und][0][value][date]=29/04/2014&node[field_ftritem_public_summary][und][0][value]=Check for sanitation and hygiene at food service points&node[field_ftritem_narrative][und][0][value]=Compile statistics of cleanliness&node[field_ftritem_field_trip][und][0][target_id]=Inspect the Warehouses(14065)&node[field_ftritem_place][und][0][target_id]=Amuru(14066)&node[field_ftritem_images][0][fid]=7895&node[field_ftritem_images][0][display]=1&node[field_ftritem_images][0][width]=403&node[field_ftritem_images][0][height]=362",
+        data: node,
+        //data: "node[title]=Site visit at pokot&node[status]=1&node[type]=ftritem&node[uid]=314&node[taxonomy_vocabulary_7][und][tid]=209&node[field_ftritem_date_visited][und][0][value][date]=29/04/2014&node[field_ftritem_public_summary][und][0][value]=Check for sanitation and hygiene at food service points&node[field_ftritem_narrative][und][0][value]=Compile statistics of cleanliness&node[field_ftritem_field_trip][und][0][target_id]=Inspect the Warehouses(14065)&node[field_ftritem_place][und][0][target_id]=Amuru(14066)&node[field_ftritem_images][0][fid]=7895&node[field_ftritem_images][0][display]=1&node[field_ftritem_images][0][width]=403&node[field_ftritem_images][0][height]=362",
         dataType: 'json',
         headers: {
           'X-CSRF-Token': localStorage.usertoken
@@ -64,14 +64,13 @@ var devtracnodes = {
         data: filedata,
         //data: JSON.stringify(filedata),
         dataType: 'json',
-        cache: false,
-        //processData: false, // Don't process the files
         headers: {
           'X-CSRF-Token': localStorage.usertoken
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.log('error '+errorThrown);
           d.reject(errorThrown);
+          
         },
         success: function (data) {         
           d.resolve(data);
@@ -231,14 +230,21 @@ var devtracnodes = {
             if(sitevisits[k]['submit'] == 0 && sitevisits[k]['user-added'] == true) {
 
               devtracnodes.uploadImage(db, sitevisits[k]['nid'], k).then(function(imageResponse, persistedNid, ftritemIndex){
+                localStorage.imageid = sitevisits[k]['nid'];
                 devtracnodes.getSitevisitString(imageResponse, sitevisits[ftritemIndex]).then(function(jsonstring) {
 
-                  devtracnodes.postNode(jsonstring).then(function(updates){
-
+                  devtracnodes.postNode(jsonstring).then(function(updates) {
+                    devtrac.indexedDB.deleteImage(db, localStorage.imageid);
                     devtrac.indexedDB.editSitevisit(db, persistedNid, updates).then(function() {
                       var count_container = $("#sitevisit_count").html().split(" ");
-                      var updated_count = parseInt(count_container[0]) - 1;
-                      $("#sitevisit_count").html(updated_count);
+                      if(typeof parseInt(count_container[0]) == "number") {
+                        var updated_count = parseInt(count_container[0]) - 1;
+                        $("#sitevisit_count").html(updated_count);
+                      }
+                      else
+                      {
+                        $("#sitevisit_count").html(0);
+                      }
 
                       controller.refreshSitevisits();
                       d.resolve();
@@ -304,29 +310,11 @@ var devtracnodes = {
     uploadImage: function(db, inid, currentIndex) {
       var d = $.Deferred();
       devtrac.indexedDB.getImage(db, inid).then(function(imageObj) {
-        //for(var x in imageObj['base64s']) {
-        /*var filedata = {
-              "file":{
-                "file":imageObj['base64s'][0],
-                "filename":imageObj['names'][0],
-                "filepath":"public://"+imageObj['names'][0],
-                "metadata": 
-                  [
-                   {
-                     "height": "480",
-                   },
-
-                   {
-                     "width": "640",
-                   }
-
-                   ]
-              }
-          };*/
-
+        var file = imageObj['base64s'][0];
+        var data = file.substring(file.indexOf(",")+1);
         var filedata = {
             "file":{
-              "file":imageObj['base64s'][0],
+              "file": data,
               "filename":imageObj['names'][0],
               "filepath":"public://"+imageObj['names'][0],
               "mimeType":"image/"+imageObj['names'][0].split(".")[1],
@@ -335,22 +323,29 @@ var devtracnodes = {
         };
 
         devtracnodes.postImageFile(filedata).then(function(data) {
-          devtrac.indexedDB.deleteImage(db, inid);
+          
           data['title'] = imageObj['names'][0].split(".")[0];
           data['height'] = imageObj['height'];
           data['width'] = imageObj['width'];
-          
+
           d.resolve(data, inid, currentIndex);
-        }).fail(function(e){
-          d.reject(e);
-        });  
-        //}    
+        }).fail(function(e) {
+          if(e == "Unauthorized: CSRF validation failed") {
+            auth.getToken().then(function(token) {
+              localStorage.usertoken = token;
+              devtracnodes.uploadImage(db, inid, currentIndex);
+            });  
+          }else
+          {
+            d.reject(e);
+          }
+        });
       });
 
       return d;
     },
 
-    syncAll: function(){
+    syncAll: function() {
 
       if(parseInt($("#sitevisit_count").html()) > 0 || parseInt($("#location_count").html()) > 0 || parseInt($("#actionitem_count").html()) > 0 || parseInt($("#fieldtrip_count").html()) > 0) {
         controller.loadingMsg("Syncing...", 0);
@@ -433,7 +428,7 @@ var devtracnodes = {
             break;
 
           case 'field_ftritem_images':
-            nodestring = nodestring + a+'[und][0][fid]='+imageObj['fid']+'&node['+a+'][und][0][title]='+imageObj['title']+'&node['+a+'][und][0][metadata][height]='+imageObj['height']+'&node['+a+'][und][0][metadata][width]='+imageObj['width']+'&';
+            nodestring = nodestring + a+'[und][0][fid]='+imageObj['fid']+'&['+a+'][und][0][title]='+imageObj['title']+'&';
             break;
 
           default :

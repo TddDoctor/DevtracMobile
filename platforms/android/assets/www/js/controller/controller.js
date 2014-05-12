@@ -4,6 +4,7 @@ var controller = {
     filenames : [],
     filedimensions: [],
     filesizes : [],
+    objectstores: ["oecdobj", "placetype", "fieldtripobj", "sitevisit", "actionitemsobj", "placesitemsobj", "qtnsitemsobj", "qtionairesitemsobj", "commentsitemsobj","images"],
 
     // Application Constructor
     initialize: function () {
@@ -11,7 +12,7 @@ var controller = {
 
       //set application url if its not set
       if (!localStorage.appurl) {
-        localStorage.appurl = "http://192.168.38.114/dt11";
+        localStorage.appurl = "http://10.0.2.2/dt11";
       }
 
       auth.loginStatus().then(function () {
@@ -364,10 +365,19 @@ var controller = {
         if ($("#page_login_name").valid() && $("#page_login_pass").valid()) {
           auth.login($('#page_login_name').val(), $('#page_login_pass').val()).then(function () {
             $.mobile.changePage("#home_page", "slide", true, false);
+
+            devtrac.indexedDB.open(function (db) {
+              for(var x in objectstores) {
+                devtrac.indexedDB.deleteAllTables(objectstores[x]);
+              }
+              
             //todo: check for internet connection before request
-            controller.fetchAllData().then(function(){
-              controller.loadFieldTripList();          
+              controller.fetchAllData().then(function(){
+                controller.loadFieldTripList();          
+              });
+              
             });
+
           }).fail(function (errorThrown) {
             $.unblockUI();
           });
@@ -456,28 +466,19 @@ var controller = {
       var di = {};
       var reader = new FileReader();
       var image  = new Image();
-      
+
       reader.readAsDataURL(file);  
       reader.onload = function(_file) {
         image.src = _file.target.result;
-        
-        image.onload = function() {
-          var n = file.name,
-          s = ~~(file.size/1024) +'KB';
-          di.height = this.height;
-          di.width = this.width;
-          
-          controller.filenames.push(n);
-          controller.base64Images.push(image.src);
-          controller.filesizes.push(~~(file.size/1024));
-          controller.filedimensions.push(di);
-          
-          $('#uploadPreview').append('<img src="'+ this.src +'"> '+s+' '+n+'<br>');
-          
-        };
-        image.onerror= function() {
-          //alert('Invalid file type: '+ file.type);
-        };      
+        console.log("inside onload reader");
+
+        var n = file.name,
+        s = ~~(file.size/1024) +'KB';
+
+        controller.filenames.push(n);
+        controller.base64Images.push(image.src);
+        controller.filesizes.push(~~(file.size/1024));
+
       };
 
     },
@@ -612,6 +613,19 @@ var controller = {
 
             fieldtripList.listview('refresh');
             $("#fieldtrip_count").html(count);
+
+            var sitevisitcount = 0;
+            devtrac.indexedDB.open(function (db) {
+              devtrac.indexedDB.getAllSitevisits(db, function (sitevisit) {
+                for (var i in sitevisit) {
+                  if(sitevisit[i]['user-added'] && sitevisit[i]['submit'] == 0) {
+                    sitevisitcount = sitevisitcount + 1;
+                  } 
+                }
+                $("#sitevisit_count").html(sitevisitcount);
+              });
+
+            });
 
             //home_page
             $.mobile.changePage("#home_page", "slide", true, false);
@@ -1163,7 +1177,7 @@ var controller = {
       else {
         anid = action_id;
         localStorage.anid = anid;
-        
+
       }
 
       var form = $("#form_actionitems_details");
@@ -1177,7 +1191,7 @@ var controller = {
           var sitedate = fObject['field_actionitem_due_date']['und'][0]['value'];
 
           var formatedsitedate = "";
-          
+
           console.log("action item title is "+fObject['title']);
           if(typeof sitedate == 'object') {
             if(sitedate.date.charAt(4) != "/") {
@@ -1188,9 +1202,9 @@ var controller = {
               formatedsitedate = sitedatearray[2] + "/" + sitedatearray[1] + "/" + sitedatearray[0];
 
             }else
-              {
-                formatedsitedate = sitedate.date;
-              }
+            {
+              formatedsitedate = sitedate.date;
+            }
           }
           else {
             formatedsitedate = sitedate;
@@ -1365,7 +1379,7 @@ var controller = {
             devtrac.indexedDB.addPlacesData(db, updates);
             locationcount = locationcount + 1;
             $("#location_count").html(locationcount);
-            
+
             $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
           });
 
@@ -1380,11 +1394,11 @@ var controller = {
 
         var updates = {};
         var images = {};
-        
+
         images['base64s'] = controller.base64Images;
         images['names'] = controller.filenames;
         images['sizes'] = controller.filesizes;
-        
+
         updates['user-added'] = true;
         updates['nid'] = 1;
 
@@ -1427,7 +1441,7 @@ var controller = {
 
         updates['field_ftritem_images'] = {};
         updates['field_ftritem_images']['und'] = [];
-        
+
         if($('#sitevisit_add_type').val() == "210") {
           updates['field_ftritem_lat_long'] = {};
           updates['field_ftritem_lat_long']['und'] = [];
@@ -1445,9 +1459,7 @@ var controller = {
             }
 
             images['nid'] = updates['nid'];
-            images['width'] = controller.filedimensions[0].width;
-            images['height'] = controller.filedimensions[0].height;
-            
+
             devtrac.indexedDB.addSiteVisitsData(db, updates).then(function() {
               controller.refreshSitevisits();
               devtrac.indexedDB.addImages(db, images).then(function() {

@@ -63,6 +63,7 @@
 /home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.file/www/DirectoryEntry.js \
 /home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.file/www/DirectoryReader.js \
 /home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.file/www/Metadata.js \
+/home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.file/www/android \
 /home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.file/www/FileSystem.js \
 /home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.file/www/Flags.js \
 /home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.file/www/requestFileSystem.js \
@@ -75,6 +76,7 @@
 /home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.file/www/FileError.js \
 /home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.file/www/FileWriter.js \
 /home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.file/www/resolveLocalFileSystemURI.js \
+/home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.file/www/android/FileSystem.js \
 /home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.dialogs/www \
 /home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.dialogs/www/android \
 /home/david/workspace/DevtracMobile/platforms/android/assets/www/plugins/org.apache.cordova.dialogs/www/notification.js \

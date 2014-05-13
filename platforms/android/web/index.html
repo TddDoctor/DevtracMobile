@@ -115,6 +115,9 @@
           <label for="ug">Devtrac Uganda</label> <input type="radio" name="url"
             id="localhost" class="url" value="localhost"> <label
             for="localhost">Change URL to localhost</label>
+            <input type="radio" name="dmanual"
+            id="dmanual" class="url" value="DevtracManual"> <label
+            for="dmanual">Change URL to Devtrac Manual</label>
         </fieldset>
         <div id='urldiv'>
           <a href="#" data-role="button" data-inline="true" data-theme="b"
@@ -272,14 +275,14 @@
               <h4>Upload Status</h4>
               <ul data-role="listview" id="uploads_listview">
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="devtracnodes.uploadsitevisits();">Site Visits</a>
+                  data-icon="arrow-u" onclick="">Site Visits</a>
                   <div id="sitevisit_count" class="ui-li-count"></div></li>
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="devtracnodes.uploadLocations()">Locations</a>
+                  data-icon="arrow-u" onclick="">Locations</a>
                   <div id="location_count" class="ui-li-count"></div></li>
                 <!-- <li><a data-role="button" data-mini="true" data-icon="arrow-u" onclick="devtracnodes.postComments();">Comments</a><div id="comment_count" class="ui-li-count"></div></li> -->
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="devtracnodes.uploadActionItems()">Action Items</a>
+                  data-icon="arrow-u" onclick="">Action Items</a>
                   <div id="actionitem_count" class="ui-li-count"></div></li>
                 <li><a data-role="button" data-mini="true"
                   data-icon="arrow-u" onclick="">Fieldtrip Updates</a>

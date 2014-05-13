@@ -12,7 +12,7 @@ var controller = {
 
       //set application url if its not set
       if (!localStorage.appurl) {
-        localStorage.appurl = "http://10.0.2.2/dt11";
+        localStorage.appurl = "http://localhost/dt11";
       }
 
       auth.loginStatus().then(function () {
@@ -335,6 +335,9 @@ var controller = {
         case "Uganda":
           localStorage.appurl = "http://192.168.38.114/dt11";
           break;
+        case "DevtracManual":
+          localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+          break;
         case "localhost":
           localStorage.appurl = "http://localhost/dt11";
           break;
@@ -367,8 +370,12 @@ var controller = {
             $.mobile.changePage("#home_page", "slide", true, false);
 
             devtrac.indexedDB.open(function (db) {
-              for(var x in objectstores) {
-                devtrac.indexedDB.deleteAllTables(objectstores[x]);
+              for(var x in controller.objectstores) {
+                devtrac.indexedDB.deleteAllTables(db, controller.objectstores[x]).then(function(){
+                  
+                }).fail(function(){
+                  
+                });
               }
               
             //todo: check for internet connection before request

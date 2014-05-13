@@ -13,6 +13,7 @@ var auth = {
       // Obtain session token.
       $.ajax({
 	url: localStorage.appurl+"/services/session/token",
+       // url: "http://jenkinsge.mountbatten.net/devtracmanual/services/session/token",
 	type:"get",
 	dataType:"text",
 	error:function (jqXHR, textStatus, errorThrown) {
@@ -41,7 +42,7 @@ var auth = {
     checkToken: function() {
       var d = $.Deferred();
       
-      if(!localStorage.token == null){
+      if(!(localStorage.token == null)){
 	d.resolve(localStorage.token);
       }else{
 	auth.getToken().then(function(token){

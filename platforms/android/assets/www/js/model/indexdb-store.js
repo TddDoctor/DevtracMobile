@@ -963,6 +963,10 @@ devtrac.indexedDB.deleteAllTables = function(db, objectstore) {
   var trans = db.transaction([objectstore], "readwrite");
   var store = trans.objectStore(objectstore);
 
+  //Get everything in the store;
+  var keyRange = IDBKeyRange.lowerBound(0);
+  var cursorRequest = store.openCursor(keyRange);
+  
   cursorRequest.onsuccess = function(e) {
     var result = e.target.result;
     if(!!result == false) {
@@ -973,6 +977,10 @@ devtrac.indexedDB.deleteAllTables = function(db, objectstore) {
     store['delete'](result.key);
     result["continue"]();
   };
+  
+  cursorRequest.onerror = function(e) {
+    d.reject(e);
+  }  
   
   return d;
 };

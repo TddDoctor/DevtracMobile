@@ -59,7 +59,7 @@ var auth = {
     loginStatus: function() {
       var d = $.Deferred();
       controller.loadingMsg("Please Wait..", 0);
-      auth.checkToken().then(function(token){
+      auth.getToken().then(function(token){
 	 // Call system connect with session token.
 	  $.ajax({
 	    url : localStorage.appurl+"/api/system/connect.json",

@@ -102,7 +102,7 @@ var mapctlr = {
           
           $("#location_latlon").val(localStorage.latlon);
           $("#map_district_error").html("");
-          //alert("latlon is "+$("#location_latlon").val());
+
         });
         
         mapctlr.MAP.setView(mapctlr.LOCATION.getLatLng(),11);
@@ -110,7 +110,7 @@ var mapctlr = {
         
         mapctlr.MAP.removeEventListener('click');
         mapctlr.MAP.removeLayer(mapctlr.LOCATION.circle);
-
+        mapctlr.MAP.removeLayer(mapctlr.LOCATION);
         $('#mapheader').html("");
         $('#mapheader').html("Map");
         

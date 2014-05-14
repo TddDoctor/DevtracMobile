@@ -408,7 +408,7 @@ var controller = {
     },
 
     editlocations: function(anchor){
-      var pnidarray = $(anchor).attr("id");
+      var pnidarray = $(anchor).prev("a").attr("id");
       var pnid  = pnidarray.split('-')[1];
 
       var locationcontent = $("#locationcontent");
@@ -846,10 +846,10 @@ var controller = {
               var h1 = $("<h1 class='heada1'>" + places['title'] + "</h1>");
 
               if(places['user-added']) {
-                a = $("<a href='#' id='user" + places['nid'] + "' onclick=''></a>");  
+                a = $("<a href='#' id='user" +"-"+ places['nid'] + "' onclick=''></a>");  
               }
               else {
-                a = $("<a href='#' id='pnid" + places['nid'] + "' onclick=''></a>");
+                a = $("<a href='#' id='pnid" +"-"+ places['nid'] + "' onclick=''></a>");
               }
 
               a.append(h1);

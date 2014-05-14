@@ -26,15 +26,15 @@ var devtracnodes = {
     },
 
     //create node
-    postNode: function(node){
+    postNode: function(node) {
       var d = $.Deferred();
       var updates = [];
 
       $.ajax({
         url: localStorage.appurl+"/api/node.json",
         type: 'post',
-        data: node,
-        //data: "node[title]=Site visit at pokot&node[status]=1&node[type]=ftritem&node[uid]=314&node[taxonomy_vocabulary_7][und][tid]=209&node[field_ftritem_date_visited][und][0][value][date]=29/04/2014&node[field_ftritem_public_summary][und][0][value]=Check for sanitation and hygiene at food service points&node[field_ftritem_narrative][und][0][value]=Compile statistics of cleanliness&node[field_ftritem_field_trip][und][0][target_id]=Inspect the Warehouses(14065)&node[field_ftritem_place][und][0][target_id]=Amuru(14066)&node[field_ftritem_images][0][fid]=7895&node[field_ftritem_images][0][display]=1&node[field_ftritem_images][0][width]=403&node[field_ftritem_images][0][height]=362",
+        //data: node,
+        data: "node[title]=test70&node[status]=1&node[type]=ftritem&node[uid]=314&node[taxonomy_vocabulary_7][und][tid]=209&node[field_ftritem_date_visited][und][0][value][date]=29/04/2014&node[field_ftritem_public_summary][und][0][value]=Check for sanitation and hygiene at food service points&node[field_ftritem_narrative][und][0][value]=Compile statistics of cleanliness&node[field_ftritem_field_trip][und][0][target_id]=Inspect the Warehouses(14065)&node[field_ftritem_place][und][0][target_id]=Amuru(14066)&node[field_ftritem_images][0][fid]=7895",
         dataType: 'json',
         headers: {
           'X-CSRF-Token': localStorage.usertoken

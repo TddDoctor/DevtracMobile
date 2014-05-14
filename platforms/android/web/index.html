@@ -188,7 +188,7 @@
 
             <a data-role="button" id="edit_fieldtrip"
               href="#page_fieldtrip_edit" data-icon="edit" data-rel="dialog">Edit
-              title</a> <a href="#page_sitevisit_add" data-role="button"
+              title</a> <a href="#page_site_report_type" data-role="button"
               data-mini="true" data-icon="plus" id="addsitevisit"
               data-rel="dialog">Site Reports</a>
 
@@ -275,7 +275,7 @@
               <h4>Upload Status</h4>
               <ul data-role="listview" id="uploads_listview">
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="">Site Visits</a>
+                  data-icon="arrow-u" onclick="devtracnodes.postNode();">Site Visits</a>
                   <div id="sitevisit_count" class="ui-li-count"></div></li>
                 <li><a data-role="button" data-mini="true"
                   data-icon="arrow-u" onclick="">Locations</a>
@@ -333,6 +333,43 @@
   </div>
   <!-- /page -->
 
+<!-- Select site report type -->
+  <div data-role="page" id="page_site_report_type">
+    <div data-role="header">
+    <a id="" href="#page_fieldtrip_details" data-role="button"
+        data-icon="delete" data-iconpos="notext"></a>
+      <h3>Select Site Report Type</h3>
+    </div>
+    <!-- /header -->
+
+    <div data-role="content" class='content'>
+      <form id="form_sitereporttype" method="" action="">
+      <label for='sitevisit_add_type'>Site
+          Report Type</label> <select name="sitevisit_add_type" id="sitevisit_add_type"
+          data-mini="true" required>
+          <option value="211">Human Interest Story</option>
+          <option value="210">Roadside Observation</option>
+          <option value="209">Site Visit</option>
+        </select>
+        
+        <label for="location_district">District</label> <input type='text'
+          value='' id='location_district' name='location_district' required />
+          
+          <input type='text' value='' id='location_latlon' name='location_latlon' required  style="display: none"/>
+          
+          <label for="map_district" style="color:red;" id="map_district_error"></label>
+        <a data-role="button" href="#mappage" id="map_district"
+          onclick="var state=true; mapctlr.initMap(null, null, state); mapctlr.resizeMapIfVisible();"
+          data-theme='b'>Map District</a>
+          
+          <a id="submit_sitereporttype" data-role="button" href="" onclick="controller.submitSitereporttype();" data-theme='a'>Submit</a>
+      </form>
+
+    </div>
+    <!-- /content -->
+
+  </div>
+  <!-- /page -->
 
 
   <!-- Edit site visit details -->
@@ -370,6 +407,8 @@
   <!-- Add site visit details -->
   <div data-role="page" id="page_sitevisit_add">
     <div data-role="header">
+    <a id="" href="#page_site_report_type" data-rel="dialog"  data-role="button"
+        data-icon="back" data-iconpos="notext"></a>
       <h3>Add Site Visit</h3>
     </div>
     <!-- /header -->
@@ -379,21 +418,11 @@
 
         <label for="sitevisit_add_title">Title</label> <input type='text'
           value='' id='sitevisit_add_title' name='sitevisit_add_title' required />
-
-        <!-- <label for='sitevisit_add_districts'>Missing Districts</label><input
-          type='text' value='' id='sitevisit_add_districts'
-          name='sitevisit_add_districts' disabled=disabled required /> --> 
-          
+  
           <label
           for='sitevisit_add_oecds'>Missing Oecds</label><input type='text'
           value='' id='sitevisit_add_oecds' name='sitevisit_add_oecds'
-          disabled=disabled required /> <label for='sitevisit_add_type'>Site
-          Visit Type</label> <select name="sitevisit_add_type" id="sitevisit_add_type"
-          data-mini="true" required>
-          <option value="211">Human Interest Story</option>
-          <option value="210">Roadside Observation</option>
-          <option value="209">Site Visit</option>
-        </select> <label for="sitevisit_add_date">Date</label> <input type='text'
+          disabled=disabled required /> <label for="sitevisit_add_date">Date</label> <input type='text'
           id='sitevisit_add_date' name='sitevisit_add_date' data-role="date"
           required /> <label for="sitevisit_add_public_summary">Public
           Summary</label>
@@ -407,7 +436,7 @@
 
         <div
           class="ui-btn ui-icon-plus ui-btn-icon-left ui-corner-all fileinput-button">
-          <span>Image: </span> <input type="file" name="file" id="file" multiple="multiple" required>
+          <span>Image: </span> <input type="file" name="file" id="file" multiple="multiple">
         </div>
         <br>
         <div id="uploadPreview"></div>
@@ -416,8 +445,8 @@
           data-theme='b'
           data-mini="true" id='sitevisit_add_save'>Save</a>
           
-          <a data-role="button"
-          data-theme='b' href="#page_fieldtrip_details"
+          <a data-role="button" data-rel="dialog"
+          data-theme='b' href="#page_site_report_type"
           data-mini="true" data-inline="true" id='sitevisit_add_cancel'>Cancel</a>
       </form>
 
@@ -578,8 +607,10 @@
   <div data-role="page" id="page_add_location">
     
     <div data-role="header">
-
-      <h3>Add Location</h3>
+    <a id="" href="#page_site_report_type" data-role="button"
+        data-icon="back" data-iconpos="notext" data-rel="dialog"></a>
+        
+      <h3>Create Location</h3>
     </div>
     <!-- /header -->
 
@@ -589,22 +620,26 @@
           id='location_name' name='location_name' required /> <label
           for="location_placetypes">Location Types</label>
         <div id='location_placetypes'></div>
-
-        <label for="location_district">District</label> <input type='text'
-          value='' id='location_district' name='location_district' required />
-        <a data-role="button" href="#mappage"
-          onclick="var state=true; mapctlr.initMap(null, null, state); mapctlr.resizeMapIfVisible();"
-          data-theme='b'>Map District</a> <label for="location_contact">Contact</label>
-        <input type='text' value='' id='location_contact' /> <label
-          for="location_phone">Phone</label> <input type='text' value=''
-          id='location_phone' /> <label for="location_email">Email</label> <input
+        
+        <div data-role="collapsible" data-theme="a">
+        <h4>Contact</h4>
+        <label for="location_contact">Contact Name</label> <input type='text' value=''
+          id='location_contact' />
+        
+        <label for="location_phone">Phone</label> <input type='text' value=''
+          id='location_phone' /> 
+          
+          <label for="location_email">Email</label> <input
           type='text' value='' id='location_email' /> <label
           for="location_website">Website</label> <input type='text' value=''
-          id='location_website' /> <input type='button'
+          id='location_website' />
+        </div>
+        
+         <input type='button'
           onclick="controller.onSavelocation();" value='Save'
-          id='location_item_save' data-inline="true" data-theme='b' /> <input
-          type='button' onclick="" value='Cancel' data-inline="true"
-          id='location_item_cancel' data-theme='b' />
+          id='location_item_save' data-inline="true" data-theme='b' /> 
+          <a id="" href="#page_site_report_type" data-role="button"
+         data-theme='b' data-inline="true" data-rel="dialog">Cancel</a>
 
       </form>
 
@@ -618,9 +653,8 @@
   <div data-role="page" id="mappage">
     <div data-role="header">
       <a id="addlocation_back" data-icon="back" data-rel="dialog"
-        class="ui-btn-left" href="#page_add_location" data-iconpos="notext"></a>
-      <a id="viewlocation_back" data-icon="back" data-rel="back"
-        class="ui-btn-left" data-iconpos="notext"></a>
+        class="ui-btn-left" href="#page_site_report_type" data-iconpos="notext"></a>
+      
       <h3 id="mapheader">State of the Map</h3>
     </div>
     <!-- /header -->

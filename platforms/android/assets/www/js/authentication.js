@@ -211,6 +211,8 @@ var auth = {
 
     //logout
     logout: function() {
+      var d = $.Deferred();
+      
       controller.loadingMsg("Logging out...", 0);
       // Obtain session token.
       auth.getToken().then(function (token) {
@@ -222,7 +224,7 @@ var auth = {
           headers: {'X-CSRF-Token': token},
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
-
+            d.reject();
             alert(errorThrown);
             //hide and show dialog auth buttons
             $('#logindiv').hide();
@@ -230,8 +232,20 @@ var auth = {
           },
           success : function(data) {
             $.unblockUI();
+            
             localStorage.token = null;
             localStorage.pass = null;
+            
+            devtrac.indexedDB.open(function (db) {
+              for(var x in controller.objectstores) {
+                devtrac.indexedDB.deleteAllTables(db, controller.objectstores[x]).then(function(){
+                  
+                }).fail(function(){
+                  
+                });
+              }
+              
+            });
             
             //clear fieldtrip list
             $("#list_fieldtrips").empty();
@@ -258,6 +272,8 @@ var auth = {
             $("#username").html("Goodbye, "+localStorage.username+" !");
 
             $.mobile.changePage("#home_page", "slide", true, false);
+            
+            d.resolve();
             //clear passwords from file
             //window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, clearPasswords, failclearPass);
           }

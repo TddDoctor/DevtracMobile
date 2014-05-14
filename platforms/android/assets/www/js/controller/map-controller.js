@@ -99,6 +99,10 @@ var mapctlr = {
           mapctlr.LOCATION.circle.addTo(mapctlr.MAP);
 
           localStorage.latlon = e.latlng.lng+' '+e.latlng.lat;
+          
+          $("#location_latlon").val(localStorage.latlon);
+          $("#map_district_error").html("");
+          //alert("latlon is "+$("#location_latlon").val());
         });
         
         mapctlr.MAP.setView(mapctlr.LOCATION.getLatLng(),11);

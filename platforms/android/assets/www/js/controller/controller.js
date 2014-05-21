@@ -132,6 +132,13 @@ var controller = {
         $(".notification-bubble").html(0);
       });
 
+      
+      //remember passwords
+      $('#checkbox-mini-0').bind('click', function () {
+        
+      });
+      
+      
       //validate field to set urls for annonymous users
       var form = $("#urlForm");
       form.validate({
@@ -245,10 +252,9 @@ var controller = {
 
       //handle edit sitevisit click event
       $("#editsitevisit").bind("click", function (event) {
-        var editform = $('#form_sitevisit_edits');
-        editform.empty();
+        
         var snid = localStorage.snid;
-        if(localStorage.user == true){
+        if(localStorage.user == "true"){
           snid = parseInt(snid);
         }else{
           snid = snid.toString();
@@ -256,32 +262,13 @@ var controller = {
 
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getSitevisit(db, snid, function (sitevisitObject) {
-            var sitefieldset = $("<fieldset ></fieldset>");
+$("#sitevisit_title").val(sitevisitObject['title']);
 
-            var titlelabel = $("<label for='sitevisit_title' >Title</label>");
-            var titletextffield = $("<input type='text' value='" + sitevisitObject['title'] + "' id='sitevisit_title'>");
+$("#sitevisit_date").val(sitevisitObject['field_ftritem_date_visited']['und'][0]['value']);
 
-            var datevisited = $("<label for='sitevisit_date' >Date Visited</label>");
-            var datetextffield = $("<input type='text' value='" + sitevisitObject['field_ftritem_date_visited']['und'][0]['value'] + "' id='sitevisit_date'>");
+$("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und'][0]['value']);
 
-            var summarytitle = $("<label for='sitevisit_summary'>Summary</label>");
-            var summarytextareadiv = $('<div class="summarytextareadiv"><textarea id="sitevisit_summary" rows="4" cols="12" >'+sitevisitObject['field_ftritem_public_summary']['und'][0]['value']+'</textarea></div>');
-
-            var savesitevisitedits = $('<input type="button" data-inline="true" data-theme="b" id="save_site_visit_edits" onclick="controller.onSitevisitedit();" value="Save" />');
-
-            var cancelsitevisitedits = $('<a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="a" id="cancel_site_visit_edits">Cancel</a>');
-
-            sitefieldset.append(
-                titlelabel).append(
-                    titletextffield).append(
-                        datevisited).append(
-                            datetextffield).append(
-                                summarytitle).append(
-                                    summarytextareadiv).append(
-                                        savesitevisitedits).append(
-                                            cancelsitevisitedits);
-
-            editform.append(sitefieldset).trigger('create');
+            $("#page_sitevisit_edits").trigger('create');
           });
         });
 
@@ -289,9 +276,7 @@ var controller = {
 
       //handle edit fieldtrip click event
       $("#edit_fieldtrip").bind("click", function (event) {
-        var editform = $('#form_fieldtrip_edits');
-        editform.empty();
-
+        var editform = $("#form_fieldtrip_edits");
         var fnid = localStorage.fnid;
 
         devtrac.indexedDB.open(function (db) {
@@ -356,6 +341,15 @@ var controller = {
         $('#url').val("");
       });
 
+    //cancel url dialog
+      $('.panel_login').bind("click", function (event, ui) {
+        if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
+          $("#page_login_name").val(window.localStorage.getItem("usernam"));
+          $("#page_login_pass").val(window.localStorage.getItem("password"));  
+        }
+        
+      });
+      
       //validate login form
       $("#loginForm").validate();
 
@@ -365,6 +359,14 @@ var controller = {
           auth.login($('#page_login_name').val(), $('#page_login_pass').val()).then(function () {
             $.mobile.changePage("#home_page", "slide", true, false);
 
+            if($("#checkbox-mini-0").is(":checked")){
+              window.localStorage.setItem("usernam", $("#page_login_name").val());
+              window.localStorage.setItem("password", $("#page_login_pass").val());
+              
+            }else{
+              window.localStorage.removeItem("usernam");
+              window.localStorage.removeItem("password");
+            }
             devtrac.indexedDB.open(function (db) {
               for(var x in controller.objectstores) {
                 devtrac.indexedDB.deleteAllTables(db, controller.objectstores[x]).then(function(){
@@ -411,55 +413,24 @@ var controller = {
       var pnidarray = $(anchor).prev("a").attr("id");
       var pnid  = pnidarray.split('-')[1];
 
-      var locationcontent = $("#locationcontent");
-      locationcontent.empty();
-
-      if(localStorage.user == true){
+      if(localStorage.user == "true"){
         pnid = parseInt(pnid);
+        localStorage.placeid = pnid;
       }else{
         pnid = pnid.toString();
+        localStorage.placeid = pnid;
       }
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.getPlace(db, pnid, function (placeObject) {
           if (placeObject != undefined) {
-            var editform = $('<form id="form' + placeObject['nid'] + '"></form>');
-            editform.empty();
 
-            var placefieldset = $("<div class='ui-body ui-body-a ui-corner-all'><h3>" + placeObject['title'] + "</h3></div>");
+            $("#place_title").val(placeObject['title']);
+            $("#place_name").val(placeObject['name']);
+            $("#place_name").val(placeObject['name']);
+            $("#place_responsible").val(placeObject['field_place_responsible_person']['und'][0]['value']);
+            $("#place_email").val(placeObject['field_place_email']['und'][0]['email']);
 
-            var titlelabel = $("<label for='place_title' >Title</label>");
-            var titletextffield = $("<input type='text' value='" + placeObject['title'] + "' id='place_title'>");
-
-            var name = $("<label for='place_name' >Name</label>");
-            var namefield = $("<input type='text' value='" + placeObject['name'] + "' id='place_name'>");
-
-            if (placeObject['field_place_responsible_person']['und'] != undefined || placeObject['field_place_email']['und'] != undefined) {
-              var responsibleperson = $("<label for='place_reponsible'>Responsible person</label>");
-              var responsiblepersonfield = $("<input type='text' value='" + placeObject['field_place_responsible_person']['und'][0]['value'] + "' id='place_reponsible'>");
-
-              var email = $("<label for='place_email' >Email</label>");
-              var emailfield = $("<input type='text' value='" + placeObject['field_place_email']['und'][0]['email'] + "' id='place_email'>");
-            }
-
-            var saveplaces = $('<input type="button" data-inline="true" data-theme="b" id="save_places_info" class="place' + placeObject['nid'] + '" onclick="controller.onPlacesave(this);" value="Save" />');
-
-            var cancelplaces = $('<a data-role="button" data-inline="true" data-rel="back" data-theme="a" id="cancel_places_info">Cancel</a>');
-
-            placefieldset.append(
-                titlelabel).append(
-                    titletextffield).append(
-                        name).append(
-                            namefield).append(
-                                responsibleperson).append(
-                                    responsiblepersonfield).append(
-                                        email).append(
-                                            emailfield).append(
-                                                saveplaces).append(
-                                                    cancelplaces);
-
-            editform.append(placefieldset);
-            locationcontent.append(editform);
-            editform.trigger('create');
+            $("#page_location_edits").trigger('create');
           }
         });
 
@@ -669,8 +640,9 @@ var controller = {
 
             localStorage.fieldtripstartdate = startdatearray[0] + "/" + startdatearray[1] + "/" + startdatearray[2]; 
             
-            $("#actionitem_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(parseInt(startdatearray[0]), parseInt(startdatearray[1])+1, parseInt(startdatearray[2])), maxDate: new Date(parseInt(enddatearray[0]), parseInt(enddatearray[1]), parseInt(enddatearray[2])) });
-            $("#sitevisit_add_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(parseInt(startdatearray[0]), parseInt(startdatearray[1])+1, parseInt(startdatearray[2])), maxDate: new Date(parseInt(enddatearray[0]), parseInt(enddatearray[1]), parseInt(enddatearray[2])) });
+            $("#actionitem_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(parseInt(startdatearray[0]), parseInt(startdatearray[1])+1, parseInt(startdatearray[2])), maxDate: new Date(parseInt(enddatearray[0]), parseInt(enddatearray[1])+1, parseInt(enddatearray[2])) });
+            $("#sitevisit_add_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(parseInt(startdatearray[0]), parseInt(startdatearray[1])+1, parseInt(startdatearray[2])), maxDate: new Date(parseInt(enddatearray[0]), parseInt(enddatearray[1])+1, parseInt(enddatearray[2])) });
+            $("#sitevisit_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(parseInt(startdatearray[0]), parseInt(startdatearray[1])+1, parseInt(startdatearray[2])), maxDate: new Date(parseInt(enddatearray[0]), parseInt(enddatearray[1])+1, parseInt(enddatearray[2])) });
 
             $("#fieldtrip_details_title").html(fObject['title']);
             $("#fieldtrip_details_status").html(fObject['field_fieldtrip_status']['und'][0]['value']);
@@ -970,7 +942,7 @@ var controller = {
             break
           }
 
-          $("#sitevisists_details_subjects").html();
+          $("#sitevisists_details_title").html(fObject['title']);
           $("#sitevisists_details_summary").html(fObject['field_ftritem_public_summary']['und'][0]['value']);
 
           //get location name
@@ -1008,7 +980,17 @@ var controller = {
               if (actionitem[i]['field_actionitem_ftreportitem']['und'][0]['target_id'] == snid || sitevisitid == snid) {
                 var aItem = actionitem[i];
                 var li = $("<li></li>");
-                var a = $("<a href='#' id='" + aItem['nid'] + "' onclick='controller.onActionitemclick(this)'></a>");
+                var a = ""; 
+                
+                if(aItem["user"] != undefined){
+                  a = $("<a href='#' id='user" + aItem['nid'] + "' onclick='controller.onActionitemclick(this)'></a>");  
+                }
+                else
+                {
+                  a = $("<a href='#' id='" + aItem['nid'] + "' onclick='controller.onActionitemclick(this)'></a>");  
+                }
+                
+                
                 var h1 = $("<h1 class='heada2'>" + aItem['title'] + "</h1>");
                 var p = $("<p class='para2'></p>");
 
@@ -1053,11 +1035,28 @@ var controller = {
         }
 
       });
+      
+      var snid = localStorage.snid;
+      if(localStorage.user == "true"){
+        snid = parseInt(snid);
+      }else{
+        snid = snid.toString();
+      }
 
       devtrac.indexedDB.open(function (db) {
         console.log("siite visit is "+localStorage.snid);
 
-        devtrac.indexedDB.editSitevisit(db, localStorage.snid, updates).then(function () {
+        devtrac.indexedDB.editSitevisit(db, snid, updates).then(function () {
+          
+          $("#sitevisists_details_title").html($("#sitevisit_title").val());
+          
+          if(localStorage.user == "true"){
+            $("#user"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+          }else{
+            $("#snid"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+          }
+          
+          
           $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
         });
       });
@@ -1066,18 +1065,19 @@ var controller = {
 
     onPlacesave: function (saveButtonReference) {
       //save places edits
-      var snid = $('#sitevisitId').val();
-      var saveclass = $(saveButtonReference).attr('class');
-
-      var formId = saveclass.substring(saveclass.indexOf('e') + 1);
-
-
+      var pnid = '';
+      if(localStorage.user == "true"){
+        pnid = parseInt(localStorage.placeid);
+        
+      }else{
+        pnid = localStorage.placeid;
+        
+      }
+      
       var updates = {};
-      updates.lat = localStorage.lat;
-      updates.lon = localStorage.lon;
 
       devtrac.indexedDB.open(function (db) {
-        $('#form' + formId + ' *').filter(':input').each(function () {
+        $('#editlocationform *').filter(':input').each(function () {
           var key = $(this).attr('id').substring($(this).attr('id').indexOf('_') + 1);
           if (key.indexOf('_') == -1) {
             updates[key] = $(this).val();
@@ -1085,7 +1085,7 @@ var controller = {
 
         });
 
-        devtrac.indexedDB.editPlace(db, formId, updates).then(function () {
+        devtrac.indexedDB.editPlace(db, pnid, updates).then(function () {
           controller.loadingMsg('Saved ' + updates['title'], 2000);
 
           $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
@@ -1237,7 +1237,6 @@ var controller = {
       else {
         anid = action_id;
         localStorage.anid = anid;
-
       }
 
       var form = $("#form_actionitems_details");
@@ -1271,7 +1270,8 @@ var controller = {
           }
 
           $("#actionitem_due_date").html(formatedsitedate);
-
+          $("#actionitem_details_title").html(fObject['title']);
+          
           $("#actionitem_ftritem").html(localStorage.sitevisitname);
 
           if (fObject['status'] == "1") {
@@ -1650,6 +1650,7 @@ var controller = {
     onSavecomment: function() {
       if ($("#actionitem_comment").valid()) {
         var list_comment = $('#list_comments');
+        list_comment.empty();
         var comment = {};
 
         comment['comment_body'] = {};

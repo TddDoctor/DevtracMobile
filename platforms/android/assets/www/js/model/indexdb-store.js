@@ -870,7 +870,16 @@ devtrac.indexedDB.editPlace = function(db, pnid, updates) {
   request.onsuccess = function(event) {
     // Get the old value that we want to update
     var data = request.result;
-    data.submit = updates['submit'];
+    
+    for(var key in updates){
+      if(key == "email"){
+        data['field_place_responsible_email']['und'][0]['email'] = updates['email'];
+      }else if(key == "responsible"){
+        data['field_place_responsible_person']['und'][0]['value'] = updates['responsible']; 
+      }else if(key == "title"){
+       data['title'] = updates['title']; 
+      }
+    }
 
     // Put this updated object back into the database.
     var requestUpdate = store.put(data);
@@ -903,9 +912,17 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
   request.onsuccess = function(event) {
     // Get the old value that we want to update
     var data = request.result;
-    data.submit = updates['submit'];
-    //data.nid = updates['nid'];
-
+    
+    for(var key in updates){
+     if(key == "title"){
+       data['title'] = updates['title'];   
+     } else if(key == "date"){
+       data['field_ftritem_date_visited']['und'][0]['value'] = updates['date']
+     }else if(key  == "summary"){
+       data['field_ftritem_public_summary']['und'][0]['value'] = updates['summary']
+     }
+    }
+    
     // Put this updated object back into the database.
     var requestUpdate = store.put(data);
     requestUpdate.onerror = function(event) {
@@ -917,7 +934,7 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
       // Success - the data is updated!
       console.log("Site visit update success");
 
-      store['delete'](snid);
+      //store['delete'](snid);
       d.resolve();
     };
   };

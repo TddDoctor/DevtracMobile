@@ -27,3 +27,8 @@ body .ui-footer .ui-title {
 #uploadPreview img{
   height:32px;
 }
+
+/* Stop some key items from being truncated */
+body .ui-li .ui-li-desc {
+ white-space: normal;
+ }

@@ -1,5 +1,7 @@
 var controller = {    
 
+    //connectionStatus : false,
+    connectionStatus : true,
     base64Images : [],
     filenames : [],
     filedimensions: [],
@@ -11,34 +13,49 @@ var controller = {
       $(window).bind('orientationchange pageshow pagechange resize', mapctlr.resizeMapIfVisible);
 
       //set application url if its not set
-      if (!localStorage.appurl) {
-        localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-      }
+      //if (!localStorage.appurl) {
+      localStorage.appurl = "http://localhost/dt11";
+      //localStorage.appurl = "http://10.0.2.2/dt11";
+      //}
 
-      auth.loginStatus().then(function () {
-        $('#list_fieldtrips').attr('data-filter',true);
-        $('#homeForm').trigger('create');
+      if(controller.connectionStatus) {
+        auth.loginStatus().then(function () {
+          $('#list_fieldtrips').attr('data-filter',true);
+          $('#homeForm').trigger('create');
 
-        //download all devtrac data for user.
-        controller.fetchAllData().then(function(){
-          //load field trip details from the database if its one and the list if there's more.
+          //download all devtrac data for user.
+          controller.fetchAllData().then(function(){
+            //load field trip details from the database if its one and the list if there's more.
+            controller.loadFieldTripList();
+
+            //update upload counter
+            controller.uploadCounter();
+
+            //set welcome message
+            $("#username").html("Welcome " + localStorage.username);
+          });
+
+
+        }).fail(function () {
+          $('#list_fieldtrips').attr('data-filter',false);
+          $('#homeForm').trigger('create');
+          $.mobile.changePage("#home_page", "slide", true, false);
+          $("#username").html("Please login to use the application");
+        });
+  
+      }else
+      {
+        controller.loadingMsg("You are offline and cannot upload data", 2000);
+        if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
+          
+        //load field trip details from the database if its one and the list if there's more.
           controller.loadFieldTripList();
 
           //update upload counter
-          controller.uploadCounter();
-
-          //set welcome message
-          $("#username").html("Welcome " + localStorage.username);
-        });
-
-
-      }).fail(function () {
-        $('#list_fieldtrips').attr('data-filter',false);
-        $('#homeForm').trigger('create');
-        $.mobile.changePage("#home_page", "slide", true, false);
-        $("#username").html("Please login to use the application");
-      });
-
+          controller.uploadCounter(); 
+        }
+      }
+      
       this.bindEvents();
     },
 
@@ -81,6 +98,9 @@ var controller = {
 
       document.addEventListener("deviceready", controller.onDeviceReady, false);
 
+      document.addEventListener("offline", controller.onOffline, false);
+      document.addEventListener("online", controller.online, false);
+
       $("#sitevisit_add_save").bind('click', function(){
         controller.onSavesitevisit();
       });
@@ -117,28 +137,35 @@ var controller = {
 
       //redownload the devtrac data
       $('.refresh-button').bind('click', function () {
-        controller.loadingMsg("Downloading Data ...", 0);
-        //get all bubbles and delete them to create room for new ones.
-        for (var notify in $('#refreshme').getNotifications()) {
-          $(this).deleteBubble($('#refreshme').getNotifications()[notify]);
+        
+        if(controller.connectionStatus){
+          controller.loadingMsg("Downloading Data ...", 0);
+          //get all bubbles and delete them to create room for new ones.
+          for (var notify in $('#refreshme').getNotifications()) {
+            $(this).deleteBubble($('#refreshme').getNotifications()[notify]);
+          }
+
+          //todo: check for internet connection before request
+          controller.fetchAllData().then(function(){
+            controller.loadFieldTripList();          
+          });
+
+
+          $(".notification-bubble").html(0);          
+          
+        }else{
+          controller.loadingMsg("Please Connect to Internet ...", 1000);
         }
 
-        //todo: check for internet connection before request
-        controller.fetchAllData().then(function(){
-          controller.loadFieldTripList();          
-        });
-
-
-        $(".notification-bubble").html(0);
       });
 
-      
+
       //remember passwords
       $('#checkbox-mini-0').bind('click', function () {
-        
+
       });
-      
-      
+
+
       //validate field to set urls for annonymous users
       var form = $("#urlForm");
       form.validate({
@@ -252,7 +279,7 @@ var controller = {
 
       //handle edit sitevisit click event
       $("#editsitevisit").bind("click", function (event) {
-        
+
         var snid = localStorage.snid;
         if(localStorage.user == "true"){
           snid = parseInt(snid);
@@ -262,11 +289,11 @@ var controller = {
 
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getSitevisit(db, snid, function (sitevisitObject) {
-$("#sitevisit_title").val(sitevisitObject['title']);
+            $("#sitevisit_title").val(sitevisitObject['title']);
 
-$("#sitevisit_date").val(sitevisitObject['field_ftritem_date_visited']['und'][0]['value']);
+            $("#sitevisit_date").val(sitevisitObject['field_ftritem_date_visited']['und'][0]['value']);
 
-$("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und'][0]['value']);
+            $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und'][0]['value']);
 
             $("#page_sitevisit_edits").trigger('create');
           });
@@ -277,6 +304,7 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
       //handle edit fieldtrip click event
       $("#edit_fieldtrip").bind("click", function (event) {
         var editform = $("#form_fieldtrip_edits");
+        editform.empty();
         var fnid = localStorage.fnid;
 
         devtrac.indexedDB.open(function (db) {
@@ -341,15 +369,15 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
         $('#url').val("");
       });
 
-    //cancel url dialog
+      //cancel url dialog
       $('.panel_login').bind("click", function (event, ui) {
         if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
           $("#page_login_name").val(window.localStorage.getItem("usernam"));
           $("#page_login_pass").val(window.localStorage.getItem("password"));  
         }
-        
+
       });
-      
+
       //validate login form
       $("#loginForm").validate();
 
@@ -362,7 +390,7 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
             if($("#checkbox-mini-0").is(":checked")){
               window.localStorage.setItem("usernam", $("#page_login_name").val());
               window.localStorage.setItem("password", $("#page_login_pass").val());
-              
+
             }else{
               window.localStorage.removeItem("usernam");
               window.localStorage.removeItem("password");
@@ -427,10 +455,15 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
             $("#place_title").val(placeObject['title']);
             $("#place_name").val(placeObject['name']);
             $("#place_name").val(placeObject['name']);
-            $("#place_responsible").val(placeObject['field_place_responsible_person']['und'][0]['value']);
-            $("#place_email").val(placeObject['field_place_email']['und'][0]['email']);
 
-            $("#page_location_edits").trigger('create');
+            if(controller.sizeme(placeObject['field_place_responsible_person']) > 0){
+              $("#place_responsible").val(placeObject['field_place_responsible_person']['und'][0]['value']);
+            }
+
+            if(controller.sizeme(placeObject['field_place_responsible_person']) > 0){
+              $("#place_email").val(placeObject['field_place_email']['und'][0]['email']);
+            }
+
           }
         });
 
@@ -457,6 +490,20 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
 
       };
 
+    },
+    
+    onOffline: function() {
+      //controller.loadingMsg("Please Connect to the Internet to Upload and Download Data", 3000);
+      controller.connectionStatus = false;
+      console.log("u r offline");
+     // alert("Offline");
+    },
+    
+    online: function() {
+      console.log("u r online");
+      //controller.loadingMsg("Online", 2000);
+      controller.connectionStatus = true;
+      //alert("Online");
     },
 
     //handle save for user answers from questionnaire
@@ -639,7 +686,7 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
             var formatedenddate = enddatearray[2] + "/" + enddatearray[1] + "/" + enddatearray[0];
 
             localStorage.fieldtripstartdate = startdatearray[0] + "/" + startdatearray[1] + "/" + startdatearray[2]; 
-            
+
             $("#actionitem_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(parseInt(startdatearray[0]), parseInt(startdatearray[1])+1, parseInt(startdatearray[2])), maxDate: new Date(parseInt(enddatearray[0]), parseInt(enddatearray[1])+1, parseInt(enddatearray[2])) });
             $("#sitevisit_add_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(parseInt(startdatearray[0]), parseInt(startdatearray[1])+1, parseInt(startdatearray[2])), maxDate: new Date(parseInt(enddatearray[0]), parseInt(enddatearray[1])+1, parseInt(enddatearray[2])) });
             $("#sitevisit_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(parseInt(startdatearray[0]), parseInt(startdatearray[1])+1, parseInt(startdatearray[2])), maxDate: new Date(parseInt(enddatearray[0]), parseInt(enddatearray[1])+1, parseInt(enddatearray[2])) });
@@ -729,7 +776,7 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
           var c = enddatearray[2] + "/" + enddatearray[1] + "/" + enddatearray[0]
 
           localStorage.fieldtripstartdate = startdatearray[0] + "/" + startdatearray[1] + "/" + startdatearray[2];
-          
+
           $("#fieldtrip_details_start").html(formatedstartdate);
           $("#fieldtrip_details_end").html(c);
 
@@ -981,7 +1028,7 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
                 var aItem = actionitem[i];
                 var li = $("<li></li>");
                 var a = ""; 
-                
+
                 if(aItem["user"] != undefined){
                   a = $("<a href='#' id='user" + aItem['nid'] + "' onclick='controller.onActionitemclick(this)'></a>");  
                 }
@@ -989,8 +1036,8 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
                 {
                   a = $("<a href='#' id='" + aItem['nid'] + "' onclick='controller.onActionitemclick(this)'></a>");  
                 }
-                
-                
+
+
                 var h1 = $("<h1 class='heada2'>" + aItem['title'] + "</h1>");
                 var p = $("<p class='para2'></p>");
 
@@ -1035,7 +1082,7 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
         }
 
       });
-      
+
       var snid = localStorage.snid;
       if(localStorage.user == "true"){
         snid = parseInt(snid);
@@ -1047,16 +1094,16 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
         console.log("siite visit is "+localStorage.snid);
 
         devtrac.indexedDB.editSitevisit(db, snid, updates).then(function () {
-          
+
           $("#sitevisists_details_title").html($("#sitevisit_title").val());
-          
+
           if(localStorage.user == "true"){
             $("#user"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
           }else{
             $("#snid"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
           }
-          
-          
+
+
           $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
         });
       });
@@ -1068,18 +1115,18 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
       var pnid = '';
       if(localStorage.user == "true"){
         pnid = parseInt(localStorage.placeid);
-        
+
       }else{
         pnid = localStorage.placeid;
-        
+
       }
-      
+
       var updates = {};
 
       devtrac.indexedDB.open(function (db) {
         $('#editlocationform *').filter(':input').each(function () {
           var key = $(this).attr('id').substring($(this).attr('id').indexOf('_') + 1);
-          if (key.indexOf('_') == -1) {
+          if (key.indexOf('_') == -1 && $(this).val().length > 0) {
             updates[key] = $(this).val();
           }
 
@@ -1213,10 +1260,10 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
 
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.editFieldtrip(db, localStorage.fnid, updates).then(function() {
-          var count_container = $("#actionitem_count").html().split(" ");
-          var updated_count = parseInt(count_container[0]) - 1;
+          var count_container = $("#fieldtrip_count").html().split(" ");
+          var updated_count = parseInt(count_container[0]) + 1;
 
-          $("#actionitem_count").html(updated_count);
+          $("#fieldtrip_count").html(updated_count);
           $('#fieldtrip_details_title').html(updates['title']);
           $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
 
@@ -1271,7 +1318,7 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
 
           $("#actionitem_due_date").html(formatedsitedate);
           $("#actionitem_details_title").html(fObject['title']);
-          
+
           $("#actionitem_ftritem").html(localStorage.sitevisitname);
 
           if (fObject['status'] == "1") {
@@ -1441,7 +1488,7 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
             $("#location_count").html(locationcount);
 
             controller.createSitevisitfromlocation($('#location_name').val());
-            
+
             $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
           });
 
@@ -1456,7 +1503,7 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
       //save added site visits
 
       var ftritemtype = "";
-      
+
       switch (localStorage.ftritemtype) {
       case "209":
         ftritemtype = "Site Visit";
@@ -1705,11 +1752,11 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
 
     // device ready event handler
     onDeviceReady: function () {
-      var options = {
+      /*var options = {
           enableHighAccuracy: true
       };
 
-      navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
+      //navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
       //    onSuccess Geolocation
       //
 
@@ -1723,7 +1770,7 @@ $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und
 
       function onError(error) {
         alert('code: ' + error.code + '\n' + 'message: ' + error.message + '\n');
-      }
+      }*/
 
     },
 

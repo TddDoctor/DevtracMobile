@@ -84,6 +84,9 @@ var mapctlr = {
       }
 
       if(loc) {
+        $("#viewlocation_back").hide();
+        $("#addlocation_back").show();
+        
         mapctlr.MAP.addLayer(mapctlr.BASEMAPS['mapbox']);
         
         $('#mapheader').html("");
@@ -103,6 +106,7 @@ var mapctlr = {
           $("#location_latlon").val(localStorage.latlon);
           $("#map_district_error").html("");
 
+
         });
         
         mapctlr.MAP.setView(mapctlr.LOCATION.getLatLng(),11);
@@ -113,6 +117,9 @@ var mapctlr = {
         mapctlr.MAP.removeLayer(mapctlr.LOCATION);
         $('#mapheader').html("");
         $('#mapheader').html("Map");
+        
+        $("#viewlocation_back").show();
+        $("#addlocation_back").hide();
         
         mapctlr.MAP.addLayer(mapctlr.BASEMAPS['mapbox']);
         mapctlr.LOCATION.addTo(mapctlr.MAP);

@@ -154,11 +154,12 @@ var devtracnodes = {
               devtracnodes.getActionItemString(actionitems[actionitem]).then(function(jsonstring) {
 
                 devtracnodes.postNode(jsonstring).then(function(updates){
-
+                  
                   devtrac.indexedDB.editActionitem(db, parseInt(localStorage.currentanid), updates).then(function() {
                     var count_container = $("#actionitem_count").html().split(" ");
                     var updated_count = parseInt(count_container[0]) - 1;
                     $("#actionitem_count").html(updated_count);
+                    d.resolve();
                     devtracnodes.postComments().then(function() {
                       d.resolve();
 
@@ -346,35 +347,39 @@ var devtracnodes = {
     },
 
     syncAll: function() {
-
-      if(parseInt($("#sitevisit_count").html()) > 0 || parseInt($("#location_count").html()) > 0 || parseInt($("#actionitem_count").html()) > 0 || parseInt($("#fieldtrip_count").html()) > 0) {
-        controller.loadingMsg("Syncing...", 0);
-        devtracnodes.uploadFieldtrips().then(function() {
-          $.unblockUI();
-        }).fail(function(){
-          $.unblockUI();
-        });
-        devtracnodes.uploadsitevisits().then(function() {
-          devtracnodes.uploadActionItems().then(function() {
-            $.unblockUI();
-          }).fail(function(){
-            $.unblockUI();
-          });
-          $.unblockUI();
-        }).fail(function(e){
-          $.unblockUI();
-          controller.loadingMsg("Site Visits "+e, 2000);
-        });
-        devtracnodes.uploadLocations().then(function() {
-          $.unblockUI();
-        }).fail(function(){
-          $.unblockUI();
-        });
-      }
-      else {
-        controller.loadingMsg("No Updates", 2000);
-      }
-
+     if(controller.connectionStatus){
+       if(parseInt($("#sitevisit_count").html()) > 0 || parseInt($("#location_count").html()) > 0 || parseInt($("#actionitem_count").html()) > 0 || parseInt($("#fieldtrip_count").html()) > 0) {
+         controller.loadingMsg("Syncing...", 0);
+         devtracnodes.uploadFieldtrips().then(function() {
+           $.unblockUI();
+         }).fail(function(){
+           $.unblockUI();
+         });
+         devtracnodes.uploadsitevisits().then(function() {
+           
+           $.unblockUI();
+         }).fail(function(e){
+           $.unblockUI();
+           controller.loadingMsg("Site Visits "+e, 2000);
+         });
+         devtracnodes.uploadActionItems().then(function() {
+           $.unblockUI();
+         }).fail(function(){
+           $.unblockUI();
+         });
+         devtracnodes.uploadLocations().then(function() {
+           $.unblockUI();
+         }).fail(function(){
+           $.unblockUI();
+         });
+       }
+       else {
+         controller.loadingMsg("No Updates", 2000);
+       } 
+       
+     }else{
+       controller.loadingMsg("No Internet Connection", 2000);
+     }
     },
 
     //return site visit string

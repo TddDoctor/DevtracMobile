@@ -84,8 +84,8 @@ var mapctlr = {
       }
 
       if(loc) {
-        $("#viewlocation_back").hide();
         $("#addlocation_back").show();
+        $("#viewlocation_back").hide();
         
         mapctlr.MAP.addLayer(mapctlr.BASEMAPS['mapbox']);
         

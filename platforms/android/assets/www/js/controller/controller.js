@@ -488,6 +488,7 @@ var controller = {
         controller.base64Images.push(image.src);
         controller.filesizes.push(~~(file.size/1024));
 
+        $("#uploadPreview").append('<div>'+n+" "+~~(file.size/1024)+'kb</div>');
       };
 
     },
@@ -951,11 +952,10 @@ var controller = {
           if(fObject['field_ftritem_place'] != undefined) {
             localStorage.pnid = fObject['field_ftritem_place']['und'][0]['target_id'];
             pnid = localStorage.pnid; 
-          }
-          else
-          {
-            localStorage.pnid = snid;
-            pnid = snid;
+
+            if(fObject['user-added'] == true) {
+              pnid = parseInt(localStorage.pnid);
+            }
           }
 
           var sitedate = fObject['field_ftritem_date_visited']['und'][0]['value'];
@@ -1487,7 +1487,7 @@ var controller = {
             locationcount = locationcount + 1;
             $("#location_count").html(locationcount);
 
-            controller.createSitevisitfromlocation($('#location_name').val());
+            controller.createSitevisitfromlocation(updates[0]['nid'], $('#location_name').val());
 
             $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
           });
@@ -1498,9 +1498,8 @@ var controller = {
       controller.resetForm($('#form_sitereporttype'));
     },
 
-    createSitevisitfromlocation: function (title) {
+    createSitevisitfromlocation: function (pnid, title) {
       var sitevisitscount = 0;
-      //save added site visits
 
       var ftritemtype = "";
 
@@ -1521,10 +1520,6 @@ var controller = {
       var updates = {};
       var images = {};
 
-      images['base64s'] = controller.base64Images;
-      images['names'] = controller.filenames;
-      images['sizes'] = controller.filesizes;
-
       updates['user-added'] = true;
       updates['nid'] = 1;
 
@@ -1539,6 +1534,11 @@ var controller = {
       updates['taxonomy_vocabulary_7']['und'] = [];
       updates['taxonomy_vocabulary_7']['und'][0] = {};
       updates['taxonomy_vocabulary_7']['und'][0]['tid'] = localStorage.ftritemtype;
+      
+      updates['field_ftritem_place'] = {};
+      updates['field_ftritem_place']['und'] = [];
+      updates['field_ftritem_place']['und'][0] = {};
+      updates['field_ftritem_place']['und'][0]['target_id'] = pnid;
 
       updates['field_ftritem_date_visited'] = {};
       updates['field_ftritem_date_visited']['und'] = [];
@@ -1560,9 +1560,6 @@ var controller = {
       updates['field_ftritem_field_trip']['und'][0] = {};
       updates['field_ftritem_field_trip']['und'][0]['target_id'] = localStorage.fnid;
 
-      updates['field_ftritem_images'] = {};
-      updates['field_ftritem_images']['und'] = [];
-
       if($('#sitevisit_add_type').val() == "210") {
         updates['field_ftritem_lat_long'] = {};
         updates['field_ftritem_lat_long']['und'] = [];
@@ -1583,18 +1580,13 @@ var controller = {
 
           devtrac.indexedDB.addSiteVisitsData(db, updates).then(function() {
             controller.refreshSitevisits();
-            devtrac.indexedDB.addImages(db, images).then(function() {
-              controller.base64Images = [];
-              controller.filenames = [];
-              controller.filesizes = [];
-              controller.filedimensions = [];
-            });
 
           });
 
           sitevisitscount = sitevisitscount + 1;
           $("#sitevisit_count").html(sitevisitscount);
-
+          
+          controller.resetForm($("#form_add_location"));
         });
 
       });  

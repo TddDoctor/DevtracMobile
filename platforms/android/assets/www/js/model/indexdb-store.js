@@ -5,7 +5,7 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDB.open = function(callback) {
-  var version = 1;
+  var version = 3;
   var request = indexedDB.open("a2", version);
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -17,7 +17,7 @@ devtrac.indexedDB.open = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 1;
+  var version = 3;
   var request = indexedDB.open("a2", version);
 
   // We can only create Object stores in a versionchange transaction.
@@ -56,6 +56,9 @@ devtrac.indexedDB.open = function(callback) {
     if(db.objectStoreNames.contains("images")){
       db.deleteObjectStore("images");
     }
+    if(db.objectStoreNames.contains("sublocations")){
+      db.deleteObjectStore("sublocations");
+    }
 
     var store = db.createObjectStore("oecdobj", {autoIncrement: true});
     var placetypesstore = db.createObjectStore("placetype", {autoIncrement: true});
@@ -83,6 +86,10 @@ devtrac.indexedDB.open = function(callback) {
     
     var images = db.createObjectStore("images", {keyPath: "nid"});
     images.createIndex('nid', 'nid', { unique: true });
+    
+    var submittedlocations = db.createObjectStore("sublocations", {keyPath: "nid"});
+    submittedlocations.createIndex('nid', 'nid', { unique: true });
+    
   };
 
   request.onsuccess = function(e) {
@@ -188,6 +195,33 @@ devtrac.indexedDB.addFieldtripsData = function(db, fObj) {
     };
   }else{
     d.reject("No fieldtrips returned");
+  }
+
+  return d;
+};
+
+
+//adding uploaded locations data to object store
+devtrac.indexedDB.addUploadedLocations = function(db, lObj) {
+  var d = $.Deferred();
+  var trans = db.transaction("sublocations", "readwrite");
+  var store = trans.objectStore("sublocations");
+  var request;
+
+  if(lObj.length > 0){
+    for (var i in lObj) {
+      request = store.add(lObj[i])
+    }
+
+    request.onsuccess = function(e) {
+      d.resolve();
+    };
+
+    request.onerror = function(e) {
+      d.reject(e);
+    };
+  }else {
+    d.reject("No locations returned");
   }
 
   return d;
@@ -715,6 +749,32 @@ devtrac.indexedDB.getAllplaces = function(db, callback) {
   cursorRequest.onerror = devtrac.indexedDB.onerror;
 };
 
+//get all images in database
+devtrac.indexedDB.getAllImages = function(db, callback) {
+  var images = [];
+  var trans = db.transaction(["images"], "readonly");
+  var store = trans.objectStore("images");
+
+  // Get everything in the store;
+  var keyRange = IDBKeyRange.lowerBound(0);
+  var cursorRequest = store.openCursor(keyRange);
+
+  cursorRequest.onsuccess = function(e) {
+    var result = e.target.result;
+    if(!!result == false) {
+      callback(images);
+      return;
+    }
+
+    images.push(result.value);
+
+    result["continue"]();
+  };
+
+  cursorRequest.onerror = devtrac.indexedDB.onerror;
+};
+
+
 //get all comments in database
 devtrac.indexedDB.getAllComments = function(db, callback) {
   var comments = [];
@@ -878,6 +938,10 @@ devtrac.indexedDB.editPlace = function(db, pnid, updates) {
         data['field_place_responsible_person']['und'][0]['value'] = updates['responsible']; 
       }else if(key == "title"){
        data['title'] = updates['title']; 
+      }else if(key == "submit"){
+       data['submit'] = updates['submit']; 
+      }else if(key == "nid"){
+       data['new_nid'] = updates['nid']; 
       }
     }
 

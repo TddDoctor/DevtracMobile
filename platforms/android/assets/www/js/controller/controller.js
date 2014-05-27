@@ -12,7 +12,7 @@ var controller = {
 
       //set application url if its not set
       //if (!localStorage.appurl) {
-        localStorage.appurl = "http://jenkinsge.mountbatten.net";
+        localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //}
 
       auth.loginStatus().then(function () {

@@ -333,6 +333,7 @@ var controller = {
           break;
         case "DevtracManual":
           localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+          
           break;
         case "localhost":
           localStorage.appurl = "http://localhost/dt11";

@@ -11,9 +11,9 @@ var controller = {
       $(window).bind('orientationchange pageshow pagechange resize', mapctlr.resizeMapIfVisible);
 
       //set application url if its not set
-      if (!localStorage.appurl) {
-        localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-      }
+      //if (!localStorage.appurl) {
+        localStorage.appurl = "http://jenkinsge.mountbatten.net";
+      //}
 
       auth.loginStatus().then(function () {
         $('#list_fieldtrips').attr('data-filter',true);

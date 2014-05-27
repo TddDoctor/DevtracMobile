@@ -26,7 +26,7 @@ var devtracnodes = {
     },
 
     //create node
-    postNode: function(node) {
+    postNode: function(node, index, location_len, pnid, loc_title) {
       var d = $.Deferred();
       var updates = [];
 
@@ -47,7 +47,13 @@ var devtracnodes = {
           updates['submit'] = 1;
           updates['nid'] = data['nid'];
 
-          d.resolve(updates);
+          var status = false;
+
+          if(index == location_len-1) {
+            status = true;  
+          }
+
+          d.resolve(updates, status, pnid, loc_title);
 
         }
       }); 
@@ -178,67 +184,113 @@ var devtracnodes = {
       return d;
     },
 
+    getLocations: function() {
+      var d = $.Deferred();
+      var user_locations = [];
+
+      devtrac.indexedDB.open(function (db) {
+        devtrac.indexedDB.getAllplaces(db, function(locations) {
+
+          for(var location in locations) {
+
+            if(locations[location]['submit'] == 0 && locations[location]['user-added'] == true) {              
+              user_locations.push(locations[location]);
+            }
+
+          }
+
+          if(user_locations.length > 0) {
+            d.resolve(user_locations, db);  
+          }else{
+            d.reject();
+          }
+
+
+        });  
+
+      });
+
+      return d;
+    },
 
     //upload locations
     uploadLocations: function(){
 
       var d = $.Deferred();
-      var loc_nids = {};
+      var loc_nids = [];
       var nodestring = {};
       var jsonstring;
+      var pnid = 0;
 
-      var count = 0;
-      
-      devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getAllplaces(db, function(locations) {
-          
-          for(var location in locations) {
-            
-            if(locations[location]['submit'] == 0 && locations[location]['user-added'] == true) {
-              count = count + 1;
-              delete locations[location]['submit'];
-              localStorage.currentpnid = locations[location]['nid'];
-              delete locations[location]['nid'];
-              delete locations[location]['field_actionitem_ftreportitem'];
-              devtracnodes.getLocationString(locations[location]).then(function(jsonstring) {
+      var oldlocation_nids = [];
+      var newlocationnames = [];
+      var newlocation_nids = [];
 
-                devtracnodes.postNode(jsonstring).then(function(updates){
-                  loc_nids[parseInt(localStorage.currentpnid)] = updates['nids'];
-                  //devtrac.indexedDB.addUploadedLocations = function(db, lObj) {
-/*                  devtrac.indexedDB.editPlace(db, parseInt(localStorage.currentpnid), updates).then(function() {
-                    var count_container = $("#location_count").html().split(" ");
-                    var updated_count = parseInt(count_container[0]) - 1;
-                    $("#location_count").html(updated_count);
 
-                  });*/
-                }).fail(function(e) {
-                  if(e == "Unauthorized: CSRF validation failed") {
-                    auth.getToken().then(function(token) {
-                      localStorage.usertoken = token;
-                      devtracnodes.uploadLocations();
-                    });  
-                  }else
-                  {
-                    d.reject(e);
-                  }
-                });   
-              });
-            }
-            
+      devtracnodes.getLocations().then(function(locs, db){
+        for(var mark = 0; mark < locs.length; mark++) {
+          localStorage.currentpnid = locs[mark]['nid'];
+          if(locs[mark]['user-added']){
+            pnid = parseInt(localStorage.currentpnid);
+          }else{
+            pnid = localStorage.currentpnid;
           }
-        });  
 
+          delete locs[mark]['submit'];
+          delete locs[mark]['nid'];
+          delete locs[mark]['field_actionitem_ftreportitem'];
+
+          devtracnodes.getLocationString(locs[mark]).then(function(jsonstring, loc_title) {
+
+            devtracnodes.postNode(jsonstring, mark, locs.length, pnid, loc_title).then(function(updates, status, id, location_title) {
+              if(updates['nid'] != undefined || updates['nid'] != null) {
+                newlocationnames.push(location_title);
+                newlocation_nids.push(updates['nid']);
+                oldlocation_nids.push(id);
+
+              }
+
+              //devtrac.indexedDB.addUploadedLocations = function(db, lObj) {
+//            devtrac.indexedDB.editPlace(db, id, updates).then(function() {
+//            var count_container = $("#location_count").html().split(" ");
+//            var updated_count = parseInt(count_container[0]) - 1;
+//            $("#location_count").html(updated_count);
+
+//            if(status) {
+//            d.resolve(loc_nids);  
+//            }
+
+//            });
+
+              if(status) {
+                d.resolve(newlocationnames, newlocation_nids, oldlocation_nids,  db);  
+              }
+            }).fail(function(e) {
+              if(e == "Unauthorized: CSRF validation failed") {
+                auth.getToken().then(function(token) {
+                  localStorage.usertoken = token;
+                  devtracnodes.uploadLocations();
+                });  
+              }else
+              {
+                d.reject(e);
+              }
+            });   
+
+          }); 
+        }
+
+      }).fail(function(){
+        d.reject();
       });
-      if(controller.sizeme(loc_nids) == count) {
-        d.resolve(loc_nids);  
-      }
+
       return d;
     },
 
     //upload sitevisits
-    uploadsitevisits: function() {
+    uploadsitevisits: function(places) {
       var d = $.Deferred();
-      
+
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.getAllSitevisits(db, function(sitevisits) {
 
@@ -247,33 +299,73 @@ var devtracnodes = {
 
               localStorage.imageid = sitevisits[k]['nid'];
               devtracnodes.getSitevisitString(sitevisits[k]).then(function(jsonstring) {
-                
-                console.log("we have the site visits");
-                d.resolve();
- /*               devtracnodes.postNode(jsonstring).then(function(updates) {
-                  devtrac.indexedDB.deleteImage(db, localStorage.imageid);
-                  devtrac.indexedDB.editSitevisit(db, persistedNid, updates).then(function() {
-                    var count_container = $("#sitevisit_count").html().split(" ");
-                    if(typeof parseInt(count_container[0]) == "number") {
-                      var updated_count = parseInt(count_container[0]) - 1;
-                      $("#sitevisit_count").html(updated_count);
-                    }
-                    else
-                    {
-                      $("#sitevisit_count").html(0);
-                    }
 
-                    controller.refreshSitevisits();
-                    d.resolve();
-                  });
-                }); */ 
-                
+                console.log("we have the site visits " +jsonstring);
+                d.resolve();
+
               });
 
             }
           }
         });  
 
+      });
+
+      return d;
+    },
+
+
+    //upload sitevisits
+    uploadFtritemswithLocations: function(names, newnids, oldnids, db) {
+      var d = $.Deferred();
+      var ftritems = [];
+
+      devtracnodes.loopFtritems(names, newnids, oldnids, db, ftritems).then(function(sitevisits){
+        for(var x in sitevisits){
+          if(sitevisits[x]['submit'] == 0 && sitevisits[x]['user-added'] == true) {
+
+            for(var k = 0; k < oldnids.length; k++){
+              if(oldnids[k] == sitevisits[x]['nid']) {
+                
+              }
+            }
+            
+            devtracnodes.getSitevisitString(sitevisits[x], names).then(function(jsonstring) {
+              console.log("the site visit is "+jsonstring);
+              /*devtracnodes.postNode(jsonstring, mark, locs.length, pnid, loc_title).then(function(updates, status, id, location_title) {
+                console.log("we have uploaded the site visits ");
+                d.resolve();                  
+              });
+              console.log("we have uploade the site visits "+jsonstring);
+              d.resolve();*/
+            });
+
+          }
+
+
+        }
+
+      });
+
+      return d;
+    },
+
+
+    //get individual site visits
+    loopFtritems: function(names, newnids, oldnids, db, sitev) {
+      var d = $.Deferred();
+      var sitevisits = sitev;
+
+      devtrac.indexedDB.getSitevisit(db, parseInt(oldnids[0])).then(function(sitevisit) {
+        oldnids.splice(0, 1);
+        sitevisits.push(sitevisit);
+        if(oldnids.length > 0) {
+          devtracnodes.loopFtritems(names, newnids, oldnids, db, sitevisits).then(function(sitevisit) {
+            d.resolve(sitevisit);
+          });
+        }else{
+          d.resolve(sitevisits);
+        }
       });
 
       return d;
@@ -325,7 +417,7 @@ var devtracnodes = {
 
     uploadImages: function(db) {
       var d = $.Deferred();
-/*
+      /*
       var filedata = {};
       filedata['file'] = {};
 
@@ -341,16 +433,16 @@ var devtracnodes = {
 
       devtrac.indexedDB.getAllImages(db, function(images) {
         var base64s = images[0];
-        
+
         for(var image in base64s) {
           filedata['file']['file'] = base64s[image]
-          
+
         }
         console.log("images are received");
         d.resolve(images);
       });
 
-      
+
       /*        devtracnodes.postImageFile(filedata).then(function(data) {
 
           data['title'] = imageObj['names'][0].split(".")[0];
@@ -375,13 +467,21 @@ var devtracnodes = {
 
     syncAll: function() {
       if(controller.connectionStatus){
-        devtracnodes.checkLocationsforUpload().then(function(){
-          devtracnodes.uploadLocations().then(function(locations){
-            console.log("we have locations "+locations);
-          });  
-          
+        devtracnodes.uploadLocations().then(function(names, new_nids, old_nids, db){
+
+          devtrac.indexedDB.open(function (dbs) {
+            devtracnodes.uploadFtritemswithLocations(names, new_nids, old_nids, dbs).then(function(sitevisits) {
+              console.log("We have sitevisits");
+            });
+
+          });
+
+        }).fail(function() {
+          console.log("there are no locations");
+          controller.loadingMsg("No locations", 2000);
+
         });
-        
+
       }else{
         controller.loadingMsg("No Internet Connection", 2000);
       }
@@ -390,7 +490,7 @@ var devtracnodes = {
     //
     checkSitevisitforUpload: function(){
       var sitevisit = false;
-      
+
       devtrac.indexedDB.open(function (db) {
         //check for sitevisits to upload
         devtrac.indexedDB.getAllSitevisits(db, function(sitevisits) {
@@ -406,15 +506,15 @@ var devtracnodes = {
             d.reject();
           }
         });
-       
+
       });
-      
+
     },
-    
+
     checkLocationsforUpload: function(){
       var d = $.Deferred();
       var place = false;
-      
+
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.getAllplaces(db, function(places) {
           for(var k in places) {
@@ -430,12 +530,12 @@ var devtracnodes = {
           }
         });  
       });
-      
+
       return d;
     },
-    
+
     //return site visit string
-    getSitevisitString: function(aObj) {
+    getSitevisitString: function(aObj, placeitem) {
       var d = $.Deferred();      
       delete aObj['dbsavetime'];
       delete aObj['submit'];
@@ -477,14 +577,14 @@ var devtracnodes = {
 
             break;
           case 'field_ftritem_place':
-            nodestring = nodestring +a+'[und][0][target_id]='+localStorage.ptitle+"("+aObj[a]['und'][0]['target_id']+")"+'&';
+            nodestring = nodestring +a+'[und][0][target_id]='+placeitem[1]+"("+placeitem[0]+")"+'&';
             break;
 
           case 'field_ftritem_lat_long':
             nodestring = nodestring +a+'[und][0][geom]='+aObj[a]['und'][0]['geom']+'&';
             break;
 
-          /*case 'field_ftritem_images':
+            /*case 'field_ftritem_images':
             nodestring = nodestring + a+'[und][0][fid]='+imageObj['fid']+'&['+a+'][und][0][title]='+imageObj['title']+'&';
             break;*/
 
@@ -597,7 +697,7 @@ var devtracnodes = {
       var nodestringlen = nodestring.length;
       var newnodestring = nodestring.substring(0, nodestringlen - 1);
 
-      d.resolve(newnodestring);
+      d.resolve(newnodestring, pObj['title']);
 
       return d;
 

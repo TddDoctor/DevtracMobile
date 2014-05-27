@@ -288,7 +288,7 @@ var controller = {
         }
 
         devtrac.indexedDB.open(function (db) {
-          devtrac.indexedDB.getSitevisit(db, snid, function (sitevisitObject) {
+          devtrac.indexedDB.getSitevisit(db, snid).then(function (sitevisitObject) {
             $("#sitevisit_title").val(sitevisitObject['title']);
 
             $("#sitevisit_date").val(sitevisitObject['field_ftritem_date_visited']['und'][0]['value']);
@@ -947,7 +947,7 @@ var controller = {
 
       devtrac.indexedDB.open(function (db) {
         var pnid = 0;
-        devtrac.indexedDB.getSitevisit(db, snid, function (fObject) {
+        devtrac.indexedDB.getSitevisit(db, snid).then(function (fObject) {
 
           if(fObject['field_ftritem_place'] != undefined) {
             localStorage.pnid = fObject['field_ftritem_place']['und'][0]['target_id'];

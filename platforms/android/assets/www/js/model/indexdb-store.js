@@ -5,7 +5,7 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDB.open = function(callback) {
-  var version = 3;
+  var version = 6;
   var request = indexedDB.open("a2", version);
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -17,7 +17,7 @@ devtrac.indexedDB.open = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 3;
+  var version = 6;
   var request = indexedDB.open("a2", version);
 
   // We can only create Object stores in a versionchange transaction.
@@ -635,15 +635,29 @@ devtrac.indexedDB.getAllSitevisits = function(db, callback) {
 };
 
 //search sitevisits using index of nid
-devtrac.indexedDB.getSitevisit = function(db, snid, callback) {
+devtrac.indexedDB.getSitevisit = function(db, snid) {
+  var d = $.Deferred();
   var trans = db.transaction(["sitevisit"], "readonly");
   var store = trans.objectStore("sitevisit");
+  //var ftritem = "";
 
   var index = store.index("nid");
   index.get(snid).onsuccess = function(event) {
-    callback(event.target.result);
+    //callback(event.target.result);
+    //d.resolve(event.target.result);
+    ftritem = event.target.result;
   };
-
+  
+  trans.oncomplete = function(event) {
+    d.resolve(ftritem);
+  };
+  
+  trans.error = function(event) {
+    //d.resolve(ftritem);
+    console.log("get site visit error");
+  };
+  
+  return d;
 };
 
 //search images using index of nid

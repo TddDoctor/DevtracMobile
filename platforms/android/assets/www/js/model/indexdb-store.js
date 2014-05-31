@@ -5,7 +5,7 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDB.open = function(callback) {
-  var version = 6;
+  var version = 15;
   var request = indexedDB.open("a2", version);
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -17,7 +17,7 @@ devtrac.indexedDB.open = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 6;
+  var version = 15;
   var request = indexedDB.open("a2", version);
 
   // We can only create Object stores in a versionchange transaction.
@@ -661,14 +661,14 @@ devtrac.indexedDB.getSitevisit = function(db, snid) {
 };
 
 //search images using index of nid
-devtrac.indexedDB.getImage = function(db, inid) {
+devtrac.indexedDB.getImage = function(db, inid, newnid, vd, siteid) {
   var d = $.Deferred();
   var trans = db.transaction(["images"], "readonly");
   var store = trans.objectStore("images");
 
   var index = store.index("nid");
   index.get(inid).onsuccess = function(event) {
-    d.resolve(event.target.result);
+    d.resolve(event.target.result, newnid, vd, siteid);
   };
   return d;
 };
@@ -994,10 +994,15 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
     for(var key in updates){
      if(key == "title"){
        data['title'] = updates['title'];   
-     } else if(key == "date"){
+     } 
+     if(key == "date"){
        data['field_ftritem_date_visited']['und'][0]['value'] = updates['date']
-     }else if(key  == "summary"){
+     }
+     if(key  == "summary"){
        data['field_ftritem_public_summary']['und'][0]['value'] = updates['summary']
+     }
+     if(key == "submit"){
+       data['submit'] = updates['submit']
      }
     }
     
@@ -1010,7 +1015,7 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
     };
     requestUpdate.onsuccess = function(event) {
       // Success - the data is updated!
-      console.log("Site visit update success");
+      //console.log("Site visit update success");
 
       //store['delete'](snid);
       d.resolve();

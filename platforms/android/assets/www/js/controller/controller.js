@@ -42,20 +42,20 @@ var controller = {
           $.mobile.changePage("#home_page", "slide", true, false);
           $("#username").html("Please login to use the application");
         });
-  
+
       }else
       {
         controller.loadingMsg("You are offline and cannot upload data", 2000);
         if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
-          
-        //load field trip details from the database if its one and the list if there's more.
+
+          //load field trip details from the database if its one and the list if there's more.
           controller.loadFieldTripList();
 
           //update upload counter
           controller.uploadCounter(); 
         }
       }
-      
+
       this.bindEvents();
     },
 
@@ -137,7 +137,7 @@ var controller = {
 
       //redownload the devtrac data
       $('.refresh-button').bind('click', function () {
-        
+
         if(controller.connectionStatus){
           controller.loadingMsg("Downloading Data ...", 0);
           //get all bubbles and delete them to create room for new ones.
@@ -152,7 +152,7 @@ var controller = {
 
 
           $(".notification-bubble").html(0);          
-          
+
         }else{
           controller.loadingMsg("Please Connect to Internet ...", 1000);
         }
@@ -395,20 +395,10 @@ var controller = {
               window.localStorage.removeItem("usernam");
               window.localStorage.removeItem("password");
             }
-            devtrac.indexedDB.open(function (db) {
-              for(var x in controller.objectstores) {
-                devtrac.indexedDB.deleteAllTables(db, controller.objectstores[x]).then(function(){
-
-                }).fail(function(){
-
-                });
-              }
-
-              //todo: check for internet connection before request
-              controller.fetchAllData().then(function(){
-                controller.loadFieldTripList();          
-              });
-
+            
+            //todo: check for internet connection before request
+            controller.fetchAllData().then(function(){
+              controller.loadFieldTripList();          
             });
 
           }).fail(function (errorThrown) {
@@ -420,7 +410,7 @@ var controller = {
       //handle logout click event from dialog
       $('#page_logout_submit').bind("click", function (event, ui) {
         auth.logout().then(function(){
-
+          
         });
 
       });
@@ -460,7 +450,7 @@ var controller = {
               $("#place_responsible").val(placeObject['field_place_responsible_person']['und'][0]['value']);
             }
 
-            if(controller.sizeme(placeObject['field_place_responsible_person']) > 0){
+            if(controller.sizeme(placeObject['field_place_responsible_email']) > 0){
               $("#place_email").val(placeObject['field_place_email']['und'][0]['email']);
             }
 
@@ -492,14 +482,14 @@ var controller = {
       };
 
     },
-    
+
     onOffline: function() {
       //controller.loadingMsg("Please Connect to the Internet to Upload and Download Data", 3000);
       controller.connectionStatus = false;
       console.log("u r offline");
-     // alert("Offline");
+      // alert("Offline");
     },
-    
+
     online: function() {
       console.log("u r online");
       //controller.loadingMsg("Online", 2000);
@@ -688,9 +678,18 @@ var controller = {
 
             localStorage.fieldtripstartdate = startdatearray[0] + "/" + startdatearray[1] + "/" + startdatearray[2]; 
 
-            $("#actionitem_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(parseInt(startdatearray[0]), parseInt(startdatearray[1])+1, parseInt(startdatearray[2])), maxDate: new Date(parseInt(enddatearray[0]), parseInt(enddatearray[1])+1, parseInt(enddatearray[2])) });
-            $("#sitevisit_add_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(parseInt(startdatearray[0]), parseInt(startdatearray[1])+1, parseInt(startdatearray[2])), maxDate: new Date(parseInt(enddatearray[0]), parseInt(enddatearray[1])+1, parseInt(enddatearray[2])) });
-            $("#sitevisit_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(parseInt(startdatearray[0]), parseInt(startdatearray[1])+1, parseInt(startdatearray[2])), maxDate: new Date(parseInt(enddatearray[0]), parseInt(enddatearray[1])+1, parseInt(enddatearray[2])) });
+            var startday = parseInt(startdatearray[2]);
+            var startmonth = parseInt(startdatearray[1])+1;
+            var startyear = parseInt(startdatearray[0]);
+
+            var endday = parseInt(enddatearray[2]);
+            var endmonth = parseInt(enddatearray[1])+1;
+            var endyear = parseInt(enddatearray[0]);
+
+
+            $("#actionitem_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(startyear, startmonth, startday), maxDate: new Date(endyear, endmonth, endday) });
+            $("#sitevisit_add_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(startyear, startmonth, startday), maxDate: new Date(endyear, endmonth, endday) });
+            $("#sitevisit_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(startyear, startmonth, startday), maxDate: new Date(endyear, endmonth, endday) });
 
             $("#fieldtrip_details_title").html(fObject['title']);
             $("#fieldtrip_details_status").html(fObject['field_fieldtrip_status']['und'][0]['value']);
@@ -994,9 +993,10 @@ var controller = {
 
           //get location name
           devtrac.indexedDB.getPlace(db, pnid, function (place) {
-            localStorage.ptitle = place['title'];
 
             if (place != undefined) {
+              localStorage.ptitle = place['title'];
+
               $("#sitevisists_details_location").html(place['title']);
               localStorage.respplaceid = place['nid'];
               localStorage.respplacetitle = place['title'];
@@ -1005,9 +1005,17 @@ var controller = {
               mapctlr.initMap(place['field_place_lat_long']['und'][0]['lat'], place['field_place_lat_long']['und'][0]['lon'], state);
               mapctlr.resizeMapIfVisible(); 
             }else {
-              $("#sitevisists_details_location").html("Place Unavailable, Please Redownload.");
-              mapctlr.initMap(0.28316, 32.45168, state);
-              mapctlr.resizeMapIfVisible(); 
+              if(fObject['user-added'] == true && fObject['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") {
+                $("#sitevisists_details_location").html(fObject['ftritem_place']);
+                mapctlr.initMap(fObject['field_ftritem_lat_long']['und'][0]['lat'], fObject['field_ftritem_lat_long']['und'][0]['lon'], state);
+                mapctlr.resizeMapIfVisible();
+
+              }else{
+                $("#sitevisists_details_location").html("Place Unavailable, Please Redownload.");
+                mapctlr.initMap(0.28316, 32.45168, state);
+                mapctlr.resizeMapIfVisible();  
+              }
+
             }
 
           });
@@ -1029,7 +1037,7 @@ var controller = {
                 var li = $("<li></li>");
                 var a = ""; 
 
-                if(aItem["user"] != undefined){
+                if(aItem["user-added"] != undefined) {
                   a = $("<a href='#' id='user" + aItem['nid'] + "' onclick='controller.onActionitemclick(this)'></a>");  
                 }
                 else
@@ -1280,10 +1288,13 @@ var controller = {
         localStorage.anid = anid;
         anid = parseInt(anid);
 
+        localStorage.actionuser = true;
       }
       else {
         anid = action_id;
         localStorage.anid = anid;
+
+        localStorage.actionuser = false;
       }
 
       var form = $("#form_actionitems_details");
@@ -1298,7 +1309,6 @@ var controller = {
 
           var formatedsitedate = "";
 
-          console.log("action item title is "+fObject['title']);
           if(typeof sitedate == 'object') {
             if(sitedate.date.charAt(4) != "/") {
               var sitedatestring = JSON.stringify(sitedate);
@@ -1534,7 +1544,7 @@ var controller = {
       updates['taxonomy_vocabulary_7']['und'] = [];
       updates['taxonomy_vocabulary_7']['und'][0] = {};
       updates['taxonomy_vocabulary_7']['und'][0]['tid'] = localStorage.ftritemtype;
-      
+
       updates['field_ftritem_place'] = {};
       updates['field_ftritem_place']['und'] = [];
       updates['field_ftritem_place']['und'][0] = {};
@@ -1585,7 +1595,7 @@ var controller = {
 
           sitevisitscount = sitevisitscount + 1;
           $("#sitevisit_count").html(sitevisitscount);
-          
+
           controller.resetForm($("#form_add_location"));
         });
 
@@ -1617,7 +1627,7 @@ var controller = {
         updates['taxonomy_vocabulary_7'] = {};
         updates['taxonomy_vocabulary_7']['und'] = [];
         updates['taxonomy_vocabulary_7']['und'][0] = {};
-        updates['taxonomy_vocabulary_7']['und'][0]['tid'] = $('#sitevisit_add_type').val();
+        updates['taxonomy_vocabulary_7']['und'][0]['tid'] = localStorage.ftritemtype;
 
         updates['field_ftritem_date_visited'] = {};
         updates['field_ftritem_date_visited']['und'] = [];
@@ -1639,20 +1649,15 @@ var controller = {
         updates['field_ftritem_field_trip']['und'][0] = {};
         updates['field_ftritem_field_trip']['und'][0]['target_id'] = localStorage.fnid;
 
-        updates['field_ftritem_place'] = {};
-        updates['field_ftritem_place']['und'] = [];
-        updates['field_ftritem_place']['und'][0] = {};
-        updates['field_ftritem_place']['und'][0]['target_id'] = localStorage.pnid;
+        updates['ftritem_place'] = localStorage.ftritemdistrict;
 
         updates['field_ftritem_images'] = {};
         updates['field_ftritem_images']['und'] = [];
 
-        if($('#sitevisit_add_type').val() == "210") {
-          updates['field_ftritem_lat_long'] = {};
-          updates['field_ftritem_lat_long']['und'] = [];
-          updates['field_ftritem_lat_long']['und'][0] = {};
-          updates['field_ftritem_lat_long']['und'][0]['geom'] = localStorage.point;
-        }
+        updates['field_ftritem_lat_long'] = {};
+        updates['field_ftritem_lat_long']['und'] = [];
+        updates['field_ftritem_lat_long']['und'][0] = {};
+        updates['field_ftritem_lat_long']['und'][0]['geom'] = localStorage.point;
 
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getAllSitevisits(db, function (sitevisits) {
@@ -1674,6 +1679,7 @@ var controller = {
                 controller.filedimensions = [];
               });
               controller.resetForm($('#form_sitevisit_add'));
+              $("#uploadPreview").html("");
               $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);  
             });
 
@@ -1688,8 +1694,17 @@ var controller = {
 
     onSavecomment: function() {
       if ($("#actionitem_comment").valid()) {
+        var anid = "";
+
+        if(localStorage.actionuser){
+          anid = parseInt(localStorage.anid);
+        }
+        else
+        {
+          anid = localStorage.anid;  
+        }
         var list_comment = $('#list_comments');
-        list_comment.empty();
+        //list_comment.empty();
         var comment = {};
 
         comment['comment_body'] = {};
@@ -1703,30 +1718,22 @@ var controller = {
         comment['submit'] = 0;
 
         devtrac.indexedDB.open(function (db) {
-          devtrac.indexedDB.addCommentsData(db, comment).then(function(){
+          devtrac.indexedDB.addCommentsData(db, comment).then(function() {
+            var li = $("<li></li>");
+            var a = $("<a href='#' id='" + anid + "' onclick=''></a>");
+            var h1 = $("<h1 class='heada2'>" + $('#actionitem_comment').val() + "</h1>");
+            var p = $("<p class='para2'></p>");
 
-            devtrac.indexedDB.getAllComments(db, function (comments) {
-              for (var i in comments) {
-                if (comments[i]['nid'] == localStorage.anid) {
-                  var aItem = comments[i];
+            a.append(h1);
+            a.append(p);
+            li.append(a);
+            list_comment.append(li);
 
-                  var li = $("<li></li>");
-                  var a = $("<a href='#' id='" + aItem['nid'] + "' onclick=''></a>");
-                  var h1 = $("<h1 class='heada2'>" + aItem['comment_body']['und'][0]['value'] + "</h1>");
-                  var p = $("<p class='para2'></p>");
+            list_comment.listview('refresh');
 
-                  a.append(h1);
-                  a.append(p);
-                  li.append(a);
-                  list_comment.append(li);
-                }
-              }
-              list_comment.listview('refresh');
+            controller.loadingMsg("Saved", 1000);
 
-              controller.loadingMsg("Saved", 2000);
-
-              $('#actionitem_comment').val("");
-            });
+            $('#actionitem_comment').val("");
 
           }); 	
         });	
@@ -1850,7 +1857,7 @@ var controller = {
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.getAllplaces(db, function (locations) {
           for(var location in locations){
-            if(locations[location]['user-added'] == true && locations[location]['submit'] == 0){
+            if(locations[location]['user-added'] == true && locations[location]['submit'] == 0) {
               locationcount = locationcount + 1; 
             }
           }

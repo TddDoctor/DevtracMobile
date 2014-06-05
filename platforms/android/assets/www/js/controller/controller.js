@@ -845,9 +845,12 @@ var controller = {
       var locationsList = $('#locationslist');
       locationsList.empty();
       devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getAllplaces(db, function (places) {
-          for (var i in places) {
-            var places = places[i];
+        devtrac.indexedDB.getAllplaces(db, function (place) {
+          for (var i in place) {
+            /*if(typeof aObj[a] == 'object') {
+              
+            }*/
+            var places = place[i];
             if(places != undefined){
               var res = "";
               var p = "";
@@ -948,12 +951,15 @@ var controller = {
         var pnid = 0;
         devtrac.indexedDB.getSitevisit(db, snid).then(function (fObject) {
 
-          if(fObject['field_ftritem_place'] != undefined) {
+          if(fObject['field_ftritem_place'] != undefined && fObject['field_ftritem_place']['und'] != undefined) {
             localStorage.pnid = fObject['field_ftritem_place']['und'][0]['target_id'];
             pnid = localStorage.pnid; 
 
+          }else{
             if(fObject['user-added'] == true) {
               pnid = parseInt(localStorage.pnid);
+            }else{
+              pnid = "RV";
             }
           }
 
@@ -1010,8 +1016,13 @@ var controller = {
                 mapctlr.initMap(fObject['field_ftritem_lat_long']['und'][0]['lat'], fObject['field_ftritem_lat_long']['und'][0]['lon'], state);
                 mapctlr.resizeMapIfVisible();
 
+              }else if(fObject['user-added'] != true && fObject['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") {
+                $("#sitevisists_details_location").html("Roadside place name unavailble");
+                mapctlr.initMap(fObject['field_ftritem_lat_long']['und'][0]['lat'], fObject['field_ftritem_lat_long']['und'][0]['lon'], state);
+                mapctlr.resizeMapIfVisible();
+
               }else{
-                $("#sitevisists_details_location").html("Place Unavailable, Please Redownload.");
+                $("#sitevisists_details_location").html("Place Unavailable.");
                 mapctlr.initMap(0.28316, 32.45168, state);
                 mapctlr.resizeMapIfVisible();  
               }
@@ -1716,6 +1727,21 @@ var controller = {
         comment['nid'] = localStorage.anid;
         comment['cid'] = null;
         comment['submit'] = 0;
+        
+        comment['format'] = '1';
+        comment['status'] = '1';
+        
+        comment['field_actionitem_status'] = {};
+        comment['field_actionitem_status']['und'] = [];
+        comment['field_actionitem_status']['und'][0] = {};
+        comment['field_actionitem_status']['und'][0]['value'] = 1; 
+        
+        comment['taxonomy_vocabulary_8'] = {};
+        comment['taxonomy_vocabulary_8']['und'] = [];
+        comment['taxonomy_vocabulary_8']['und'][0] = {};
+        comment['taxonomy_vocabulary_8']['und'][0]['tid'] = '328'; 
+        comment['language'] = 'und';
+        
 
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.addCommentsData(db, comment).then(function() {

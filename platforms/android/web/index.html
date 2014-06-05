@@ -6,7 +6,7 @@
 <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
 <meta name="viewport"
   content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
+<link href='http://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" type="text/css" href="../assets/www/css/style_light.css" />
 <link rel="stylesheet" href="../assets/www/css/jquery.mobile-1.4.0.min.css" />
 <link rel="stylesheet"
@@ -80,15 +80,21 @@
 
     <div data-role="content" class='content'>
       <form class="cmxform" id="loginForm" method="" action="">
-        <p>
-          <label for="page_login_name">Username</label> <input type="text"
-            id="page_login_name" minlength="2" required />
-        </p>
+      
+      <div class="input-prepend">
+        
+          <input type="text"
+            id="page_login_name" minlength="2" placeholder="username" required />
+      
+      </div>
+        
         <br>
-        <p>
-          <label for="page_login_pass">Password</label> <input type="password"
-            id="page_login_pass" minlength="2" required />
-        </p>
+        
+        <div class="input-prepend">
+        
+          <input type="password"
+            id="page_login_pass" minlength="2" placeholder="password" required />
+        </div>
 
         <p>
           <input type="checkbox" name="checkbox-mini-0" id="checkbox-mini-0"
@@ -96,9 +102,11 @@
             me</label>
         </p>
         <br>
+        
         <div id='logindiv'>
           <button type="button" data-theme="b" id="page_login_submit">Login</button>
         </div>
+        
         <div id='logoutdiv'>
           <button type="button" data-theme="b" id="page_logout_submit">Logout</button>
         </div>
@@ -194,10 +202,10 @@
           <div class="ui-block-b" data-theme="a">
 
             <a data-role="button" id="edit_fieldtrip"
-              href="#page_fieldtrip_edit" data-icon="edit" data-rel="dialog">Edit
-              title</a> <a href="#page_site_report_type" data-role="button"
-              data-mini="true" data-icon="plus" id="addsitevisit"
-              data-rel="dialog">Site Reports</a>
+              href="#page_fieldtrip_edit" data-rel="dialog"style="text-align: left;"><i class="icon-edit"></i>&nbsp&nbsp Edit
+              Title</a> <a href="#page_site_report_type" data-role="button"
+              data-mini="true" id="addsitevisit" style="text-align: left;"
+              data-rel="dialog"><i class="icon-plus"></i>&nbsp&nbsp Add Site Report</a>
 
           </div>
         </fieldset>
@@ -254,11 +262,11 @@
               <ul data-role="listview">
                 <li><a href="#page_sitevisit_edits" data-role="button"
                   data-mini="true" id="editsitevisit"
-                  data-rel="dialog"><i class="icon-pencil"></i>Edit</a></li>
+                  data-rel="dialog"><i class="icon-edit"></i>&nbsp&nbsp Edit</a></li>
                 <li><a href="#page_add_actionitems" data-role="button"
                   data-mini="true" data-icon="" id="addactionitem"
-                  data-rel="dialog"><i class="icon-refresh"></i>Add action item</a></li>
-                <li><a data-role="button" data-mini="true" id="addquestionnaire"><i class="icon-refresh"></i>Questionnaire</a></li>
+                  data-rel="dialog"><i class="icon-plus"></i>&nbsp&nbsp Add action item</a></li>
+                <li><a data-role="button" data-mini="true" id="addquestionnaire"><i class="icon-book"></i>&nbsp&nbsp Questionnaire</a></li>
               </ul>
 
             </div>
@@ -269,11 +277,11 @@
 
                 <li><a href="#page_location_list" data-role="button"
                   data-mini="true" onclick="controller.listlocations();"
-                  data-icon="eye" id="listlocation">List</a></li>
+                   id="listlocation"><i class="icon-list"></i>&nbsp&nbsp List</a></li>
 
                 <li><a href="#mappage" data-role="button" class="panel_map"
-                  data-icon="location"
-                  onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);">Map</a></li>
+                  
+                  onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="icon-map-marker"></i>&nbsp&nbsp Map</a></li>
 
               </ul>
             </div>
@@ -282,22 +290,22 @@
               <h4>Upload Status</h4>
               <ul data-role="listview" id="uploads_listview">
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="devtracnodes.postNode();">Site
+                  data-icon="" onclick="devtracnodes.postNode();">Site
                     Visits</a>
                   <div id="sitevisit_count" class="ui-li-count"></div></li>
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="">Locations</a>
+                  data-icon="" onclick="">Locations</a>
                   <div id="location_count" class="ui-li-count"></div></li>
                 <!-- <li><a data-role="button" data-mini="true" data-icon="arrow-u" onclick="devtracnodes.postComments();">Comments</a><div id="comment_count" class="ui-li-count"></div></li> -->
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="">Action Items</a>
+                  data-icon="" onclick="">Action Items</a>
                   <div id="actionitem_count" class="ui-li-count"></div></li>
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="">Fieldtrip Updates</a>
+                  data-icon="" onclick="">Fieldtrip Updates</a>
                   <div id="fieldtrip_count" class="ui-li-count"></div></li>
 
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="devtracnodes.syncAll()">Sync
+                  data-icon="" onclick="devtracnodes.syncAll()" style="text-align: center"><i class="icon-upload-alt"></i>&nbsp&nbsp Sync
                     All</a></li>
 
               </ul>

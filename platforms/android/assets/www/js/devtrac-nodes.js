@@ -140,7 +140,7 @@ var devtracnodes = {
   "format": 1,
   "status": '1',
   "comment_body": { "und": {0 : { "value": "<p>Some body text</p>", "format": '1' }}},
-  "field_actionitem_status": { "und": {0 : { "value": 1 }}}
+  "field_actionitem_status": { "und": {0 : { "value": '1' }}}
                   
               }
               

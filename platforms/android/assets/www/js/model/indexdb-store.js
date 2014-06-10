@@ -5,7 +5,7 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDB.open = function(callback) {
-  var version = 18;
+  var version = 27;
   var request = indexedDB.open("a2", version);
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -17,7 +17,7 @@ devtrac.indexedDB.open = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 18;
+  var version = 27;
   var request = indexedDB.open("a2", version);
 
   // We can only create Object stores in a versionchange transaction.
@@ -571,7 +571,7 @@ devtrac.indexedDB.getAllFieldtripItems = function(db, callback) {
 };
 
 //get all questions in database
-devtrac.indexedDB.getAllQuestionItems = function(db, ftritems, callback) {
+devtrac.indexedDB.getAllQuestionItems = function(db, ftritem, callback) {
   var qtns = [];
   var trans = db.transaction(["qtnsitemsobj"], "readonly");
   var store = trans.objectStore("qtnsitemsobj");
@@ -582,15 +582,22 @@ devtrac.indexedDB.getAllQuestionItems = function(db, ftritems, callback) {
 
   cursorRequest.onsuccess = function(e) {
     var result = e.target.result;
+    
     if(!!result == false) {
       callback(qtns);
       return;
     }
-    //check for question to retrieve
-    if(result.value.status === 1 && ftritems[0]['taxonomy_vocabulary_1']['und'][0]['tid'] === result.value.taxonomy_vocabulary_1.und[0].tid) {
-    qtns.push(result.value);
-    }
+    
     result["continue"]();
+    
+    if(ftritem['taxonomy_vocabulary_1'] != undefined) {
+      //check for question to retrieve
+      if(result.value.status == 1 && ftritem['taxonomy_vocabulary_1']['und'][0]['tid'] == result.value.taxonomy_vocabulary_1.und[0].tid) {
+        qtns.push(result.value);
+      }
+      
+    }
+    
   };
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
@@ -1023,6 +1030,38 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
   };
 
   return d;
+};
+
+//delete place
+devtrac.indexedDB.deletePlace = function(db, pnid) {
+  var trans = db.transaction(["placesitemsobj"], "readwrite");
+  var store = trans.objectStore("placesitemsobj");
+
+  var request = store['delete'](pnid);
+
+  request.onsuccess = function(e) {
+    console.log("Deleted sitevisit "+pnid);
+  };
+
+  request.onerror = function(e) {
+    console.log(e);
+  };
+};
+
+//delete sitevisit
+devtrac.indexedDB.deleteSitevisit = function(db, snid) {
+  var trans = db.transaction(["sitevisit"], "readwrite");
+  var store = trans.objectStore("sitevisit");
+
+  var request = store['delete'](snid);
+
+  request.onsuccess = function(e) {
+    console.log("Deleted sitevisit "+snid);
+  };
+
+  request.onerror = function(e) {
+    console.log(e);
+  };
 };
 
 //delete image

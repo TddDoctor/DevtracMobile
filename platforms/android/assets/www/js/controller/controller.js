@@ -68,6 +68,7 @@ var controller = {
           vocabularies.getPlacetypeVocabularies(db).then(function(){
             devtracnodes.getSiteVisits(db).then(function(){
               devtracnodes.getQuestions(db).then(function() {
+                
                 devtracnodes.getActionItems(db);
                 devtracnodes.getPlaces(db);
                 d.resolve();
@@ -939,6 +940,8 @@ var controller = {
         localStorage.user = true;
         snid = parseInt(snid);
       }
+      
+      owlhandler.populateOwl(snid);
 
       localStorage.sitevisitname = $(anchor).children('.heada1').html();
 

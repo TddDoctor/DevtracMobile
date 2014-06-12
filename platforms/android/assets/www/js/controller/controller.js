@@ -14,7 +14,9 @@ var controller = {
 
       //set application url if its not set
       //if (!localStorage.appurl) {
-      localStorage.appurl = "http://localhost/dt11";
+      localStorage.appurl = "http://192.168.38.114/dt11";
+      //localStorage.appurl = "http://localhost/dt11";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //}
 
@@ -68,7 +70,7 @@ var controller = {
           vocabularies.getPlacetypeVocabularies(db).then(function(){
             devtracnodes.getSiteVisits(db).then(function(){
               devtracnodes.getQuestions(db).then(function() {
-                
+
                 devtracnodes.getActionItems(db);
                 devtracnodes.getPlaces(db);
                 d.resolve();
@@ -396,7 +398,7 @@ var controller = {
               window.localStorage.removeItem("usernam");
               window.localStorage.removeItem("password");
             }
-            
+
             //todo: check for internet connection before request
             controller.fetchAllData().then(function(){
               controller.loadFieldTripList();          
@@ -411,7 +413,7 @@ var controller = {
       //handle logout click event from dialog
       $('#page_logout_submit').bind("click", function (event, ui) {
         auth.logout().then(function(){
-          
+
         });
 
       });
@@ -849,7 +851,7 @@ var controller = {
         devtrac.indexedDB.getAllplaces(db, function (place) {
           for (var i in place) {
             /*if(typeof aObj[a] == 'object') {
-              
+
             }*/
             var places = place[i];
             if(places != undefined){
@@ -940,7 +942,7 @@ var controller = {
         localStorage.user = true;
         snid = parseInt(snid);
       }
-      
+
       owlhandler.populateOwl(snid);
 
       localStorage.sitevisitname = $(anchor).children('.heada1').html();
@@ -1730,21 +1732,21 @@ var controller = {
         comment['nid'] = localStorage.anid;
         comment['cid'] = null;
         comment['submit'] = 0;
-        
+
         comment['format'] = '1';
         comment['status'] = '1';
-        
+
         comment['field_actionitem_status'] = {};
         comment['field_actionitem_status']['und'] = [];
         comment['field_actionitem_status']['und'][0] = {};
         comment['field_actionitem_status']['und'][0]['value'] = 1; 
-        
+
         comment['taxonomy_vocabulary_8'] = {};
         comment['taxonomy_vocabulary_8']['und'] = [];
         comment['taxonomy_vocabulary_8']['und'][0] = {};
         comment['taxonomy_vocabulary_8']['und'][0]['tid'] = '328'; 
         comment['language'] = 'und';
-        
+
 
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.addCommentsData(db, comment).then(function() {

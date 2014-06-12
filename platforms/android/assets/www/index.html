@@ -6,7 +6,7 @@
 <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
 <meta name="viewport"
   content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
-
+<!-- <link href='http://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'> -->
 <link rel="stylesheet" type="text/css" href="css/style_light.css"/>
 <link rel="stylesheet" href="css/jquery.mobile-1.4.0.min.css" />
 <link rel="stylesheet" href="css/jquery.mobile.theme-1.4.0.min.css" />
@@ -22,6 +22,8 @@
  
 <!-- Default Theme -->
 <link rel="stylesheet" href="libs/owl-carousel/owl.theme.css">
+
+<!-- <link rel="stylesheet" href="css/font-awesome.css"> -->
 
 <link rel="stylesheet" href="css/leaflet.css" />
 </head>
@@ -78,15 +80,21 @@
 
     <div data-role="content" class='content'>
       <form class="cmxform" id="loginForm" method="" action="">
-        <p>
-          <label for="page_login_name">Username</label> <input type="text"
-            id="page_login_name" minlength="2" required />
-        </p>
+      
+      <div class="input-prepend">
+        
+          <input type="text"
+            id="page_login_name" minlength="2" placeholder="username" required />
+      
+      </div>
+        
         <br>
-        <p>
-          <label for="page_login_pass">Password</label> <input type="password"
-            id="page_login_pass" minlength="2" required />
-        </p>
+        
+        <div class="input-prepend">
+        
+          <input type="password"
+            id="page_login_pass" minlength="2" placeholder="password" required />
+        </div>
 
         <p>
           <input type="checkbox" name="checkbox-mini-0" id="checkbox-mini-0"
@@ -94,9 +102,11 @@
             me</label>
         </p>
         <br>
+        
         <div id='logindiv'>
           <button type="button" data-theme="b" id="page_login_submit">Login</button>
         </div>
+        
         <div id='logoutdiv'>
           <button type="button" data-theme="b" id="page_logout_submit">Logout</button>
         </div>
@@ -192,10 +202,10 @@
           <div class="ui-block-b" data-theme="a">
 
             <a data-role="button" id="edit_fieldtrip"
-              href="#page_fieldtrip_edit" data-icon="edit" data-rel="dialog">Edit
-              title</a> <a href="#page_site_report_type" data-role="button"
-              data-mini="true" data-icon="plus" id="addsitevisit"
-              data-rel="dialog">Add Site Report</a>
+              href="#page_fieldtrip_edit" data-rel="dialog"style="text-align: left;"><i class="icon-edit"></i>&nbsp&nbsp Edit
+              Title</a> <a href="#page_site_report_type" data-role="button"
+              data-mini="true" id="addsitevisit" style="text-align: left;"
+              data-rel="dialog"><i class="icon-plus"></i>&nbsp&nbsp Add Site Report</a>
 
           </div>
         </fieldset>
@@ -251,13 +261,12 @@
               <h4>Edit</h4>
               <ul data-role="listview">
                 <li><a href="#page_sitevisit_edits" data-role="button"
-                  data-mini="true" data-icon="edit" id="editsitevisit"
-                  data-rel="dialog">Edit</a></li>
+                  data-mini="true" id="editsitevisit"
+                  data-rel="dialog"><i class="icon-edit"></i>&nbsp&nbsp Edit</a></li>
                 <li><a href="#page_add_actionitems" data-role="button"
-                  data-mini="true" data-icon="arrow-u" id="addactionitem"
-                  data-rel="dialog">Add action item</a></li>
-                <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" id="addquestionnaire">Questionnaire</a></li>
+                  data-mini="true" data-icon="" id="addactionitem"
+                  data-rel="dialog"><i class="icon-plus"></i>&nbsp&nbsp Add action item</a></li>
+                <li><a data-role="button" data-mini="true" id="addquestionnaire"><i class="icon-book"></i>&nbsp&nbsp Questionnaire</a></li>
               </ul>
 
             </div>
@@ -268,11 +277,11 @@
 
                 <li><a href="#page_location_list" data-role="button"
                   data-mini="true" onclick="controller.listlocations();"
-                  data-icon="eye" id="listlocation">List</a></li>
+                   id="listlocation"><i class="icon-list"></i>&nbsp&nbsp List</a></li>
 
                 <li><a href="#mappage" data-role="button" class="panel_map"
-                  data-icon="location"
-                  onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);">Map</a></li>
+                  
+                  onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="icon-map-marker"></i>&nbsp&nbsp Map</a></li>
 
               </ul>
             </div>
@@ -281,22 +290,22 @@
               <h4>Upload Status</h4>
               <ul data-role="listview" id="uploads_listview">
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="devtracnodes.postNode();">Site
+                  data-icon="" onclick="devtracnodes.postNode();">Site
                     Visits</a>
                   <div id="sitevisit_count" class="ui-li-count"></div></li>
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="">Locations</a>
+                  data-icon="" onclick="">Locations</a>
                   <div id="location_count" class="ui-li-count"></div></li>
                 <!-- <li><a data-role="button" data-mini="true" data-icon="arrow-u" onclick="devtracnodes.postComments();">Comments</a><div id="comment_count" class="ui-li-count"></div></li> -->
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="">Action Items</a>
+                  data-icon="" onclick="">Action Items</a>
                   <div id="actionitem_count" class="ui-li-count"></div></li>
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="">Fieldtrip Updates</a>
+                  data-icon="" onclick="">Fieldtrip Updates</a>
                   <div id="fieldtrip_count" class="ui-li-count"></div></li>
 
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="devtracnodes.syncAll()">Sync
+                  data-icon="" onclick="devtracnodes.syncAll()" style="text-align: center"><i class="icon-upload-alt"></i>&nbsp&nbsp Sync
                     All</a></li>
 
               </ul>
@@ -648,29 +657,6 @@
 
   </div>
   <!-- /page -->
-<!--   
-    Confirm logout
-  <div data-role="page" id="page_confirm_logout">
-    <div data-role="header">
-      <h3>Confirm Logout</h3>
-    </div>
-    /header
-
-    <div data-role="content" class='content' id='confirm_logout_content'>
-<form id="editlocationform">
-        <label for='place_title'>Are you sure you want to Logout, All Your Saved Data will be DELETED. Please Upload all Saved Data before logging out.</label>
-</form>
- <input type="button" data-inline="true" data-theme="b" id="confirm_logout"
-          class=""
-          onclick="controller.confirm_logout();" value="Save" /> <a
-          data-role="button" data-inline="true" data-rel="back" data-theme="a"
-          id="cancel_confirm_logout">Cancel</a>
-
-    </div>
-    /content
-
-  </div>
-  /page -->
 
   <!-- page -->
   <div data-role="page" id="page_add_location">
@@ -752,6 +738,7 @@
 
   </div>
   <!-- /page -->
+
   <script src="libs/jquery-1.7.2.min.js"></script>
   <script src="libs/jquery-ui-1.10.4.custom.js"></script>
   <script type="text/javascript" src="cordova.js"></script>
@@ -770,6 +757,7 @@
   <script src="libs/jquery.blockUI.js"></script>
 
   <script type="text/javascript" src="libs/IndexedDBShim/dist/IndexedDBShim.js"></script>
+  <script src="libs/movies-app.js"></script>
   <script type="text/javascript" src="js/model/indexdb-store.js"></script>
   <script type="text/javascript" src="js/controller/map-controller.js"></script>
   
@@ -782,8 +770,6 @@
       controller.initialize();
       
   </script>
-  
-  <script src="libs/movies-app.js"></script>
 
 </body>
 </html>

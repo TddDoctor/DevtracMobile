@@ -73,6 +73,7 @@ var devtracnodes = {
           for (var ans in answers) {
             $.ajax({
               url: localStorage.appurl+"/api/questionnaire/submit",
+              //url: "http://jenkinsge.mountbatten.net/devtracmanual/api/questionnaire/submit",
               type: 'post',
               data: JSON.stringify(answers[ans]),
               headers: {'X-CSRF-Token': localStorage.usertoken},
@@ -101,23 +102,23 @@ var devtracnodes = {
           if(comments.length > 0){
             for (var comment in comments) {
               comments[comment]['nid'] = commentId['nid'];
-              
+
               var info = {
 
-  'node_type': 'comment_node_actionitem',
-  "subject": "<p>Some body text</p>",
-  "language": "und",
-  "taxonomy_vocabulary_8": { "und": { "tid": "328" } },
-  "nid": commentId,
-  
-  "uid": localStorage.uid,
-  "format": 1,
-  "status": '1',
-  "comment_body": { "und": {0 : { "value": "<p>Some body text</p>", "format": '1' }}},
-  "field_actionitem_status": { "und": { "value": '1' }}
-                  
+                  'node_type': 'comment_node_actionitem',
+                  "subject": "<p>Some body text</p>",
+                  "language": "und",
+                  "taxonomy_vocabulary_8": { "und": { "tid": "328" } },
+                  "nid": commentId,
+
+                  "uid": localStorage.uid,
+                  "format": 1,
+                  "status": '1',
+                  "comment_body": { "und": {0 : { "value": "<p>Some body text</p>", "format": '1' }}},
+                  "field_actionitem_status": { "und": { "value": '1' }}
+
               }
-              
+
               $.ajax({
                 url: localStorage.appurl+"/api/comment",
                 type: 'post',
@@ -139,7 +140,7 @@ var devtracnodes = {
           }else{
             d.reject();
           }
-          
+
         });
       });
       return d;
@@ -157,7 +158,7 @@ var devtracnodes = {
         if(actionitems[x]['submit'] == 0 && actionitems[x]['user-added'] == true) {
           delete actionitems[x]['submit'];
           localStorage.currentanid = actionitems[x]['nid'];
-          
+
           devtracnodes.getActionItemString(actionitems[x]).then(function(jsonstring, anid) {
 
             devtracnodes.postNode(jsonstring, x, actionitems.length, anid).then(function(updates, status, anid) {
@@ -167,18 +168,18 @@ var devtracnodes = {
                   var updated_count = parseInt(count_container[0]) - 1;
                   $("#actionitem_count").html(updated_count);
 
-                });                
+                });            
               });
 
-                devtracnodes.postComments(updates).then(function() {
-                  $.unblockUI();
-                  d.resolve();
+              devtracnodes.postComments(updates).then(function() {
+                $.unblockUI();
+                d.resolve();
 
-                }).fail(function(){
-                  $.unblockUI();
-                  d.resolve();
-                  
-                });
+              }).fail(function(){
+                $.unblockUI();
+                d.resolve();
+
+              });
 
             }).fail(function() {
               d.reject();
@@ -356,12 +357,12 @@ var devtracnodes = {
       var nodeids = [];
       var imagestring = "";
       var counter = 0;
-      
+
       var flag = imagearr['names'].length - 1;
 
       for (var x = 0; x < imagearr['base64s'].length; x++) {
         devtracnodes.postImageFile(imagearr, x , nid).then(function (fid, imagename, ftritemnid, y) {
-          
+
           flag = flag - 1;
           imagestring = imagestring+"&node[field_ftritem_images][und]["+counter+"][fid]="+fid+"&node[field_ftritem_images][und]["+counter+"][title]="+imagename;
           counter = counter + 1;
@@ -369,7 +370,7 @@ var devtracnodes = {
           filenames[y]= imagename;
           nodeids[y]= ftritemnid;
 
-          
+
           if (flag < 0) {
             d.resolve(fids, filenames, nodeids, imagestring, nid, vd, siteid);         
           }
@@ -387,7 +388,7 @@ var devtracnodes = {
     //create node
     postImageFile: function(images, index, nid) {
       var d = $.Deferred();
-      
+
       var filedata = {
           "file":{
             "file": images['base64s'][index],
@@ -411,7 +412,7 @@ var devtracnodes = {
         },
         success: function (data) {         
           //console.log("Image posted "+"public://media/images/"+localStorage.uid +"/"+nid+"/"+images['names'][index]);
-          
+
           d.resolve(data['fid'], images['names'][index], nid, index);
 
         }
@@ -425,45 +426,48 @@ var devtracnodes = {
       var d = $.Deferred();
       var date_visited = "";
 
-          for(var k = 0; k < sitevisits.length; k++) {
-            if(sitevisits[k]['submit'] == 0 && sitevisits[k]['user-added'] == true) {
-              devtracnodes.getSitevisitString(sitevisits[k]).then(function(jsonstring, active_sitereport, date, siteid) {
-                devtracnodes.postNode(jsonstring, active_sitereport, date, siteid).then(function(updates, x, y, z, active_ftritem, datevisited) {
-                  devtrac.indexedDB.getImage(db, parseInt(active_ftritem['nid']), updates['nid'], datevisited, y).then(function(image, nid, vdate, sid) {
-                    devtracnodes.imagehelper(nid, image, vdate, sid).then(function(fids, filenames, nodeids, imagestring, nid, visitdate, ftrid){
+      for(var k = 0; k < sitevisits.length; k++) {
+        if(sitevisits[k]['submit'] == 0 && sitevisits[k]['user-added'] == true && sitevisits[k]['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") {
+          devtracnodes.getSitevisitString(sitevisits[k]).then(function(jsonstring, active_sitereport, date, siteid) {
+            devtracnodes.postNode(jsonstring, active_sitereport, date, siteid).then(function(updates, x, y, z, active_ftritem, datevisited) {
+              devtrac.indexedDB.getImage(db, parseInt(active_ftritem['nid']), updates['nid'], datevisited, y).then(function(image, nid, vdate, sid) {
+                devtracnodes.imagehelper(nid, image, vdate, sid).then(function(fids, filenames, nodeids, imagestring, nid, visitdate, ftrid){
 
-                      date_visited = "&node[field_ftritem_date_visited][und][0][value][date]="+visitdate;
-                      imagestring = imagestring + date_visited; 
-                      devtracnodes.updateNode(nid, imagestring, ftrid).then(function(updates, ftritemid) {
+                  date_visited = "&node[field_ftritem_date_visited][und][0][value][date]="+visitdate;
+                  imagestring = imagestring + date_visited; 
+                  devtracnodes.updateNode(nid, imagestring, ftrid).then(function(updates, ftritemid) {
 
-           /*todo:   devtrac.indexedDB.editSitevisit(db, ftritemid, updates).then(function() {
-                          var count_container = $("#sitevisit_count").html().split(" ");
-                          if(typeof parseInt(count_container[0]) == "number") {
-                            var updated_count = parseInt(count_container[0]) - 1;
-                            $("#sitevisit_count").html(updated_count);
-                          }
-                          else
-                          {                      //
-                            $("#sitevisit_count").html(0);
-                          }
+                    /*todo: */  devtrac.indexedDB.editSitevisit(db, ftritemid, updates).then(function() {
+                      var count_container = $("#sitevisit_count").html().split(" ");
+                      if(typeof parseInt(count_container[0]) == "number") {
+                        var updated_count = parseInt(count_container[0]) - 1;
+                        $("#sitevisit_count").html(updated_count);
+                      }
+                      else
+                      {                      
+                        $("#sitevisit_count").html(0);
+                      }
 
-                          controller.refreshSitevisits();
-                          d.resolve();
-                        });*/
-                        d.resolve()
-                      });
-                    }).fail(function(e){
-                      console.log("the image is error is "+e);
+                      controller.refreshSitevisits();
+                      d.resolve();
                     });
-
+                    d.resolve()
                   });
-
+                }).fail(function(e){
+                  console.log("the image is error is "+e);
+                  if(e.indexOf("Could not create destination directory") != -1) {
+                    devtracnodes.uploadsitevisits(db, sitevisits);
+                  }
                 });
 
               });
 
-            }
-          }
+            });
+
+          });
+
+        }
+      }
 
       return d;
     },
@@ -479,34 +483,34 @@ var devtracnodes = {
         for(var k = 0; k < sitevisits.length; k++){
           if(sitevisits[k]['submit'] == 0 && sitevisits[k]['user-added'] == true) {
 
-                devtracnodes.getSitevisitString(sitevisits[k], names[k], newnids[k], k).then(function(jsonstring, p, q, r, mark) {
+            devtracnodes.getSitevisitString(sitevisits[k], names[k], newnids[k], k).then(function(jsonstring, p, q, r, mark) {
 
-                  devtracnodes.postNode(jsonstring, mark, sitevisits.length, r).then(function(updates, stat, snid) {
+              devtracnodes.postNode(jsonstring, mark, sitevisits.length, r).then(function(updates, stat, snid) {
 
-/*todo*/             devtrac.indexedDB.editSitevisit(db, parseInt(snid), updates).then(function() {
-                      var count_container = $("#sitevisit_count").html().split(" ");
-                      if(typeof parseInt(count_container[0]) == "number") {
-                        var updated_count = parseInt(count_container[0]) - 1;
-                        $("#sitevisit_count").html(updated_count);
-                      }
-                      else
-                      {
-                        $("#sitevisit_count").html(0);
-                      }
+                /*todo*/             devtrac.indexedDB.editSitevisit(db, parseInt(snid), updates).then(function() {
+                  var count_container = $("#sitevisit_count").html().split(" ");
+                  if(typeof parseInt(count_container[0]) == "number") {
+                    var updated_count = parseInt(count_container[0]) - 1;
+                    $("#sitevisit_count").html(updated_count);
+                  }
+                  else
+                  {
+                    $("#sitevisit_count").html(0);
+                  }
 
-                      devtrac.indexedDB.deleteSitevisit(db, parseInt(snid));
-                      controller.refreshSitevisits();
-                    if(stat){
-                      d.resolve();           
-                    }
-                    });
-                    
-                  }).fail(function(){
-                    d.reject();    
-                  });
-
+                  devtrac.indexedDB.deleteSitevisit(db, parseInt(snid));
+                  controller.refreshSitevisits();
+                  if(stat){
+                    d.resolve();           
+                  }
                 });
-            
+
+              }).fail(function(){
+                d.reject();    
+              });
+
+            });
+
           }
         }
 
@@ -542,12 +546,14 @@ var devtracnodes = {
     //upload fieldtrips
     uploadFieldtrips: function() {
       var d = $.Deferred();
+      var count = 0;
 
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.getAllFieldtripItems(db, function(fieldtrips) {
 
           for(var k in fieldtrips) {
             if(fieldtrips[k]['editflag'] == 1) {
+              count = count + 1;
               delete fieldtrips[k]['editflag'];
               localStorage.title = fieldtrips[k]['title'];
               localStorage.currentfnid = fieldtrips[k]['nid'];
@@ -559,12 +565,13 @@ var devtracnodes = {
                   updates['editflag'] = 0;
                   updates['title'] = localStorage.title;
 
-             /*todo*/   devtrac.indexedDB.editFieldtrip(db, localStorage.currentfnid, updates).then(function() {
+                  d.resolve();
+
+                  /*todo*/  devtrac.indexedDB.editFieldtrip(db, localStorage.currentfnid, updates).then(function() {
                     var count_container = $("#fieldtrip_count").html().split(" ");
                     var updated_count = parseInt(count_container[0]) - 1;
                     $("#fieldtrip_count").html(updated_count);
 
-                    d.resolve();
                   });
 
                 }).fail(function() {
@@ -572,6 +579,10 @@ var devtracnodes = {
                 }); 
               });
             }
+          }
+
+          if(count == 0) {
+            d.reject();
           }
         });  
 
@@ -581,79 +592,113 @@ var devtracnodes = {
     },
 
     syncAll: function() {
+      var actionitems = false;
+      var ftritems = false;
+      var ftritems_locs = false;
+      var fieldtrips = false;
+
       if(controller.connectionStatus) {
         controller.loadingMsg("Syncing, Please Wait...", 0);
 
+        //upload locations and sitevisits (human interest stories and site visits)
         devtracnodes.uploadLocations().then(function(names, new_nids, old_nids, db) {
           devtrac.indexedDB.open(function (dbs) {
             devtracnodes.uploadFtritemswithLocations(names, new_nids, old_nids, dbs).then(function(sitevisits) {
-              console.log("locations with site visits uploaded");
-              
-              devtracnodes.checkSitevisits().then(function(sitevisits){
-                
-                devtracnodes.uploadsitevisits(dbs, sitevisits).then(function() {
-                  
-                  devtracnodes.checkActionitems().then(function(actionitems, db){
-                    devtracnodes.uploadActionItems(actionitems).then(function(){
-                      
-                      
-                    }).fail(function(){
-                      
-                    });
-                  }).fail(function(){
-                    
-                  });
-                  
-                });
-                
-              }).fail(function(){
-                
 
-              });
+              ftritems_locs = true;
+              if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){
+                $.unblockUI();
 
+              }
             }).fail(function(){
-              console.log("we cannot upload the data");
+              ftritems_locs = true;
+              if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){
+                $.unblockUI();
+
+              }
+
             });
 
           });
 
         }).fail(function() {
-          devtracnodes.checkSitevisits().then(function(sitevisits) {
-            devtrac.indexedDB.open(function (dbs) {
-              devtracnodes.uploadsitevisits(dbs, sitevisits).then(function() {
-                
-                devtracnodes.checkActionitems().then(function(actionitems, db){
-                  devtracnodes.uploadActionItems(actionitems).then(function(){
-                    
-                    
-                  }).fail(function(){
-                    
-                  });
-                }).fail(function(){
-                  
-                });
-                           
-                
-              });  
-            });
-            
-          }).fail(function(){
-            console.log("no locations with site visits and no site visits");
 
-          });
+          ftritems_locs = true;
+          if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){
+            $.unblockUI();
 
+          }
         });
 
-/*        devtracnodes.checkActionitems().then(function(actionitems, db){
+        //upload site visits road side observations
+        devtracnodes.checkSitevisits().then(function(sitevisits){     
+          devtrac.indexedDB.open(function (db) {
+            devtracnodes.uploadsitevisits(db, sitevisits).then(function() {
+              ftritems = true;
+              if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){
+                $.unblockUI();
+
+              }
+
+            }).fail(function(){
+              ftritems = true;
+              if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){
+                $.unblockUI();
+
+              }
+
+            });
+          });
+
+
+        }).fail(function(){
+          ftritems = true;
+          if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){
+            $.unblockUI();
+
+          }
+        });
+
+        //upload action items and comments
+        devtracnodes.checkActionitems().then(function(actionitems, db){
           devtracnodes.uploadActionItems(actionitems).then(function(){
-            devtracnodes.uploadFieldtrips();
-            
+            actionitems = true;
+            if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){
+              $.unblockUI();
+
+            }
+
           }).fail(function(){
-            devtracnodes.uploadFieldtrips();
+            actionitems = true;
+            if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){
+              $.unblockUI();
+
+            }
           });
         }).fail(function(){
-          devtracnodes.uploadFieldtrips();
-        });*/
+          actionitems = true;
+          if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){
+            $.unblockUI();
+
+          }
+        });
+
+        //upload fieldtrips
+        devtracnodes.uploadFieldtrips().then(function() {
+          fieldtrips = true;
+          if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){
+            $.unblockUI();
+
+          }
+
+
+        }).fail(function(){
+          fieldtrips = true;
+          if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){
+            $.unblockUI();
+
+          }
+        });
 
       }
       else
@@ -761,7 +806,7 @@ var devtracnodes = {
             if(placename != undefined && placename != null){
               nodestring = nodestring +a+'[und][0][target_id]='+placename+"("+placeid+")"+'&';
             }
-            
+
             break;
 
           case 'field_ftritem_lat_long':
@@ -837,7 +882,7 @@ var devtracnodes = {
       return d;
 
     },
-    
+
     //return fieldtrip string
     getCommentString: function(cObj) {
       var d = $.Deferred();         

@@ -141,12 +141,12 @@ var controller = {
       //redownload the devtrac data
       $('.refresh-button').bind('click', function () {
         
-        //provide a dialog to ask the user if he wants to download devtrac data again.
+        //provide a dialog to ask the user if he wants to log in anonymously.
         $('<div>').simpledialog2({
           mode : 'button',
           headerText : 'Info...',
           headerClose : true,
-          buttonPrompt : "Do you want to redownload all your Devtrac Data?",
+          buttonPrompt : "Do you want to redownload your devtrac data ?",
           buttons : {
             'OK' : {
               click : function() {
@@ -169,13 +169,11 @@ var controller = {
                 }else{
                   controller.loadingMsg("Please Connect to Internet ...", 1000);
                 }
-
               }
             },
             'Cancel' : {
               click : function() {
 
-                
               },
               icon : "delete",
               theme : "b"
@@ -184,6 +182,13 @@ var controller = {
         });
 
       });
+
+
+      //remember passwords
+      $('#checkbox-mini-0').bind('click', function () {
+
+      });
+
 
       //validate field to set urls for annonymous users
       var form = $("#urlForm");
@@ -619,7 +624,51 @@ var controller = {
           var fieldtripList = $('#list_fieldtrips');
           fieldtripList.empty();
 
-          if (data.length >= 1) {
+          if (data.length > 1) {
+            var sdate;
+            var count = 0;
+            $('.panel_home').show();
+            for (var i = 0, len = data.length; i < len; i++) {
+              var fieldtrip = data[i];
+
+              if(fieldtrip['editflag'] == 1) {
+                count = count + 1;
+              }
+
+              fieldtrip['field_fieldtrip_start_end_date'].length > 0 ? sdate = fieldtrip['field_fieldtrip_start_end_date']['und'][0]['value'] : sdate = "";
+
+              var li = $("<li></li>");
+              var a = $("<a href='#page_fieldtrip_details' id='fnid" + fieldtrip['nid'] + "' onclick='controller.onFieldtripClick(this)'></a>");
+              var h1 = $("<h1 class='heada1'>" + fieldtrip['title'] + "</h1>");
+              var p = $("<p class='para1'>Start Date: " + sdate + "</p>");
+
+              a.append(h1);
+              a.append(p);
+              li.append(a);
+              fieldtripList.append(li);
+
+            }
+
+            fieldtripList.listview('refresh');
+            $("#fieldtrip_count").html(count);
+
+            var sitevisitcount = 0;
+            devtrac.indexedDB.open(function (db) {
+              devtrac.indexedDB.getAllSitevisits(db, function (sitevisit) {
+                for (var i in sitevisit) {
+                  if(sitevisit[i]['user-added'] && sitevisit[i]['submit'] == 0) {
+                    sitevisitcount = sitevisitcount + 1;
+                  } 
+                }
+                $("#sitevisit_count").html(sitevisitcount);
+              });
+
+            });
+
+            //home_page
+            $.mobile.changePage("#home_page", "slide", true, false);
+            $.unblockUI();
+          } else if (data.length == 1) {
             $('.panel_home').hide();
             var count = 0;
             var fObject = data[0];
@@ -666,10 +715,10 @@ var controller = {
             $("#sitevisit_add_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(startyear, startmonth, startday), maxDate: new Date(endyear, endmonth, endday) });
             $("#sitevisit_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(startyear, startmonth, startday), maxDate: new Date(endyear, endmonth, endday) });
 
-            $("#fieldtrip_details_title").html(fObject['title']);
-            $("#fieldtrip_details_status").html(fObject['field_fieldtrip_status']['und'][0]['value']);
-            $("#fieldtrip_details_start").html(formatedstartdate);
-            $("#fieldtrip_details_end").html(formatedenddate);
+            $("#fieldtrip_details_title").append(fObject['title']);
+            $("#fieldtrip_details_status").append(fObject['field_fieldtrip_status']['und'][0]['value']);
+            $("#fieldtrip_details_start").append(formatedstartdate);
+            $("#fieldtrip_details_end").append(formatedenddate);
 
             var sitevisitcount = 0;
             devtrac.indexedDB.open(function (db) {
@@ -705,8 +754,8 @@ var controller = {
 
                 $("#fieldtrip_count").html(count);
                 $("#sitevisit_count").html(sitevisitcount);
-                sitevisitList.trigger('create');
-
+                sitevisitList.listview('refresh');
+                
                 $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
                 $.unblockUI();
               });

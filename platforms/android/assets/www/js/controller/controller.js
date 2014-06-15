@@ -1,5 +1,7 @@
 var controller = {    
 
+    //connectionStatus : false,
+    connectionStatus : true,
     base64Images : [],
     filenames : [],
     filedimensions: [],
@@ -12,32 +14,49 @@ var controller = {
 
       //set application url if its not set
       //if (!localStorage.appurl) {
-        localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://localhost/dt11";
+      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://10.0.2.2/dt11";
       //}
 
-      auth.loginStatus().then(function () {
-        $('#list_fieldtrips').attr('data-filter',true);
-        $('#homeForm').trigger('create');
+      if(controller.connectionStatus) {
+        auth.loginStatus().then(function () {
+          $('#list_fieldtrips').attr('data-filter',true);
+          $('#homeForm').trigger('create');
 
-        //download all devtrac data for user.
-        controller.fetchAllData().then(function(){
+          //download all devtrac data for user.
+          controller.fetchAllData().then(function(){
+            //load field trip details from the database if its one and the list if there's more.
+            controller.loadFieldTripList();
+
+            //update upload counter
+            controller.uploadCounter();
+
+            //set welcome message
+            $("#username").html("Welcome " + localStorage.username);
+          });
+
+
+        }).fail(function () {
+          $('#list_fieldtrips').attr('data-filter',false);
+          $('#homeForm').trigger('create');
+          $.mobile.changePage("#home_page", "slide", true, false);
+          $("#username").html("Please login to use the application");
+        });
+
+      }else
+      {
+        controller.loadingMsg("You are offline and cannot upload data", 2000);
+        if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
+
           //load field trip details from the database if its one and the list if there's more.
           controller.loadFieldTripList();
 
           //update upload counter
-          controller.uploadCounter();
-
-          //set welcome message
-          $("#username").html("Welcome " + localStorage.username);
-        });
-
-
-      }).fail(function () {
-        $('#list_fieldtrips').attr('data-filter',false);
-        $('#homeForm').trigger('create');
-        $.mobile.changePage("#home_page", "slide", true, false);
-        $("#username").html("Please login to use the application");
-      });
+          controller.uploadCounter(); 
+        }
+      }
 
       this.bindEvents();
     },
@@ -51,6 +70,7 @@ var controller = {
           vocabularies.getPlacetypeVocabularies(db).then(function(){
             devtracnodes.getSiteVisits(db).then(function(){
               devtracnodes.getQuestions(db).then(function() {
+
                 devtracnodes.getActionItems(db);
                 devtracnodes.getPlaces(db);
                 d.resolve();
@@ -80,6 +100,9 @@ var controller = {
     bindEvents: function () {
 
       document.addEventListener("deviceready", controller.onDeviceReady, false);
+
+      document.addEventListener("offline", controller.onOffline, false);
+      document.addEventListener("online", controller.online, false);
 
       $("#sitevisit_add_save").bind('click', function(){
         controller.onSavesitevisit();
@@ -117,20 +140,55 @@ var controller = {
 
       //redownload the devtrac data
       $('.refresh-button').bind('click', function () {
-        controller.loadingMsg("Downloading Data ...", 0);
-        //get all bubbles and delete them to create room for new ones.
-        for (var notify in $('#refreshme').getNotifications()) {
-          $(this).deleteBubble($('#refreshme').getNotifications()[notify]);
-        }
+        
+        //provide a dialog to ask the user if he wants to log in anonymously.
+        $('<div>').simpledialog2({
+          mode : 'button',
+          headerText : 'Info...',
+          headerClose : true,
+          buttonPrompt : "Do you want to redownload your devtrac data ?",
+          buttons : {
+            'OK' : {
+              click : function() {
 
-        //todo: check for internet connection before request
-        controller.fetchAllData().then(function(){
-          controller.loadFieldTripList();          
+                if(controller.connectionStatus){
+                  controller.loadingMsg("Downloading Data ...", 0);
+                  //get all bubbles and delete them to create room for new ones.
+                  for (var notify in $('#refreshme').getNotifications()) {
+                    $(this).deleteBubble($('#refreshme').getNotifications()[notify]);
+                  }
+
+                  //todo: check for internet connection before request
+                  controller.fetchAllData().then(function(){
+                    controller.loadFieldTripList();          
+                  });
+
+
+                  $(".notification-bubble").html(0);          
+
+                }else{
+                  controller.loadingMsg("Please Connect to Internet ...", 1000);
+                }
+              }
+            },
+            'Cancel' : {
+              click : function() {
+
+              },
+              icon : "delete",
+              theme : "b"
+            }
+          }
         });
 
-
-        $(".notification-bubble").html(0);
       });
+
+
+      //remember passwords
+      $('#checkbox-mini-0').bind('click', function () {
+
+      });
+
 
       //validate field to set urls for annonymous users
       var form = $("#urlForm");
@@ -245,43 +303,23 @@ var controller = {
 
       //handle edit sitevisit click event
       $("#editsitevisit").bind("click", function (event) {
-        var editform = $('#form_sitevisit_edits');
-        editform.empty();
+
         var snid = localStorage.snid;
-        if(localStorage.user == true){
+        if(localStorage.user == "true"){
           snid = parseInt(snid);
         }else{
           snid = snid.toString();
         }
 
         devtrac.indexedDB.open(function (db) {
-          devtrac.indexedDB.getSitevisit(db, snid, function (sitevisitObject) {
-            var sitefieldset = $("<fieldset ></fieldset>");
+          devtrac.indexedDB.getSitevisit(db, snid).then(function (sitevisitObject) {
+            $("#sitevisit_title").val(sitevisitObject['title']);
 
-            var titlelabel = $("<label for='sitevisit_title' >Title</label>");
-            var titletextffield = $("<input type='text' value='" + sitevisitObject['title'] + "' id='sitevisit_title'>");
+            $("#sitevisit_date").val(sitevisitObject['field_ftritem_date_visited']['und'][0]['value']);
 
-            var datevisited = $("<label for='sitevisit_date' >Date Visited</label>");
-            var datetextffield = $("<input type='text' value='" + sitevisitObject['field_ftritem_date_visited']['und'][0]['value'] + "' id='sitevisit_date'>");
+            $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und'][0]['value']);
 
-            var summarytitle = $("<label for='sitevisit_summary'>Summary</label>");
-            var summarytextareadiv = $('<div class="summarytextareadiv"><textarea id="sitevisit_summary" rows="4" cols="12" >'+sitevisitObject['field_ftritem_public_summary']['und'][0]['value']+'</textarea></div>');
-
-            var savesitevisitedits = $('<input type="button" data-inline="true" data-theme="b" id="save_site_visit_edits" onclick="controller.onSitevisitedit();" value="Save" />');
-
-            var cancelsitevisitedits = $('<a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="a" id="cancel_site_visit_edits">Cancel</a>');
-
-            sitefieldset.append(
-                titlelabel).append(
-                    titletextffield).append(
-                        datevisited).append(
-                            datetextffield).append(
-                                summarytitle).append(
-                                    summarytextareadiv).append(
-                                        savesitevisitedits).append(
-                                            cancelsitevisitedits);
-
-            editform.append(sitefieldset).trigger('create');
+            $("#page_sitevisit_edits").trigger('create');
           });
         });
 
@@ -289,9 +327,8 @@ var controller = {
 
       //handle edit fieldtrip click event
       $("#edit_fieldtrip").bind("click", function (event) {
-        var editform = $('#form_fieldtrip_edits');
+        var editform = $("#form_fieldtrip_edits");
         editform.empty();
-
         var fnid = localStorage.fnid;
 
         devtrac.indexedDB.open(function (db) {
@@ -357,6 +394,15 @@ var controller = {
         $('#url').val("");
       });
 
+      //cancel url dialog
+      $('.panel_login').bind("click", function (event, ui) {
+        if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
+          $("#page_login_name").val(window.localStorage.getItem("usernam"));
+          $("#page_login_pass").val(window.localStorage.getItem("password"));  
+        }
+
+      });
+
       //validate login form
       $("#loginForm").validate();
 
@@ -366,20 +412,18 @@ var controller = {
           auth.login($('#page_login_name').val(), $('#page_login_pass').val()).then(function () {
             $.mobile.changePage("#home_page", "slide", true, false);
 
-            devtrac.indexedDB.open(function (db) {
-              for(var x in controller.objectstores) {
-                devtrac.indexedDB.deleteAllTables(db, controller.objectstores[x]).then(function(){
+            if($("#checkbox-mini-0").is(":checked")){
+              window.localStorage.setItem("usernam", $("#page_login_name").val());
+              window.localStorage.setItem("password", $("#page_login_pass").val());
 
-                }).fail(function(){
+            }else{
+              window.localStorage.removeItem("usernam");
+              window.localStorage.removeItem("password");
+            }
 
-                });
-              }
-
-              //todo: check for internet connection before request
-              controller.fetchAllData().then(function(){
-                controller.loadFieldTripList();          
-              });
-
+            //todo: check for internet connection before request
+            controller.fetchAllData().then(function(){
+              controller.loadFieldTripList();          
             });
 
           }).fail(function (errorThrown) {
@@ -412,55 +456,29 @@ var controller = {
       var pnidarray = $(anchor).prev("a").attr("id");
       var pnid  = pnidarray.split('-')[1];
 
-      var locationcontent = $("#locationcontent");
-      locationcontent.empty();
-
-      if(localStorage.user == true){
+      if(localStorage.user == "true"){
         pnid = parseInt(pnid);
+        localStorage.placeid = pnid;
       }else{
         pnid = pnid.toString();
+        localStorage.placeid = pnid;
       }
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.getPlace(db, pnid, function (placeObject) {
           if (placeObject != undefined) {
-            var editform = $('<form id="form' + placeObject['nid'] + '"></form>');
-            editform.empty();
 
-            var placefieldset = $("<div class='ui-body ui-body-a ui-corner-all'><h3>" + placeObject['title'] + "</h3></div>");
+            $("#place_title").val(placeObject['title']);
+            $("#place_name").val(placeObject['name']);
+            $("#place_name").val(placeObject['name']);
 
-            var titlelabel = $("<label for='place_title' >Title</label>");
-            var titletextffield = $("<input type='text' value='" + placeObject['title'] + "' id='place_title'>");
-
-            var name = $("<label for='place_name' >Name</label>");
-            var namefield = $("<input type='text' value='" + placeObject['name'] + "' id='place_name'>");
-
-            if (placeObject['field_place_responsible_person']['und'] != undefined || placeObject['field_place_email']['und'] != undefined) {
-              var responsibleperson = $("<label for='place_reponsible'>Responsible person</label>");
-              var responsiblepersonfield = $("<input type='text' value='" + placeObject['field_place_responsible_person']['und'][0]['value'] + "' id='place_reponsible'>");
-
-              var email = $("<label for='place_email' >Email</label>");
-              var emailfield = $("<input type='text' value='" + placeObject['field_place_email']['und'][0]['email'] + "' id='place_email'>");
+            if(controller.sizeme(placeObject['field_place_responsible_person']) > 0){
+              $("#place_responsible").val(placeObject['field_place_responsible_person']['und'][0]['value']);
             }
 
-            var saveplaces = $('<input type="button" data-inline="true" data-theme="b" id="save_places_info" class="place' + placeObject['nid'] + '" onclick="controller.onPlacesave(this);" value="Save" />');
+            if(controller.sizeme(placeObject['field_place_responsible_email']) > 0){
+              $("#place_email").val(placeObject['field_place_email']['und'][0]['email']);
+            }
 
-            var cancelplaces = $('<a data-role="button" data-inline="true" data-rel="back" data-theme="a" id="cancel_places_info">Cancel</a>');
-
-            placefieldset.append(
-                titlelabel).append(
-                    titletextffield).append(
-                        name).append(
-                            namefield).append(
-                                responsibleperson).append(
-                                    responsiblepersonfield).append(
-                                        email).append(
-                                            emailfield).append(
-                                                saveplaces).append(
-                                                    cancelplaces);
-
-            editform.append(placefieldset);
-            locationcontent.append(editform);
-            editform.trigger('create');
           }
         });
 
@@ -485,8 +503,23 @@ var controller = {
         controller.base64Images.push(image.src);
         controller.filesizes.push(~~(file.size/1024));
 
+        $("#uploadPreview").append('<div>'+n+" "+~~(file.size/1024)+'kb</div>');
       };
 
+    },
+
+    onOffline: function() {
+      //controller.loadingMsg("Please Connect to the Internet to Upload and Download Data", 3000);
+      controller.connectionStatus = false;
+      console.log("u r offline");
+      // alert("Offline");
+    },
+
+    online: function() {
+      console.log("u r online");
+      //controller.loadingMsg("Online", 2000);
+      controller.connectionStatus = true;
+      //alert("Online");
     },
 
     //handle save for user answers from questionnaire
@@ -669,14 +702,24 @@ var controller = {
             var formatedenddate = enddatearray[2] + "/" + enddatearray[1] + "/" + enddatearray[0];
 
             localStorage.fieldtripstartdate = startdatearray[0] + "/" + startdatearray[1] + "/" + startdatearray[2]; 
-            
-            $("#actionitem_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(parseInt(startdatearray[0]), parseInt(startdatearray[1])+1, parseInt(startdatearray[2])), maxDate: new Date(parseInt(enddatearray[0]), parseInt(enddatearray[1]), parseInt(enddatearray[2])) });
-            $("#sitevisit_add_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(parseInt(startdatearray[0]), parseInt(startdatearray[1])+1, parseInt(startdatearray[2])), maxDate: new Date(parseInt(enddatearray[0]), parseInt(enddatearray[1]), parseInt(enddatearray[2])) });
 
-            $("#fieldtrip_details_title").html(fObject['title']);
-            $("#fieldtrip_details_status").html(fObject['field_fieldtrip_status']['und'][0]['value']);
-            $("#fieldtrip_details_start").html(formatedstartdate);
-            $("#fieldtrip_details_end").html(formatedenddate);
+            var startday = parseInt(startdatearray[2]);
+            var startmonth = parseInt(startdatearray[1])+1;
+            var startyear = parseInt(startdatearray[0]);
+
+            var endday = parseInt(enddatearray[2]);
+            var endmonth = parseInt(enddatearray[1])+1;
+            var endyear = parseInt(enddatearray[0]);
+
+
+            $("#actionitem_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(startyear, startmonth, startday), maxDate: new Date(endyear, endmonth, endday) });
+            $("#sitevisit_add_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(startyear, startmonth, startday), maxDate: new Date(endyear, endmonth, endday) });
+            $("#sitevisit_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(startyear, startmonth, startday), maxDate: new Date(endyear, endmonth, endday) });
+
+            $("#fieldtrip_details_title").append(fObject['title']);
+            $("#fieldtrip_details_status").append(fObject['field_fieldtrip_status']['und'][0]['value']);
+            $("#fieldtrip_details_start").append(formatedstartdate);
+            $("#fieldtrip_details_end").append(formatedenddate);
 
             var sitevisitcount = 0;
             devtrac.indexedDB.open(function (db) {
@@ -712,10 +755,10 @@ var controller = {
 
                 $("#fieldtrip_count").html(count);
                 $("#sitevisit_count").html(sitevisitcount);
-                sitevisitList.trigger('create');
-
+                sitevisitList.listview('refresh');
+                
                 $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
-
+                $.unblockUI();
               });
 
             });
@@ -758,7 +801,7 @@ var controller = {
           var c = enddatearray[2] + "/" + enddatearray[1] + "/" + enddatearray[0]
 
           localStorage.fieldtripstartdate = startdatearray[0] + "/" + startdatearray[1] + "/" + startdatearray[2];
-          
+
           $("#fieldtrip_details_start").html(formatedstartdate);
           $("#fieldtrip_details_end").html(c);
 
@@ -827,9 +870,12 @@ var controller = {
       var locationsList = $('#locationslist');
       locationsList.empty();
       devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getAllplaces(db, function (places) {
-          for (var i in places) {
-            var places = places[i];
+        devtrac.indexedDB.getAllplaces(db, function (place) {
+          for (var i in place) {
+            /*if(typeof aObj[a] == 'object') {
+
+            }*/
+            var places = place[i];
             if(places != undefined){
               var res = "";
               var p = "";
@@ -919,6 +965,8 @@ var controller = {
         snid = parseInt(snid);
       }
 
+      owlhandler.populateOwl(snid);
+
       localStorage.sitevisitname = $(anchor).children('.heada1').html();
 
       var form = $("#form_sitevisists_details");
@@ -928,16 +976,18 @@ var controller = {
 
       devtrac.indexedDB.open(function (db) {
         var pnid = 0;
-        devtrac.indexedDB.getSitevisit(db, snid, function (fObject) {
+        devtrac.indexedDB.getSitevisit(db, snid).then(function (fObject) {
 
-          if(fObject['field_ftritem_place'] != undefined) {
+          if(fObject['field_ftritem_place'] != undefined && fObject['field_ftritem_place']['und'] != undefined) {
             localStorage.pnid = fObject['field_ftritem_place']['und'][0]['target_id'];
             pnid = localStorage.pnid; 
-          }
-          else
-          {
-            localStorage.pnid = snid;
-            pnid = snid;
+
+          }else{
+            if(fObject['user-added'] == true) {
+              pnid = parseInt(localStorage.pnid);
+            }else{
+              pnid = "RV";
+            }
           }
 
           var sitedate = fObject['field_ftritem_date_visited']['und'][0]['value'];
@@ -971,14 +1021,15 @@ var controller = {
             break
           }
 
-          $("#sitevisists_details_subjects").html();
+          $("#sitevisists_details_title").html(fObject['title']);
           $("#sitevisists_details_summary").html(fObject['field_ftritem_public_summary']['und'][0]['value']);
 
           //get location name
           devtrac.indexedDB.getPlace(db, pnid, function (place) {
-            localStorage.ptitle = place['title'];
 
             if (place != undefined) {
+              localStorage.ptitle = place['title'];
+
               $("#sitevisists_details_location").html(place['title']);
               localStorage.respplaceid = place['nid'];
               localStorage.respplacetitle = place['title'];
@@ -987,9 +1038,22 @@ var controller = {
               mapctlr.initMap(place['field_place_lat_long']['und'][0]['lat'], place['field_place_lat_long']['und'][0]['lon'], state);
               mapctlr.resizeMapIfVisible(); 
             }else {
-              $("#sitevisists_details_location").html("Place Unavailable, Please Redownload.");
-              mapctlr.initMap(0.28316, 32.45168, state);
-              mapctlr.resizeMapIfVisible(); 
+              if(fObject['user-added'] == true && fObject['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") {
+                $("#sitevisists_details_location").html(fObject['ftritem_place']);
+                mapctlr.initMap(fObject['field_ftritem_lat_long']['und'][0]['lat'], fObject['field_ftritem_lat_long']['und'][0]['lon'], state);
+                mapctlr.resizeMapIfVisible();
+
+              }else if(fObject['user-added'] != true && fObject['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") {
+                $("#sitevisists_details_location").html("Roadside place name unavailble");
+                mapctlr.initMap(fObject['field_ftritem_lat_long']['und'][0]['lat'], fObject['field_ftritem_lat_long']['und'][0]['lon'], state);
+                mapctlr.resizeMapIfVisible();
+
+              }else{
+                $("#sitevisists_details_location").html("Place Unavailable.");
+                mapctlr.initMap(0.28316, 32.45168, state);
+                mapctlr.resizeMapIfVisible();  
+              }
+
             }
 
           });
@@ -1009,7 +1073,17 @@ var controller = {
               if (actionitem[i]['field_actionitem_ftreportitem']['und'][0]['target_id'] == snid || sitevisitid == snid) {
                 var aItem = actionitem[i];
                 var li = $("<li></li>");
-                var a = $("<a href='#' id='" + aItem['nid'] + "' onclick='controller.onActionitemclick(this)'></a>");
+                var a = ""; 
+
+                if(aItem["user-added"] != undefined) {
+                  a = $("<a href='#' id='user" + aItem['nid'] + "' onclick='controller.onActionitemclick(this)'></a>");  
+                }
+                else
+                {
+                  a = $("<a href='#' id='" + aItem['nid'] + "' onclick='controller.onActionitemclick(this)'></a>");  
+                }
+
+
                 var h1 = $("<h1 class='heada2'>" + aItem['title'] + "</h1>");
                 var p = $("<p class='para2'></p>");
 
@@ -1055,10 +1129,27 @@ var controller = {
 
       });
 
+      var snid = localStorage.snid;
+      if(localStorage.user == "true"){
+        snid = parseInt(snid);
+      }else{
+        snid = snid.toString();
+      }
+
       devtrac.indexedDB.open(function (db) {
         console.log("siite visit is "+localStorage.snid);
 
-        devtrac.indexedDB.editSitevisit(db, localStorage.snid, updates).then(function () {
+        devtrac.indexedDB.editSitevisit(db, snid, updates).then(function () {
+
+          $("#sitevisists_details_title").html($("#sitevisit_title").val());
+
+          if(localStorage.user == "true"){
+            $("#user"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+          }else{
+            $("#snid"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+          }
+
+
           $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
         });
       });
@@ -1067,26 +1158,27 @@ var controller = {
 
     onPlacesave: function (saveButtonReference) {
       //save places edits
-      var snid = $('#sitevisitId').val();
-      var saveclass = $(saveButtonReference).attr('class');
+      var pnid = '';
+      if(localStorage.user == "true"){
+        pnid = parseInt(localStorage.placeid);
 
-      var formId = saveclass.substring(saveclass.indexOf('e') + 1);
+      }else{
+        pnid = localStorage.placeid;
 
+      }
 
       var updates = {};
-      updates.lat = localStorage.lat;
-      updates.lon = localStorage.lon;
 
       devtrac.indexedDB.open(function (db) {
-        $('#form' + formId + ' *').filter(':input').each(function () {
+        $('#editlocationform *').filter(':input').each(function () {
           var key = $(this).attr('id').substring($(this).attr('id').indexOf('_') + 1);
-          if (key.indexOf('_') == -1) {
+          if (key.indexOf('_') == -1 && $(this).val().length > 0) {
             updates[key] = $(this).val();
           }
 
         });
 
-        devtrac.indexedDB.editPlace(db, formId, updates).then(function () {
+        devtrac.indexedDB.editPlace(db, pnid, updates).then(function () {
           controller.loadingMsg('Saved ' + updates['title'], 2000);
 
           $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
@@ -1214,10 +1306,10 @@ var controller = {
 
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.editFieldtrip(db, localStorage.fnid, updates).then(function() {
-          var count_container = $("#actionitem_count").html().split(" ");
-          var updated_count = parseInt(count_container[0]) - 1;
+          var count_container = $("#fieldtrip_count").html().split(" ");
+          var updated_count = parseInt(count_container[0]) + 1;
 
-          $("#actionitem_count").html(updated_count);
+          $("#fieldtrip_count").html(updated_count);
           $('#fieldtrip_details_title').html(updates['title']);
           $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
 
@@ -1234,11 +1326,13 @@ var controller = {
         localStorage.anid = anid;
         anid = parseInt(anid);
 
+        localStorage.actionuser = true;
       }
       else {
         anid = action_id;
         localStorage.anid = anid;
 
+        localStorage.actionuser = false;
       }
 
       var form = $("#form_actionitems_details");
@@ -1253,7 +1347,6 @@ var controller = {
 
           var formatedsitedate = "";
 
-          console.log("action item title is "+fObject['title']);
           if(typeof sitedate == 'object') {
             if(sitedate.date.charAt(4) != "/") {
               var sitedatestring = JSON.stringify(sitedate);
@@ -1272,6 +1365,7 @@ var controller = {
           }
 
           $("#actionitem_due_date").html(formatedsitedate);
+          $("#actionitem_details_title").html(fObject['title']);
 
           $("#actionitem_ftritem").html(localStorage.sitevisitname);
 
@@ -1441,8 +1535,8 @@ var controller = {
             locationcount = locationcount + 1;
             $("#location_count").html(locationcount);
 
-            controller.createSitevisitfromlocation($('#location_name').val());
-            
+            controller.createSitevisitfromlocation(updates[0]['nid'], $('#location_name').val());
+
             $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
           });
 
@@ -1452,12 +1546,11 @@ var controller = {
       controller.resetForm($('#form_sitereporttype'));
     },
 
-    createSitevisitfromlocation: function (title) {
+    createSitevisitfromlocation: function (pnid, title) {
       var sitevisitscount = 0;
-      //save added site visits
 
       var ftritemtype = "";
-      
+
       switch (localStorage.ftritemtype) {
       case "209":
         ftritemtype = "Site Visit";
@@ -1475,10 +1568,6 @@ var controller = {
       var updates = {};
       var images = {};
 
-      images['base64s'] = controller.base64Images;
-      images['names'] = controller.filenames;
-      images['sizes'] = controller.filesizes;
-
       updates['user-added'] = true;
       updates['nid'] = 1;
 
@@ -1493,6 +1582,11 @@ var controller = {
       updates['taxonomy_vocabulary_7']['und'] = [];
       updates['taxonomy_vocabulary_7']['und'][0] = {};
       updates['taxonomy_vocabulary_7']['und'][0]['tid'] = localStorage.ftritemtype;
+
+      updates['field_ftritem_place'] = {};
+      updates['field_ftritem_place']['und'] = [];
+      updates['field_ftritem_place']['und'][0] = {};
+      updates['field_ftritem_place']['und'][0]['target_id'] = pnid;
 
       updates['field_ftritem_date_visited'] = {};
       updates['field_ftritem_date_visited']['und'] = [];
@@ -1514,9 +1608,6 @@ var controller = {
       updates['field_ftritem_field_trip']['und'][0] = {};
       updates['field_ftritem_field_trip']['und'][0]['target_id'] = localStorage.fnid;
 
-      updates['field_ftritem_images'] = {};
-      updates['field_ftritem_images']['und'] = [];
-
       if($('#sitevisit_add_type').val() == "210") {
         updates['field_ftritem_lat_long'] = {};
         updates['field_ftritem_lat_long']['und'] = [];
@@ -1537,18 +1628,13 @@ var controller = {
 
           devtrac.indexedDB.addSiteVisitsData(db, updates).then(function() {
             controller.refreshSitevisits();
-            devtrac.indexedDB.addImages(db, images).then(function() {
-              controller.base64Images = [];
-              controller.filenames = [];
-              controller.filesizes = [];
-              controller.filedimensions = [];
-            });
 
           });
 
           sitevisitscount = sitevisitscount + 1;
           $("#sitevisit_count").html(sitevisitscount);
 
+          controller.resetForm($("#form_add_location"));
         });
 
       });  
@@ -1579,7 +1665,7 @@ var controller = {
         updates['taxonomy_vocabulary_7'] = {};
         updates['taxonomy_vocabulary_7']['und'] = [];
         updates['taxonomy_vocabulary_7']['und'][0] = {};
-        updates['taxonomy_vocabulary_7']['und'][0]['tid'] = $('#sitevisit_add_type').val();
+        updates['taxonomy_vocabulary_7']['und'][0]['tid'] = localStorage.ftritemtype;
 
         updates['field_ftritem_date_visited'] = {};
         updates['field_ftritem_date_visited']['und'] = [];
@@ -1601,20 +1687,15 @@ var controller = {
         updates['field_ftritem_field_trip']['und'][0] = {};
         updates['field_ftritem_field_trip']['und'][0]['target_id'] = localStorage.fnid;
 
-        updates['field_ftritem_place'] = {};
-        updates['field_ftritem_place']['und'] = [];
-        updates['field_ftritem_place']['und'][0] = {};
-        updates['field_ftritem_place']['und'][0]['target_id'] = localStorage.pnid;
+        updates['ftritem_place'] = localStorage.ftritemdistrict;
 
         updates['field_ftritem_images'] = {};
         updates['field_ftritem_images']['und'] = [];
 
-        if($('#sitevisit_add_type').val() == "210") {
-          updates['field_ftritem_lat_long'] = {};
-          updates['field_ftritem_lat_long']['und'] = [];
-          updates['field_ftritem_lat_long']['und'][0] = {};
-          updates['field_ftritem_lat_long']['und'][0]['geom'] = localStorage.point;
-        }
+        updates['field_ftritem_lat_long'] = {};
+        updates['field_ftritem_lat_long']['und'] = [];
+        updates['field_ftritem_lat_long']['und'][0] = {};
+        updates['field_ftritem_lat_long']['und'][0]['geom'] = localStorage.point;
 
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getAllSitevisits(db, function (sitevisits) {
@@ -1636,6 +1717,7 @@ var controller = {
                 controller.filedimensions = [];
               });
               controller.resetForm($('#form_sitevisit_add'));
+              $("#uploadPreview").html("");
               $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);  
             });
 
@@ -1650,7 +1732,17 @@ var controller = {
 
     onSavecomment: function() {
       if ($("#actionitem_comment").valid()) {
+        var anid = "";
+
+        if(localStorage.actionuser){
+          anid = parseInt(localStorage.anid);
+        }
+        else
+        {
+          anid = localStorage.anid;  
+        }
         var list_comment = $('#list_comments');
+        //list_comment.empty();
         var comment = {};
 
         comment['comment_body'] = {};
@@ -1663,31 +1755,38 @@ var controller = {
         comment['cid'] = null;
         comment['submit'] = 0;
 
+        comment['format'] = '1';
+        comment['status'] = '1';
+
+        comment['field_actionitem_status'] = {};
+        comment['field_actionitem_status']['und'] = [];
+        comment['field_actionitem_status']['und'][0] = {};
+        comment['field_actionitem_status']['und'][0]['value'] = 1; 
+
+        comment['taxonomy_vocabulary_8'] = {};
+        comment['taxonomy_vocabulary_8']['und'] = [];
+        comment['taxonomy_vocabulary_8']['und'][0] = {};
+        comment['taxonomy_vocabulary_8']['und'][0]['tid'] = '328'; 
+        comment['language'] = 'und';
+
+
         devtrac.indexedDB.open(function (db) {
-          devtrac.indexedDB.addCommentsData(db, comment).then(function(){
+          devtrac.indexedDB.addCommentsData(db, comment).then(function() {
+            var li = $("<li></li>");
+            var a = $("<a href='#' id='" + anid + "' onclick=''></a>");
+            var h1 = $("<h1 class='heada2'>" + $('#actionitem_comment').val() + "</h1>");
+            var p = $("<p class='para2'></p>");
 
-            devtrac.indexedDB.getAllComments(db, function (comments) {
-              for (var i in comments) {
-                if (comments[i]['nid'] == localStorage.anid) {
-                  var aItem = comments[i];
+            a.append(h1);
+            a.append(p);
+            li.append(a);
+            list_comment.append(li);
 
-                  var li = $("<li></li>");
-                  var a = $("<a href='#' id='" + aItem['nid'] + "' onclick=''></a>");
-                  var h1 = $("<h1 class='heada2'>" + aItem['comment_body']['und'][0]['value'] + "</h1>");
-                  var p = $("<p class='para2'></p>");
+            list_comment.listview('refresh');
 
-                  a.append(h1);
-                  a.append(p);
-                  li.append(a);
-                  list_comment.append(li);
-                }
-              }
-              list_comment.listview('refresh');
+            controller.loadingMsg("Saved", 1000);
 
-              controller.loadingMsg("Saved", 2000);
-
-              $('#actionitem_comment').val("");
-            });
+            $('#actionitem_comment').val("");
 
           }); 	
         });	
@@ -1705,11 +1804,11 @@ var controller = {
 
     // device ready event handler
     onDeviceReady: function () {
-      var options = {
+      /*var options = {
           enableHighAccuracy: true
       };
 
-      navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
+      //navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
       //    onSuccess Geolocation
       //
 
@@ -1723,7 +1822,7 @@ var controller = {
 
       function onError(error) {
         alert('code: ' + error.code + '\n' + 'message: ' + error.message + '\n');
-      }
+      }*/
 
     },
 
@@ -1811,7 +1910,7 @@ var controller = {
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.getAllplaces(db, function (locations) {
           for(var location in locations){
-            if(locations[location]['user-added'] == true && locations[location]['submit'] == 0){
+            if(locations[location]['user-added'] == true && locations[location]['submit'] == 0) {
               locationcount = locationcount + 1; 
             }
           }

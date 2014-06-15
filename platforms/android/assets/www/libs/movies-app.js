@@ -1,31 +1,37 @@
 $(document).ready(function() {
-  
-  var owl = $(".owl-carousel");
-  
-  owl.owlCarousel({
-    items: 1,
-    slideSpeed : 300,
-    paginationSpeed : 400,
-    singleItem:true,
-    pagination : false,
-    paginationNumbers: false,
-    navigation : true
-
-  });
-  
-  owlhandler.populateOwl(owl);
+  owlhandler.initialise();
    
 });
 
 var owlhandler = {
     
-    populateOwl: function(owl) {
+    owlObject : null,
+    
+    initialise: function() {
+      var owl = $(".owl-carousel");
       
+      owl.owlCarousel({
+        items: 1,
+        slideSpeed : 300,
+        paginationSpeed : 400,
+        singleItem:true,
+        pagination : false,
+        paginationNumbers: false,
+        navigation : true
+
+      });
+      
+      owlhandler.owlObject = owl;
+    
+    },
+    
+    populateOwl: function(snid) {
+      var owl = owlhandler.owlObject;
       localStorage.numbercount = 0;
       devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getAllSitevisits(db, function (ftritems) {
+        devtrac.indexedDB.getSitevisit(db, snid).then(function (ftritem) {
           
-          devtrac.indexedDB.getAllQuestionItems(db, ftritems, function (qtns) {
+          devtrac.indexedDB.getAllQuestionItems(db, ftritem, function (qtns) {
             if(qtns.length > 0) {
               var firstslide = '<div class="item"><h1>Swipe to Start</h1></div>';   
               owl.data('owlCarousel').addItem(firstslide);
@@ -44,7 +50,7 @@ var owlhandler = {
 
                   }
 
-                  var qtncontent = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div data-role="controlgroup">' + radios + '</div></div>';
+                  var qtncontent = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div data-role="controlgroup" class="qtions">' + radios + '</div></div>';
            
                   owl.data('owlCarousel').addItem(qtncontent);
                   
@@ -54,7 +60,7 @@ var owlhandler = {
 
                   localStorage.numbercount = parseInt(localStorage.numbercount) + 1;
 
-                  var qtncontent = '<div class="item"><h3>'+qtns[qtn].title+'</h3><input type="text" name="text_"'+qtns[qtn].nid+'" id=' + qtns[qtn].nid + ' value=""></div>';
+                  var qtncontent = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div class="qtions"><input type="text" name="text_"'+qtns[qtn].nid+'" id=' + qtns[qtn].nid + ' value=""></div></div>';
                   owl.data('owlCarousel').addItem(qtncontent);
                   
                   break;
@@ -74,7 +80,7 @@ var owlhandler = {
                     options = options + '<option value="'+arr[item]+'">'+arr[item]+'</option>';
                   }
 
-                  var innerdiv = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div data-role="controlgroup"><select id=select_'+qtns[qtn].nid+' name=select'+qtns[qtn].nid+'>'+options+'</select></div></div>';                                
+                  var innerdiv = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div class="qtions" data-role="controlgroup"><select id=select_'+qtns[qtn].nid+' name=select'+qtns[qtn].nid+'>'+options+'</select></div></div>';                                
 
                   owl.data('owlCarousel').addItem(innerdiv);
                   
@@ -91,7 +97,7 @@ var owlhandler = {
 
                   }
 
-                  var qtncontent = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div data-role="controlgroup">' + checkbox+'</div></div>';
+                  var qtncontent = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div data-role="controlgroup" class="qtions">' + checkbox+'</div></div>';
              
                   owl.data('owlCarousel').addItem(qtncontent);
                   

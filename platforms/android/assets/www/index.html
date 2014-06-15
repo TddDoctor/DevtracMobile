@@ -6,7 +6,7 @@
 <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
 <meta name="viewport"
   content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
-
+<link href='http://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" type="text/css" href="css/style_light.css"/>
 <link rel="stylesheet" href="css/jquery.mobile-1.4.0.min.css" />
 <link rel="stylesheet" href="css/jquery.mobile.theme-1.4.0.min.css" />
@@ -23,10 +23,11 @@
 <!-- Default Theme -->
 <link rel="stylesheet" href="libs/owl-carousel/owl.theme.css">
 
+<!-- <link rel="stylesheet" href="css/font-awesome.css"> -->
+
 <link rel="stylesheet" href="css/leaflet.css" />
 </head>
 <body>
-
   <!-- Application Home page  -->
   <div data-role="page" id="home_page">
 
@@ -59,6 +60,7 @@
     <div data-role="content" class='content'>
       <form class="cmxform" id="homeForm" method="" action="">
         <p id="username"></p>
+
         <ul data-role="listview" id="list_fieldtrips">
 
         </ul>
@@ -78,19 +80,33 @@
 
     <div data-role="content" class='content'>
       <form class="cmxform" id="loginForm" method="" action="">
+      
+      <div class="input-prepend">
+        
+          <input type="text"
+            id="page_login_name" minlength="2" placeholder="username" required />
+      
+      </div>
+        
+        <br>
+        
+        <div class="input-prepend">
+        
+          <input type="password"
+            id="page_login_pass" minlength="2" placeholder="password" required />
+        </div>
+
         <p>
-          <label for="page_login_name">Username</label> <input type="text"
-            id="page_login_name" minlength="2" required />
+          <input type="checkbox" name="checkbox-mini-0" id="checkbox-mini-0"
+            data-mini="true"> <label for="checkbox-mini-0">Remember
+            me</label>
         </p>
         <br>
-        <p>
-          <label for="page_login_pass">Password</label> <input type="password"
-            id="page_login_pass" minlength="2" required />
-        </p>
-        <br>
+        
         <div id='logindiv'>
           <button type="button" data-theme="b" id="page_login_submit">Login</button>
         </div>
+        
         <div id='logoutdiv'>
           <button type="button" data-theme="b" id="page_logout_submit">Logout</button>
         </div>
@@ -114,10 +130,9 @@
           <input type="radio" name="url" id="ug" class="url" value="Uganda">
           <label for="ug">Devtrac Uganda</label> <input type="radio" name="url"
             id="localhost" class="url" value="localhost"> <label
-            for="localhost">Change URL to localhost</label>
-            <input type="radio" name="url"
-            id="android" class="url" value="android"> <label
-            for="android">Change URL to Android</label>
+            for="localhost">Change URL to localhost</label> <input type="radio"
+            name="url" id="dmanual" class="url" value="DevtracManual"> <label
+            for="dmanual">Change URL to Devtrac Manual</label>
         </fieldset>
         <div id='urldiv'>
           <a href="#" data-role="button" data-inline="true" data-theme="b"
@@ -185,12 +200,13 @@
 
           </div>
           <div class="ui-block-b" data-theme="a">
-          
-          <a data-role="button" id="edit_fieldtrip" href="#page_fieldtrip_edit" data-icon="edit" data-rel="dialog">Edit title</a>
-          <a href="#page_sitevisit_add" data-role="button"
-                  data-mini="true" data-icon="plus" id="addsitevisit"
-                  data-rel="dialog">Site Reports</a>
-                  
+
+            <a data-role="button" id="edit_fieldtrip"
+              href="#page_fieldtrip_edit" data-rel="dialog"style="text-align: left;"><i class="icon-edit"></i>&nbsp&nbsp Edit
+              Title</a> <a href="#page_site_report_type" data-role="button"
+              data-mini="true" id="addsitevisit" style="text-align: left;"
+              data-rel="dialog"><i class="icon-plus"></i>&nbsp&nbsp Add Site Report</a>
+
           </div>
         </fieldset>
 
@@ -222,6 +238,9 @@
         <fieldset class="ui-grid-a">
           <div class="ui-block-a">
             <div class="ui-bar" style="width: 70%">
+              <label for="sitevisists_details_title"><b>Title: </b></label>
+              <p id="sitevisists_details_title" required></p>
+
               <label for="sitevisists_details_date"><b>Date Visited:
               </b></label>
               <p id="sitevisists_details_date" required></p>
@@ -242,13 +261,12 @@
               <h4>Edit</h4>
               <ul data-role="listview">
                 <li><a href="#page_sitevisit_edits" data-role="button"
-                  data-mini="true" data-icon="edit" id="editsitevisit"
-                  data-rel="dialog">Edit</a></li>
+                  data-mini="true" id="editsitevisit"
+                  data-rel="dialog"><i class="icon-edit"></i>&nbsp&nbsp Edit</a></li>
                 <li><a href="#page_add_actionitems" data-role="button"
-                  data-mini="true" data-icon="arrow-u" id="addactionitem"
-                  data-rel="dialog">Add action item</a></li>
-                <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" id="addquestionnaire">Questionnaire</a></li>
+                  data-mini="true" data-icon="" id="addactionitem"
+                  data-rel="dialog"><i class="icon-plus"></i>&nbsp&nbsp Add action item</a></li>
+                <li><a data-role="button" data-mini="true" id="addquestionnaire"><i class="icon-book"></i>&nbsp&nbsp Questionnaire</a></li>
               </ul>
 
             </div>
@@ -256,40 +274,39 @@
             <div data-role="collapsible" data-theme="b">
               <h4>Places</h4>
               <ul data-role="listview">
+
                 <li><a href="#page_location_list" data-role="button"
-                  data-mini="true" onclick="controller.listlocations();" data-icon="eye"
-                  id="listlocation">List</a></li>
-                  
+                  data-mini="true" onclick="controller.listlocations();"
+                   id="listlocation"><i class="icon-list"></i>&nbsp&nbsp List</a></li>
+
                 <li><a href="#mappage" data-role="button" class="panel_map"
-                  data-icon="location"
-                  onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);">Map</a></li>
-                <li><a href="#page_add_location" data-role="button"
-                  data-mini="true" data-icon="arrow-u" data-rel="dialog"
-                  id="addlocation">Add</a></li>
+                  
+                  onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="icon-map-marker"></i>&nbsp&nbsp Map</a></li>
+
               </ul>
             </div>
 
             <div data-role="collapsible" data-theme="b">
-              <h4>Uploads</h4>
+              <h4>Upload Status</h4>
               <ul data-role="listview" id="uploads_listview">
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="devtracnodes.uploadsitevisits();">Site
+                  data-icon="" onclick="devtracnodes.postNode();">Site
                     Visits</a>
-                <div id="sitevisit_count" class="ui-li-count"></div></li>
+                  <div id="sitevisit_count" class="ui-li-count"></div></li>
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="devtracnodes.uploadLocations()">Locations</a>
+                  data-icon="" onclick="">Locations</a>
                   <div id="location_count" class="ui-li-count"></div></li>
                 <!-- <li><a data-role="button" data-mini="true" data-icon="arrow-u" onclick="devtracnodes.postComments();">Comments</a><div id="comment_count" class="ui-li-count"></div></li> -->
                 <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="devtracnodes.uploadActionItems()">Action
-                    Items</a>
+                  data-icon="" onclick="">Action Items</a>
                   <div id="actionitem_count" class="ui-li-count"></div></li>
-                  <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="devtracnodes.uploadFieldtrips()">Fieldtrip Updates</a>
+                <li><a data-role="button" data-mini="true"
+                  data-icon="" onclick="">Fieldtrip Updates</a>
                   <div id="fieldtrip_count" class="ui-li-count"></div></li>
-                  <li><a data-role="button" data-mini="true"
-                  data-icon="arrow-u" onclick="devtracnodes.upload()">Sync All</a>
-                  </li>
+
+                <li><a data-role="button" data-mini="true"
+                  data-icon="" onclick="devtracnodes.syncAll()" style="text-align: center"><i class="icon-upload-alt"></i>&nbsp&nbsp Sync
+                    All</a></li>
 
               </ul>
             </div>
@@ -308,11 +325,11 @@
 
   </div>
   <!-- /page -->
-  
+
   <!-- List locations -->
   <div data-role="page" id="page_location_list">
     <div data-role="header">
-    <a id="" href="#page_sitevisits_details" data-role="button"
+      <a id="" href="#page_sitevisits_details" data-role="button"
         data-icon="back" data-iconpos="notext"></a>
       <h3>Locations</h3>
     </div>
@@ -320,10 +337,11 @@
 
     <div data-role="content" class='content'>
       <form id="form_location_list" method="" action="">
-      <ul data-role="listview" id="locationslist" data-split-icon="gear" data-split-theme="d">
-                
-      </ul>
-      
+        <ul data-role="listview" id="locationslist" data-split-icon="gear"
+          data-split-theme="d">
+
+        </ul>
+
       </form>
 
     </div>
@@ -331,6 +349,43 @@
 
   </div>
   <!-- /page -->
+
+  <!-- Select site report type -->
+  <div data-role="page" id="page_site_report_type">
+    <div data-role="header">
+      <a id="" href="#page_fieldtrip_details" data-role="button"
+        data-icon="delete" data-iconpos="notext"></a>
+      <h3>Select Site Report Type</h3>
+    </div>
+    <!-- /header -->
+
+    <div data-role="content" class='content'>
+      <form id="form_sitereporttype" method="" action="">
+        <label for='sitevisit_add_type'>Site Report Type</label> <select
+          name="sitevisit_add_type" id="sitevisit_add_type" data-mini="true"
+          required>
+          <option value="211">Human Interest Story</option>
+          <option value="210">Roadside Observation</option>
+          <option value="209">Site Visit</option>
+        </select> <label for="location_district">District</label> <input type='text'
+          value='' id='location_district' name='location_district' required />
+
+        <input type='text' value='' id='location_latlon' name='location_latlon'
+          required style="display: none" /> <label for="map_district"
+          style="color: red;" id="map_district_error"></label> <a
+          data-role="button" href="#mappage" id="map_district"
+          onclick="var state=true; mapctlr.initMap(null, null, state); mapctlr.resizeMapIfVisible();"
+          data-theme='b'>Map District</a> <a id="submit_sitereporttype"
+          data-role="button" href=""
+          onclick="controller.submitSitereporttype();" data-theme='a'>Submit</a>
+      </form>
+
+    </div>
+    <!-- /content -->
+
+  </div>
+  <!-- /page -->
+
 
   <!-- Edit site visit details -->
   <div data-role="page" id="page_sitevisit_edits">
@@ -340,14 +395,29 @@
     <!-- /header -->
 
     <div data-role="content" class='content'>
-      <form id="form_sitevisit_edits" method="" action=""></form>
+      <form id="form_sitevisit_edits" method="" action="">
+        <fieldset>
+          <label for='sitevisit_title'>Title</label> <input type='text'
+            value='' id='sitevisit_title'> <label for='sitevisit_date'>Date
+            Visited</label> <input type='text' value='' id='sitevisit_date'> <label
+            for='sitevisit_summary'>Summary</label>
+          <div class="summarytextareadiv">
+            <textarea id="sitevisit_summary" rows="4" cols="12"></textarea>
+          </div>
+
+        </fieldset>
+      </form>
+      <input type="button" data-inline="true" data-theme="b"
+        id="save_site_visit_edits" onclick="controller.onSitevisitedit();"
+        value="Save" /> <a href="#" data-role="button" data-inline="true"
+        data-rel="back" data-theme="a" id="cancel_site_visit_edits">Cancel</a>
 
     </div>
     <!-- /content -->
 
   </div>
   <!-- /page -->
-  
+
   <!-- Edit fieldtrips details -->
   <div data-role="page" id="page_fieldtrip_edit">
     <div data-role="header">
@@ -367,6 +437,8 @@
   <!-- Add site visit details -->
   <div data-role="page" id="page_sitevisit_add">
     <div data-role="header">
+      <a id="" href="#page_site_report_type" data-rel="dialog"
+        data-role="button" data-icon="back" data-iconpos="notext"></a>
       <h3>Add Site Visit</h3>
     </div>
     <!-- /header -->
@@ -377,22 +449,11 @@
         <label for="sitevisit_add_title">Title</label> <input type='text'
           value='' id='sitevisit_add_title' name='sitevisit_add_title' required />
 
-        <!-- <label for='sitevisit_add_districts'>Missing Districts</label><input
-          type='text' value='' id='sitevisit_add_districts'
-          name='sitevisit_add_districts' disabled=disabled required /> -->
-          
-          <label
-          for='sitevisit_add_oecds'>Missing Oecds</label><input type='text'
+        <label for='sitevisit_add_oecds'>Missing Oecds</label><input type='text'
           value='' id='sitevisit_add_oecds' name='sitevisit_add_oecds'
-          disabled=disabled required /> <label for='sitevisit_add_type'>Site
-          Visit Type</label> <select name="sitevisit_add_type" id="sitevisit_add_type"
-          data-mini="true" required>
-          <option value="211">Human Interest Story</option>
-          <option value="210">Roadside Observation</option>
-          <option value="209">Site Visit</option>
-        </select> <label for="sitevisit_add_date">Date</label> <input type='text'
-          id='sitevisit_add_date' name='sitevisit_add_date'
-          data-role="date" class="date-input" data-inline="false" required /> <label
+          disabled=disabled required /> <label for="sitevisit_add_date">Date</label>
+        <input type='text' id='sitevisit_add_date' name='sitevisit_add_date'
+          data-role="date" required /> <label
           for="sitevisit_add_public_summary">Public Summary</label>
         <textarea rows="8" type='text' value=''
           id='sitevisit_add_public_summary' name='sitevisit_add_public_summary'
@@ -404,14 +465,16 @@
 
         <div
           class="ui-btn ui-icon-plus ui-btn-icon-left ui-corner-all fileinput-button">
-          <span>Image: </span> <input type="file" name="file" id="file" value="">
+          <span>Image: </span> <input type="file" name="file" id="file"
+            multiple="multiple">
         </div>
-
-        <input data-inline="true" type="button"
-          onclick="controller.onSavesitevisit();" value='Save' data-theme='b'
-          data-mini="true" id='sitevisit_add_save' /><a data-role="button"
-          onclick="" data-theme='b' href="#page_fieldtrip_details"
-          data-mini="true" data-inline="true" id='sitevisit_add_cancel'>Cancel</a>
+        <br>
+        <div id="uploadPreview"></div>
+        <br> <a data-inline="true" data-role="button" data-theme='b'
+          data-mini="true" id='sitevisit_add_save'>Save</a> <a
+          data-role="button" data-rel="dialog" data-theme='b'
+          href="#page_site_report_type" data-mini="true" data-inline="true"
+          id='sitevisit_add_cancel'>Cancel</a>
       </form>
 
     </div>
@@ -456,20 +519,19 @@
 
         <label for="actionitem_date">Due Date</label> <input type='text'
           id='actionitem_date' name='actionitem_date' data-role="date"
-          data-inline="false" required /> <label
-          for="actionitem_followuptask">Follow up task</label>
+          data-inline="false" required /> <label for="actionitem_followuptask">Follow
+          up task</label>
         <textarea rows="8" type='text' value='' id='actionitem_followuptask'
           name='actionitem_followuptask' required></textarea>
 
-        <label
-          for="actionitem_report">Report</label> <input type='text' value=''
-          id='actionitem_report' name='actionitem_report' required /> <label
-          for="actionitem_tags">Tags</label> <input type='text' value=''
+        <label for="actionitem_report">Report</label> <input type='text'
+          value='' id='actionitem_report' name='actionitem_report' required />
+        <label for="actionitem_tags">Tags</label> <input type='text' value=''
           id='actionitem_tags' /> <input data-inline="true" type="button"
           onclick="controller.onSaveactionitem();" value='Save' data-theme='b'
-           id='action_item_save' /><input type="button"
-          onclick="" value='Cancel' data-theme='b'
-          data-inline="true" id='action_item_cancel' />
+          id='action_item_save' /><input type="button" onclick=""
+          value='Cancel' data-theme='b' data-inline="true"
+          id='action_item_cancel' />
       </form>
 
     </div>
@@ -494,6 +556,8 @@
         <fieldset class="ui-grid-a">
           <div class="ui-block-a">
             <div class="ui-bar" style="width: 70%">
+              <label for="actionitem_details_title"><b>Title: </b></label>
+              <p id="actionitem_details_title" required></p>
 
               <label for="actionitem_due_date"><b>Due Date: </b></label>
               <p id="actionitem_due_date" required></p>
@@ -502,15 +566,6 @@
                   Location: </b></label>
               <p id="actionitem_resp_location" required></p>
 
-              <label for="actionitem_ftritem"><b>Report: </b></label>
-              <p id="actionitem_ftritem" required></p>
-
-              <label for="actionitem_details_status"><b>Status: </b></label>
-              <p id="actionitem_details_status" required></p>
-
-              <label for="actionitem_details_priority"><b>Priority:
-              </b></label>
-              <p id="actionitem_details_priority" required></p>
             </div>
           </div>
           <div class="ui-block-b">
@@ -538,6 +593,26 @@
               </ul>
             </div>
 
+            <div data-role="collapsible" data-theme="b">
+              <h4>Status</h4>
+              <ul data-role="listview">
+                <li><label for="actionitem_details_status"><b>Status:
+                  </b></label>
+                  <p id="actionitem_details_status" required></p></li>
+
+                <li><label for="actionitem_ftritem"><b>Report:
+                  </b></label>
+                  <p id="actionitem_ftritem" required></p></li>
+
+                <li><label for="actionitem_details_priority"><b>Priority:
+                  </b></label>
+                  <p id="actionitem_details_priority" required></p></li>
+
+              </ul>
+            </div>
+
+
+
           </div>
         </fieldset>
 
@@ -562,7 +637,22 @@
     </div>
     <!-- /header -->
 
-    <div data-role="content" class='content' id='locationcontent'></div>
+    <div data-role="content" class='content' id='locationcontent'>
+<form id="editlocationform">
+        <label for='place_title'>Title</label> <input type='text' value=''
+          id='place_title'> <label for='place_name'>Name</label> <input
+          type='text' value='' id='place_name'> <label
+          for='place_reponsible'>Responsible person</label> <input type='text'
+          value='' id='place_responsible'> <label for='place_email'>Email</label>
+        <input type='text' value='' id='place_email'>
+</form>
+ <input type="button" data-inline="true" data-theme="b" id="save_places_info"
+          class=""
+          onclick="controller.onPlacesave(this);" value="Save" /> <a
+          data-role="button" data-inline="true" data-rel="back" data-theme="a"
+          id="cancel_places_info">Cancel</a>
+
+    </div>
     <!-- /content -->
 
   </div>
@@ -570,10 +660,12 @@
 
   <!-- page -->
   <div data-role="page" id="page_add_location">
- 
-    <div data-role="header">
 
-      <h3>Add Location</h3>
+    <div data-role="header">
+      <a id="" href="#page_site_report_type" data-role="button" data-icon="back"
+        data-iconpos="notext" data-rel="dialog"></a>
+
+      <h3>Create Location</h3>
     </div>
     <!-- /header -->
 
@@ -584,21 +676,20 @@
           for="location_placetypes">Location Types</label>
         <div id='location_placetypes'></div>
 
-        <label for="location_district">District</label> <input type='text'
-          value='' id='location_district' name='location_district' required />
-        <a data-role="button" href="#mappage"
-          onclick="var state=true; mapctlr.initMap(null, null, state); mapctlr.resizeMapIfVisible();"
-          data-theme='b'>Map District</a> <label for="location_contact">Contact</label>
-        <input type='text' value='' id='location_contact' /> <label
-          for="location_phone">Phone</label> <input type='text' value=''
-          id='location_phone' /> <label for="location_email">Email</label> <input
-          type='text' value='' id='location_email' /> <label
-          for="location_website">Website</label> <input type='text' value=''
-          id='location_website' /> <input type='button'
-          onclick="controller.onSavelocation();" value='Save'
-          id='location_item_save' data-inline="true" data-theme='b' /> <input
-          type='button' onclick="" value='Cancel' data-inline="true"
-          id='location_item_cancel' data-theme='b' />
+        <div data-role="collapsible" data-theme="a">
+          <h4>Contact</h4>
+          <label for="location_contact">Contact Name</label> <input type='text'
+            value='' id='location_contact' /> <label for="location_phone">Phone</label>
+          <input type='text' value='' id='location_phone' /> <label
+            for="location_email">Email</label> <input type='text' value=''
+            id='location_email' /> <label for="location_website">Website</label>
+          <input type='text' value='' id='location_website' />
+        </div>
+
+        <input type='button' onclick="controller.onSavelocation();" value='Save'
+          id='location_item_save' data-inline="true" data-theme='b' /> <a id=""
+          href="#page_site_report_type" data-role="button" data-theme='b'
+          data-inline="true" data-rel="dialog">Cancel</a>
 
       </form>
 
@@ -612,10 +703,12 @@
   <div data-role="page" id="mappage">
     <div data-role="header">
       <a id="addlocation_back" data-icon="back" data-rel="dialog"
-        class="ui-btn-left" href="#page_add_location" data-iconpos="notext"></a>
-      <a id="viewlocation_back" data-icon="back" data-rel="back"
-        class="ui-btn-left" data-iconpos="notext"></a>
-      <h3 id="mapheader">State of the Map</h3>
+        class="ui-btn-left" href="#page_site_report_type" data-iconpos="notext"></a>
+      <a id="viewlocation_back" data-icon="back" data-rel="dialog"
+        class="ui-btn-left" href="#page_sitevisits_details"
+        data-iconpos="notext"></a>
+
+      <h3 id="mapheader"></h3>
     </div>
     <!-- /header -->
 
@@ -627,24 +720,24 @@
 
   </div>
   <!-- /page -->
-  
+
   <!-- Add questionnaire page -->
   <div data-role="page" id="page_add_questionnaire">
-  
+
     <div data-role="header" id='qtnaireheader'>
-      <a id="" data-rel="back" data-icon="back" data-iconpos="notext" data-role="button" style="margin-top: 2.5px;">Back</a>
+      <a id="" data-rel="back" data-icon="back" data-iconpos="notext"
+        data-role="button" style="margin-top: 2.5px;">Back</a>
       <h3 id="qtn_title">Questionnaire</h3>
     </div>
     <!-- /header -->
 
     <div data-role="content" class='content' id='qtnairecontent'>
-      <div id="owl-demo" class="owl-carousel owl-theme">
-     
-      </div>
+      <div id="owl-demo" class="owl-carousel owl-theme"></div>
     </div>
     <!-- /content -->
 
   </div>
+  <!-- /page -->
 
   <script src="libs/jquery-1.7.2.min.js"></script>
   <script src="libs/jquery-ui-1.10.4.custom.js"></script>
@@ -663,8 +756,10 @@
   <script src="libs/leaflet.js"></script>
   <script src="libs/jquery.blockUI.js"></script>
 
-  <script type="text/javascript" src="libs/IndexedDBShim/dist/IndexedDBShim.js"></script>
+  <script type="text/javascript" src="libs/IndexedDBShim-master/dist/IndexedDBShim.js"></script>
   <script type="text/javascript" src="js/model/indexdb-store.js"></script>
+  <script src="libs/movies-app.js"></script>
+  
   <script type="text/javascript" src="js/controller/map-controller.js"></script>
   
   <script type="text/javascript" src="js/authentication.js"></script>
@@ -676,8 +771,6 @@
       controller.initialize();
       
   </script>
-  
-  <script src="libs/movies-app.js"></script>
 
 </body>
 </html>

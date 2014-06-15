@@ -5,8 +5,8 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDB.open = function(callback) {
-  var version = 9;
-  var request = indexedDB.open("a1", version);
+  var version = 1;
+  var request = indexedDB.open("e", version);
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
     callback(devtrac.indexedDB.db);
@@ -17,8 +17,8 @@ devtrac.indexedDB.open = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 9;
-  var request = indexedDB.open("a1", version);
+  var version = 1;
+  var request = indexedDB.open("e", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -56,6 +56,9 @@ devtrac.indexedDB.open = function(callback) {
     if(db.objectStoreNames.contains("images")){
       db.deleteObjectStore("images");
     }
+    if(db.objectStoreNames.contains("sublocations")){
+      db.deleteObjectStore("sublocations");
+    }
 
     var store = db.createObjectStore("oecdobj", {autoIncrement: true});
     var placetypesstore = db.createObjectStore("placetype", {autoIncrement: true});
@@ -83,6 +86,10 @@ devtrac.indexedDB.open = function(callback) {
     
     var images = db.createObjectStore("images", {keyPath: "nid"});
     images.createIndex('nid', 'nid', { unique: true });
+    
+    var submittedlocations = db.createObjectStore("sublocations", {keyPath: "nid"});
+    submittedlocations.createIndex('nid', 'nid', { unique: true });
+    
   };
 
   request.onsuccess = function(e) {
@@ -188,6 +195,33 @@ devtrac.indexedDB.addFieldtripsData = function(db, fObj) {
     };
   }else{
     d.reject("No fieldtrips returned");
+  }
+
+  return d;
+};
+
+
+//adding uploaded locations data to object store
+devtrac.indexedDB.addUploadedLocations = function(db, lObj) {
+  var d = $.Deferred();
+  var trans = db.transaction("sublocations", "readwrite");
+  var store = trans.objectStore("sublocations");
+  var request;
+
+  if(lObj.length > 0){
+    for (var i in lObj) {
+      request = store.add(lObj[i])
+    }
+
+    request.onsuccess = function(e) {
+      d.resolve();
+    };
+
+    request.onerror = function(e) {
+      d.reject(e);
+    };
+  }else {
+    d.reject("No locations returned");
   }
 
   return d;
@@ -537,7 +571,7 @@ devtrac.indexedDB.getAllFieldtripItems = function(db, callback) {
 };
 
 //get all questions in database
-devtrac.indexedDB.getAllQuestionItems = function(db, ftritems, callback) {
+devtrac.indexedDB.getAllQuestionItems = function(db, ftritem, callback) {
   var qtns = [];
   var trans = db.transaction(["qtnsitemsobj"], "readonly");
   var store = trans.objectStore("qtnsitemsobj");
@@ -548,15 +582,22 @@ devtrac.indexedDB.getAllQuestionItems = function(db, ftritems, callback) {
 
   cursorRequest.onsuccess = function(e) {
     var result = e.target.result;
+    
     if(!!result == false) {
       callback(qtns);
       return;
     }
-    //check for question to retrieve
-    if(result.value.status === 1 && ftritems[0]['taxonomy_vocabulary_1']['und'][0]['tid'] === result.value.taxonomy_vocabulary_1.und[0].tid) {
-    qtns.push(result.value);
-    }
+    
     result["continue"]();
+    
+    if(ftritem['taxonomy_vocabulary_1'] != undefined) {
+      //check for question to retrieve
+      if(result.value.status == 1 && ftritem['taxonomy_vocabulary_1']['und'][0]['tid'] == result.value.taxonomy_vocabulary_1.und[0].tid) {
+        qtns.push(result.value);
+      }
+      
+    }
+    
   };
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
@@ -601,26 +642,40 @@ devtrac.indexedDB.getAllSitevisits = function(db, callback) {
 };
 
 //search sitevisits using index of nid
-devtrac.indexedDB.getSitevisit = function(db, snid, callback) {
+devtrac.indexedDB.getSitevisit = function(db, snid) {
+  var d = $.Deferred();
   var trans = db.transaction(["sitevisit"], "readonly");
   var store = trans.objectStore("sitevisit");
+  //var ftritem = "";
 
   var index = store.index("nid");
   index.get(snid).onsuccess = function(event) {
-    callback(event.target.result);
+    //callback(event.target.result);
+    //d.resolve(event.target.result);
+    ftritem = event.target.result;
   };
-
+  
+  trans.oncomplete = function(event) {
+    d.resolve(ftritem);
+  };
+  
+  trans.error = function(event) {
+    //d.resolve(ftritem);
+    console.log("get site visit error");
+  };
+  
+  return d;
 };
 
 //search images using index of nid
-devtrac.indexedDB.getImage = function(db, inid) {
+devtrac.indexedDB.getImage = function(db, inid, newnid, vd, siteid) {
   var d = $.Deferred();
   var trans = db.transaction(["images"], "readonly");
   var store = trans.objectStore("images");
 
   var index = store.index("nid");
   index.get(inid).onsuccess = function(event) {
-    d.resolve(event.target.result);
+    d.resolve(event.target.result, newnid, vd, siteid);
   };
   return d;
 };
@@ -714,6 +769,32 @@ devtrac.indexedDB.getAllplaces = function(db, callback) {
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
 };
+
+//get all images in database
+devtrac.indexedDB.getAllImages = function(db, callback) {
+  var images = [];
+  var trans = db.transaction(["images"], "readonly");
+  var store = trans.objectStore("images");
+
+  // Get everything in the store;
+  var keyRange = IDBKeyRange.lowerBound(0);
+  var cursorRequest = store.openCursor(keyRange);
+
+  cursorRequest.onsuccess = function(e) {
+    var result = e.target.result;
+    if(!!result == false) {
+      callback(images);
+      return;
+    }
+
+    images.push(result.value);
+
+    result["continue"]();
+  };
+
+  cursorRequest.onerror = devtrac.indexedDB.onerror;
+};
+
 
 //get all comments in database
 devtrac.indexedDB.getAllComments = function(db, callback) {
@@ -870,7 +951,20 @@ devtrac.indexedDB.editPlace = function(db, pnid, updates) {
   request.onsuccess = function(event) {
     // Get the old value that we want to update
     var data = request.result;
-    data.submit = updates['submit'];
+    
+    for(var key in updates){
+      if(key == "email"){
+        data['field_place_responsible_email']['und'][0]['email'] = updates['email'];
+      }else if(key == "responsible"){
+        data['field_place_responsible_person']['und'][0]['value'] = updates['responsible']; 
+      }else if(key == "title"){
+       data['title'] = updates['title']; 
+      }else if(key == "submit"){
+       data['submit'] = updates['submit']; 
+      }else if(key == "nid"){
+       data['new_nid'] = updates['nid']; 
+      }
+    }
 
     // Put this updated object back into the database.
     var requestUpdate = store.put(data);
@@ -903,9 +997,22 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
   request.onsuccess = function(event) {
     // Get the old value that we want to update
     var data = request.result;
-    data.submit = updates['submit'];
-    //data.nid = updates['nid'];
-
+    
+    for(var key in updates){
+     if(key == "title"){
+       data['title'] = updates['title'];   
+     } 
+     if(key == "date"){
+       data['field_ftritem_date_visited']['und'][0]['value'] = updates['date']
+     }
+     if(key  == "summary"){
+       data['field_ftritem_public_summary']['und'][0]['value'] = updates['summary']
+     }
+     if(key == "submit"){
+       data['submit'] = updates['submit']
+     }
+    }
+    
     // Put this updated object back into the database.
     var requestUpdate = store.put(data);
     requestUpdate.onerror = function(event) {
@@ -915,14 +1022,46 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
     };
     requestUpdate.onsuccess = function(event) {
       // Success - the data is updated!
-      console.log("Site visit update success");
+      //console.log("Site visit update success");
 
-      store['delete'](snid);
+      //store['delete'](snid);
       d.resolve();
     };
   };
 
   return d;
+};
+
+//delete place
+devtrac.indexedDB.deletePlace = function(db, pnid) {
+  var trans = db.transaction(["placesitemsobj"], "readwrite");
+  var store = trans.objectStore("placesitemsobj");
+
+  var request = store['delete'](pnid);
+
+  request.onsuccess = function(e) {
+    console.log("Deleted sitevisit "+pnid);
+  };
+
+  request.onerror = function(e) {
+    console.log(e);
+  };
+};
+
+//delete sitevisit
+devtrac.indexedDB.deleteSitevisit = function(db, snid) {
+  var trans = db.transaction(["sitevisit"], "readwrite");
+  var store = trans.objectStore("sitevisit");
+
+  var request = store['delete'](snid);
+
+  request.onsuccess = function(e) {
+    console.log("Deleted sitevisit "+snid);
+  };
+
+  request.onerror = function(e) {
+    console.log(e);
+  };
 };
 
 //delete image

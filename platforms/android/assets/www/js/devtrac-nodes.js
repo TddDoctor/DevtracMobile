@@ -17,7 +17,7 @@ var devtracnodes = {
           console.log(JSON.stringify(XMLHttpRequest));
           console.log(JSON.stringify(textStatus));
           console.log(JSON.stringify(errorThrown));
-          d.reject();
+          d.reject(errorThrown);
         },
         success: function (data) {
           updates['submit'] = 1;
@@ -45,7 +45,7 @@ var devtracnodes = {
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.log('error '+errorThrown);
-          d.reject();
+          d.reject(errorThrown);
         },
         success: function (data) {         
           updates['submit'] = 1;
@@ -81,7 +81,7 @@ var devtracnodes = {
               contentType: 'application/json',
               error: function(XMLHttpRequest, textStatus, errorThrown) {
                 console.log('error '+errorThrown);
-                d.reject();
+                d.reject(errorThrown);
               },
               success: function (data) {
                 console.log('Answers upload success');
@@ -181,8 +181,16 @@ var devtracnodes = {
 
               });
 
-            }).fail(function() {
-              d.reject();
+            }).fail(function(e) {
+              if(e == "Unauthorized: CSRF validation failed" || e == "Unauthorized") {
+                auth.getToken().then(function(token) {
+                  localStorage.usertoken = token;
+                  devtracnodes.uploadActionItems(actionitems);
+                });  
+              }else
+              {
+                d.reject(e);
+              }
             });   
           });
         }
@@ -329,7 +337,7 @@ var devtracnodes = {
               });
 
             }).fail(function(e) {
-              if(e == "Unauthorized: CSRF validation failed") {
+              if(e == "Unauthorized: CSRF validation failed" || e == "Unauthorized") {
                 auth.getToken().then(function(token) {
                   localStorage.usertoken = token;
                   devtracnodes.uploadLocations();
@@ -452,7 +460,17 @@ var devtracnodes = {
                       d.resolve();
                     });
                     d.resolve()
-                  });
+                  }).fail(function(e){
+                    if(e == "Unauthorized: CSRF validation failed" || e == "Unauthorized") {
+                      auth.getToken().then(function(token) {
+                        localStorage.usertoken = token;
+                        devtracnodes.uploadsitevisits(db, sitevisits);
+                      });  
+                    }else
+                    {
+                      d.reject(e);
+                    }
+                  })
                 }).fail(function(e){
                   console.log("the image is error is "+e);
                   if(e.indexOf("Could not create destination directory") != -1) {
@@ -462,6 +480,16 @@ var devtracnodes = {
 
               });
 
+            }).fail(function(e){
+              if(e == "Unauthorized: CSRF validation failed" || e == "Unauthorized") {
+                auth.getToken().then(function(token) {
+                  localStorage.usertoken = token;
+                  devtracnodes.uploadsitevisits(db, sitevisits);
+                });  
+              }else
+              {
+                d.reject(e);
+              }
             });
 
           });
@@ -505,8 +533,16 @@ var devtracnodes = {
                   }
                 });
 
-              }).fail(function(){
-                d.reject();    
+              }).fail(function(e){
+                if(e == "Unauthorized: CSRF validation failed" || e == "Unauthorized") {
+                  auth.getToken().then(function(token) {
+                    localStorage.usertoken = token;
+                    devtracnodes.uploadLocations();
+                  });  
+                }else
+                {
+                  d.reject(e);
+                }
               });
 
             });
@@ -574,8 +610,16 @@ var devtracnodes = {
 
                   });
 
-                }).fail(function() {
-                  d.reject();
+                }).fail(function(e) {
+                  if(e == "Unauthorized: CSRF validation failed" || e == "Unauthorized") {
+                    auth.getToken().then(function(token) {
+                      localStorage.usertoken = token;
+                      devtracnodes.uploadFieldtrips();
+                    });  
+                  }else
+                  {
+                    d.reject(e);
+                  }
                 }); 
               });
             }
@@ -707,15 +751,16 @@ var devtracnodes = {
       }
     },
 
-    //
-    checkSitevisitforUpload: function(){
+    //check sitevisits to update
+    checkSitevisitforUpdate: function(){
+      var d = $.Deferred();
       var sitevisit = false;
 
       devtrac.indexedDB.open(function (db) {
         //check for sitevisits to upload
         devtrac.indexedDB.getAllSitevisits(db, function(sitevisits) {
           for(var k in sitevisits) {
-            if(sitevisits[k]['submit'] == 0 && sitevisits[k]['user-added'] == true) {
+            if(sitevisits[k]['submit'] == 0 && sitevisits[k]['user-added'] == undefined) {
               sitevisit = true;
               break;
             }
@@ -729,8 +774,10 @@ var devtracnodes = {
 
       });
 
+      return d;
     },
 
+    // check locations to upload
     checkLocationsforUpload: function(){
       var d = $.Deferred();
       var place = false;

@@ -592,8 +592,10 @@ devtrac.indexedDB.getAllQuestionItems = function(db, ftritem, callback) {
     
     if(ftritem['taxonomy_vocabulary_1'] != undefined) {
       //check for question to retrieve
-      if(result.value.status == 1 && ftritem['taxonomy_vocabulary_1']['und'][0]['tid'] == result.value.taxonomy_vocabulary_1.und[0].tid) {
-        qtns.push(result.value);
+      if(ftritem['taxonomy_vocabulary_1']['und'] != undefined && result.value.status == 1) {
+        if(ftritem['taxonomy_vocabulary_1']['und'][0]['tid'] == result.value.taxonomy_vocabulary_1.und[0].tid) {
+          qtns.push(result.value);
+        }  
       }
       
     }

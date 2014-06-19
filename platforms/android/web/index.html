@@ -32,6 +32,54 @@
 
 </head>
 <body>
+
+  <!-- Page Login  -->
+  <div data-role="page" id="page_login">
+    <div data-role="header">
+      <h1 title="Login">Login</h1>
+    </div>
+    <!-- /header -->
+
+    <div data-role="content" class='content'>
+      <form class="cmxform" id="loginForm" method="" action="">
+
+        <div class="input-prepend">
+
+          <input type="text" id="page_login_name" minlength="2"
+            placeholder="username" required />
+
+        </div>
+
+        <br>
+
+        <div class="input-prepend">
+
+          <input type="password" id="page_login_pass" minlength="2"
+            placeholder="password" required />
+        </div>
+
+        <p>
+          <input type="checkbox" name="checkbox-mini-0" id="checkbox-mini-0"
+            data-mini="true"> <label for="checkbox-mini-0">Remember
+            me</label>
+        </p>
+        <br>
+
+        <div id='logindiv'>
+          <button type="button" data-theme="b" id="page_login_submit" data-mini="true">Login</button>
+        </div>
+
+        <div id='logoutdiv'>
+          <button type="button" data-theme="b" id="page_logout_submit" data-mini="true">Logout</button>
+        </div>
+      </form>
+    </div>
+    <!-- /content -->
+
+  </div>
+  <!-- /page -->
+
+
   <!-- Fieldtrips details -->
   <div data-role="page" id="page_fieldtrip_details">
     <div data-role="controlgroup">
@@ -147,52 +195,6 @@
         <ul data-role="listview" id="list_fieldtrips">
 
         </ul>
-      </form>
-    </div>
-    <!-- /content -->
-
-  </div>
-  <!-- /page -->
-
-  <!-- Page Login  -->
-  <div data-role="page" id="page_login">
-    <div data-role="header">
-      <h1 title="Login">Login</h1>
-    </div>
-    <!-- /header -->
-
-    <div data-role="content" class='content'>
-      <form class="cmxform" id="loginForm" method="" action="">
-
-        <div class="input-prepend">
-
-          <input type="text" id="page_login_name" minlength="2"
-            placeholder="username" required />
-
-        </div>
-
-        <br>
-
-        <div class="input-prepend">
-
-          <input type="password" id="page_login_pass" minlength="2"
-            placeholder="password" required />
-        </div>
-
-        <p>
-          <input type="checkbox" name="checkbox-mini-0" id="checkbox-mini-0"
-            data-mini="true"> <label for="checkbox-mini-0">Remember
-            me</label>
-        </p>
-        <br>
-
-        <div id='logindiv'>
-          <button type="button" data-theme="b" id="page_login_submit">Login</button>
-        </div>
-
-        <div id='logoutdiv'>
-          <button type="button" data-theme="b" id="page_logout_submit">Logout</button>
-        </div>
       </form>
     </div>
     <!-- /content -->

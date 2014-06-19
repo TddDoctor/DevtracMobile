@@ -16,6 +16,7 @@ var controller = {
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       localStorage.appurl = "http://localhost/dt11";
+      //localStorage.appurl = "http://192.168.38.114/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //}
@@ -41,20 +42,25 @@ var controller = {
         }).fail(function () {
           $('#list_fieldtrips').attr('data-filter',false);
           $('#homeForm').trigger('create');
-          $.mobile.changePage("#home_page", "slide", true, false);
-          $("#username").html("Please login to use the application");
+          //$.mobile.changePage("#home_page", "slide", true, false);
+          //$("#username").html("Please login to use the application");
         });
 
       }else
       {
-        controller.loadingMsg("You are offline and cannot upload data", 2000);
+        
         if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
-
+          controller.loadingMsg("You are offline, cannot upload data. Now using offline data", 5000);
           //load field trip details from the database if its one and the list if there's more.
           controller.loadFieldTripList();
 
           //update upload counter
           controller.uploadCounter(); 
+        }else {
+          controller.loadingMsg("Please connect to the internet to login and download your devtrac data.", 2000);
+          //hide logout button and show login button when offline
+          $('#logoutdiv').hide();
+          $('#logindiv').show();
         }
       }
 
@@ -650,7 +656,7 @@ var controller = {
 
             }
 
-            fieldtripList.listview('refresh');
+            fieldtripList.listview().listview('refresh');
             $("#fieldtrip_count").html(count);
 
             var sitevisitcount = 0;
@@ -666,7 +672,7 @@ var controller = {
 
             });
 
-            //home_page
+            
             $.mobile.changePage("#home_page", "slide", true, false);
             $.unblockUI();
           } else if (data.length == 1) {
@@ -755,7 +761,7 @@ var controller = {
 
                 $("#fieldtrip_count").html(count);
                 $("#sitevisit_count").html(sitevisitcount);
-                sitevisitList.listview('refresh');
+                sitevisitList.listview().listview('refresh');
                 
                 $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
                 $.unblockUI();
@@ -1129,6 +1135,7 @@ var controller = {
 
       });
 
+      updates['submit'] = 1;
       var snid = localStorage.snid;
       if(localStorage.user == "true"){
         snid = parseInt(snid);
@@ -1137,7 +1144,7 @@ var controller = {
       }
 
       devtrac.indexedDB.open(function (db) {
-        console.log("siite visit is "+localStorage.snid);
+        //console.log("siite visit is "+localStorage.snid);
 
         devtrac.indexedDB.editSitevisit(db, snid, updates).then(function () {
 

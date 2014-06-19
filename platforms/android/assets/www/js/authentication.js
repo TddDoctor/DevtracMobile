@@ -165,7 +165,10 @@ var auth = {
             d.reject();
           },
           success : function(data) {
-            if(localStorage.uid != data.user.uid){
+            
+            if(window.localStorage.getItem("dataflag") != data.user.uid){
+              window.localStorage.removeItem("dataflag");
+              window.localStorage.setItem("dataflag", data.user.uid)
               devtrac.indexedDB.open(function (db) {
                 for(var x in controller.objectstores) {
                   devtrac.indexedDB.deleteAllTables(db, controller.objectstores[x]).then(function(){
@@ -183,6 +186,7 @@ var auth = {
             localStorage.username = name;
             localStorage.pass = pass;
             localStorage.uid = data.user.uid;
+            
             localStorage.realname = data.user.realname
 
             // Obtain session token.
@@ -276,7 +280,7 @@ var auth = {
             //set closing message
             $("#username").html("Goodbye, "+localStorage.username+" !");
 
-            $.mobile.changePage("#home_page", "slide", true, false);
+            $.mobile.changePage("#page_login", "slide", true, false);
 
             d.resolve();
             //clear passwords from file

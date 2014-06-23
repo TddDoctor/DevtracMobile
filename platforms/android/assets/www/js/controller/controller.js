@@ -15,7 +15,7 @@ var controller = {
       //set application url if its not set
       //if (!localStorage.appurl) {
       localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-      //localStorage.appurl = "http://localhost/dt11";
+      l//ocalStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.114/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
@@ -1014,7 +1014,7 @@ var controller = {
           var sitedate = fObject['field_ftritem_date_visited']['und'][0]['value'];
           var formatedsitedate;
 
-          if(localStorage.user == "false"){
+          if(localStorage.user == "false" && sitedate.indexOf('/') == -1){
             var sitedatestring = JSON.stringify(sitedate);
             var sitedateonly = sitedatestring.substring(1, sitedatestring.indexOf('T'));
             var sitedatearray = sitedateonly.split("-");
@@ -1646,7 +1646,7 @@ var controller = {
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.getAllSitevisits(db, function (sitevisits) {
           for (var k in sitevisits) {
-            if (sitevisits[k]['user-added'] && sitevisits[k]['nid'] == updates['nid']) {
+            if (sitevisits[k]['user-added'] == true && sitevisits[k]['nid'] == updates['nid']) {
               updates['nid'] = sitevisits[k]['nid'] + 1;
               sitevisitscount = sitevisitscount + 1;
             }

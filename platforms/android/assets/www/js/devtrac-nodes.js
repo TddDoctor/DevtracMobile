@@ -529,8 +529,9 @@ var devtracnodes = {
           devtracnodes.getSitevisitString(sitevisits[k]).then(function(jsonstring, active_sitereport, date, siteid) {
             devtrac.indexedDB.open(function (db) {
 
-              devtracnodes.updateNode(sitevisits[k]['nid'], jsonstring, ftrid).then(function(updates, ftritemid, sid) {
+              devtracnodes.updateNode(siteid, jsonstring).then(function(updates, ftritemid, sid) {
 
+                updates['editflag'] = 0;
                 /*todo: */  devtrac.indexedDB.editSitevisit(db, sid, updates).then(function() {
                   var count_container = $("#sitevisit_count").html().split(" ");
                   if(typeof parseInt(count_container[0]) == "number") {
@@ -896,12 +897,13 @@ var devtracnodes = {
             break;
           case 'field_ftritem_date_visited':
             var duedate = null;
-            if(aObj['user-added']) {
+            if(aObj['user-added'] || aObj[a]['und'][0]['value'].indexOf('/') != -1) {
               var dateparts = aObj[a]['und'][0]['value'].split('/');
               duedate = dateparts[2]+'/'+dateparts[1]+'/'+dateparts[0];
 
             }else{
               var sitedate = aObj[a]['und'][0]['value'];
+              
               var sitedatestring = JSON.stringify(sitedate);
               var sitedateonly = sitedatestring.substring(1, sitedatestring.indexOf('T'));
               var sitedatearray = sitedateonly.split("-");

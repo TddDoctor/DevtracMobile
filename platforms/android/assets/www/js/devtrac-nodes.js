@@ -20,10 +20,10 @@ var devtracnodes = {
           d.reject(errorThrown);
         },
         success: function (data) {
-          updates['submit'] = 1;
+          updates['submit'] = 0;
 
           console.log("We have updated the node "+nid);
-          d.resolve(updates, siteid);
+          d.resolve(updates, siteid, nid);
         }
       });
       return d;
@@ -237,7 +237,7 @@ var devtracnodes = {
 
           for(var ftritem in ftritems) {
 
-            if(ftritems[ftritem]['submit'] == 0 && ftritems[ftritem]['user-added'] == true) {              
+            if((ftritems[ftritem]['submit'] == 0 && ftritems[ftritem]['user-added'] == true)  || ftritems[ftritem]['editflag'] == 1) {              
               sitevisits.push(ftritems[ftritem]);
             }
 
@@ -251,6 +251,37 @@ var devtracnodes = {
 
 
         });  
+
+      });
+
+      return d;
+    },
+    
+    countSitevisits: function() {
+      var d = $.Deferred();
+      var sitevisits = [];
+
+      var count = 0;
+      devtrac.indexedDB.open(function (db) {
+        devtrac.indexedDB.getAllSitevisits(db, function(ftritems) {
+
+          for(var ftritem in ftritems) {
+
+            if(ftritems[ftritem]['submit'] == 1 || ftritems[ftritem]['editflag'] == 1) {              
+              count = count + 1
+            }
+
+          }        
+          if(count > 0) {
+            d.resolve(count);  
+          }else
+          {
+            d.reject();
+          }
+
+        });  
+
+        
 
       });
 
@@ -435,7 +466,7 @@ var devtracnodes = {
       var date_visited = "";
 
       for(var k = 0; k < sitevisits.length; k++) {
-        if(sitevisits[k]['submit'] == 0 && sitevisits[k]['user-added'] == true && sitevisits[k]['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") {
+        if(sitevisits[k]['user-added'] == true && sitevisits[k]['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") {
           devtracnodes.getSitevisitString(sitevisits[k]).then(function(jsonstring, active_sitereport, date, siteid) {
             devtracnodes.postNode(jsonstring, active_sitereport, date, siteid).then(function(updates, x, y, z, active_ftritem, datevisited) {
               devtrac.indexedDB.getImage(db, parseInt(active_ftritem['nid']), updates['nid'], datevisited, y).then(function(image, nid, vdate, sid) {
@@ -493,7 +524,42 @@ var devtracnodes = {
             });
 
           });
+//stopped here need to pass the correct ftritem nid to updateNode function
+        }else if(sitevisits[k]['user-added'] == undefined && sitevisits[k]['editflag'] == 1) { //if its a sitevisit created from devtrac
+          devtracnodes.getSitevisitString(sitevisits[k]).then(function(jsonstring, active_sitereport, date, siteid) {
+            devtrac.indexedDB.open(function (db) {
 
+              devtracnodes.updateNode(sitevisits[k]['nid'], jsonstring, ftrid).then(function(updates, ftritemid, sid) {
+
+                /*todo: */  devtrac.indexedDB.editSitevisit(db, sid, updates).then(function() {
+                  var count_container = $("#sitevisit_count").html().split(" ");
+                  if(typeof parseInt(count_container[0]) == "number") {
+                    var updated_count = parseInt(count_container[0]) - 1;
+                    $("#sitevisit_count").html(updated_count);
+                  }
+                  else
+                  {                      
+                    $("#sitevisit_count").html(0);
+                  }
+
+                  controller.refreshSitevisits();
+                  d.resolve();
+                });
+                
+              }).fail(function(e){
+                if(e == "Unauthorized: CSRF validation failed" || e == "Unauthorized") {
+                  auth.getToken().then(function(token) {
+                    localStorage.usertoken = token;
+                    devtracnodes.uploadsitevisits(db, sitevisits);
+                  });  
+                }else
+                {
+                  d.reject(e);
+                }
+              });
+            });
+
+          });
         }
       }
 

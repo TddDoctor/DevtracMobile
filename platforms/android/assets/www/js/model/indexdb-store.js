@@ -5,8 +5,17 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDB.open = function(callback) {
-  var version = 1;
-  var request = indexedDB.open("e", version);
+  var version = 2;
+  var request = indexedDB.open("e1", version);
+  
+  var req = indexedDB.deleteDatabase('eeee');
+  req.onsuccess = function () {
+      console.log("Deleted database successfully");
+  };
+  req.onerror = function () {
+      console.log("Couldn't delete database");
+  }
+  
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
     callback(devtrac.indexedDB.db);
@@ -17,8 +26,8 @@ devtrac.indexedDB.open = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 1;
-  var request = indexedDB.open("e", version);
+  var version = 2;
+  var request = indexedDB.open("e1", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -266,7 +275,9 @@ devtrac.indexedDB.addSiteVisitsData = function(db, sObj) {
       if(!(sObj[i]['dbsavetime'] && sObj[i]['editflag'])){
         sObj[i]['dbsavetime'] = timestamp;
         sObj[i]['editflag'] = 0;
+        
       }
+      
       sitevisitrequest = sitevisitstore.add(sObj[i]);
 
     }
@@ -287,6 +298,7 @@ devtrac.indexedDB.addSiteVisitsData = function(db, sObj) {
     if(!(sObj['dbsavetime'] && sObj['editflag'])){
       sObj['dbsavetime'] = timestamp;
       sObj['editflag'] = 0;
+      
     }
     sitevisitrequest = sitevisitstore.add(sObj);
 
@@ -1005,13 +1017,16 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
        data['title'] = updates['title'];   
      } 
      if(key == "date"){
-       data['field_ftritem_date_visited']['und'][0]['value'] = updates['date']
+       data['field_ftritem_date_visited']['und'][0]['value'] = updates['date'];
      }
      if(key  == "summary"){
-       data['field_ftritem_public_summary']['und'][0]['value'] = updates['summary']
+       data['field_ftritem_public_summary']['und'][0]['value'] = updates['summary'];
      }
      if(key == "submit"){
-       data['submit'] = updates['submit']
+       data['submit'] = updates['submit'];
+     }
+     if(key == "editflag"){
+       data['editflag'] = updates['editflag'];
      }
     }
     

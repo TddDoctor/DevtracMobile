@@ -14,8 +14,8 @@ var controller = {
 
       //set application url if its not set
       //if (!localStorage.appurl) {
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-      localStorage.appurl = "http://localhost/dt11";
+      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.114/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
@@ -302,9 +302,10 @@ var controller = {
       });
 
       $('input[type=file]').on('change', function(event, ui) {
-        if(this.disabled) return alert('File upload not supported!');
-        var F = this.files;
-        if(F && F[0]) for(var i=0; i<F.length; i++) controller.readImage( F[i] );
+          if(this.disabled) return alert('File upload not supported!');
+          var F = this.files;
+          if(F && F[0]) for(var i=0; i<F.length; i++) controller.readImage( F[i] );  
+        
       });
 
       //handle edit sitevisit click event
@@ -415,6 +416,8 @@ var controller = {
       //handle login click event from dialog
       $('#page_login_submit').bind("click", function (event, ui) {
         if ($("#page_login_name").valid() && $("#page_login_pass").valid()) {
+          
+          //todo: check for internet connection before request
           auth.login($('#page_login_name').val(), $('#page_login_pass').val()).then(function () {
             $.mobile.changePage("#home_page", "slide", true, false);
 
@@ -427,7 +430,6 @@ var controller = {
               window.localStorage.removeItem("password");
             }
 
-            //todo: check for internet connection before request
             controller.fetchAllData().then(function(){
               controller.loadFieldTripList();          
             });
@@ -440,6 +442,7 @@ var controller = {
 
       //handle logout click event from dialog
       $('#page_logout_submit').bind("click", function (event, ui) {
+        //todo: check for internet connection before request
         auth.logout().then(function(){
 
         });
@@ -508,8 +511,8 @@ var controller = {
         controller.filenames.push(n);
         controller.base64Images.push(image.src);
         controller.filesizes.push(~~(file.size/1024));
-
-        $("#uploadPreview").append('<div>'+n+" "+~~(file.size/1024)+'kb</div>');
+        
+        $("#uploadPreview").html('').append('<div>'+n+" "+~~(file.size/1024)+'kb</div>');
       };
 
     },
@@ -663,7 +666,7 @@ var controller = {
             devtrac.indexedDB.open(function (db) {
               devtrac.indexedDB.getAllSitevisits(db, function (sitevisit) {
                 for (var i in sitevisit) {
-                  if(sitevisit[i]['user-added'] && sitevisit[i]['submit'] == 0) {
+                  if((sitevisit[i]['user-added'] == true && sitevisit[i]['submit'] == 0) || sitevisit[i]['editflag'] == 1) {
                     sitevisitcount = sitevisitcount + 1;
                   } 
                 }
@@ -718,14 +721,26 @@ var controller = {
             var endyear = parseInt(enddatearray[0]);
 
 
-            $("#actionitem_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(startyear, startmonth, startday), maxDate: new Date(endyear, endmonth, endday) });
-            $("#sitevisit_add_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(startyear, startmonth, startday), maxDate: new Date(endyear, endmonth, endday) });
-            $("#sitevisit_date").datepicker({ dateFormat: "yy/mm/dd", minDate: new Date(startyear, startmonth, startday), maxDate: new Date(endyear, endmonth, endday) });
+            $("#actionitem_date").datepicker({ 
+              dateFormat: "yy/mm/dd", 
+              minDate: new Date(startyear, startmonth, startday), 
+              maxDate: new Date(endyear, endmonth, endday) 
+            });
+            $("#sitevisit_add_date").datepicker({ 
+              dateFormat: "yy/mm/dd", 
+              minDate: new Date(startyear, startmonth, startday), 
+              maxDate: new Date(endyear, endmonth, endday) 
+            });
+            $("#sitevisit_date").datepicker({ 
+              dateFormat: "yy/mm/dd", 
+              minDate: new Date(startyear, startmonth, startday), 
+              maxDate: new Date(endyear, endmonth, endday) 
+            });
 
-            $("#fieldtrip_details_title").append(fObject['title']);
-            $("#fieldtrip_details_status").append(fObject['field_fieldtrip_status']['und'][0]['value']);
-            $("#fieldtrip_details_start").append(formatedstartdate);
-            $("#fieldtrip_details_end").append(formatedenddate);
+            $("#fieldtrip_details_title").html('').append(fObject['title']);
+            $("#fieldtrip_details_status").html('').append(fObject['field_fieldtrip_status']['und'][0]['value']);
+            $("#fieldtrip_details_start").html('').append(formatedstartdate);
+            $("#fieldtrip_details_end").html('').append(formatedenddate);
 
             var sitevisitcount = 0;
             devtrac.indexedDB.open(function (db) {
@@ -733,7 +748,7 @@ var controller = {
                 for (var i in sitevisit) {
                   if(sitevisit[i]['field_ftritem_field_trip'] != undefined){
                     if (sitevisit[i]['field_ftritem_field_trip']['und'][0]['target_id'] == fObject['nid']) {
-                      if(sitevisit[i]['user-added'] && sitevisit[i]['submit'] == 0) {
+                      if((sitevisit[i]['user-added'] == true && sitevisit[i]['submit'] == 0) || sitevisit[i]['editflag'] == 1) {
                         sitevisitcount = sitevisitcount + 1;
                       }
 
@@ -1135,7 +1150,7 @@ var controller = {
 
       });
 
-      updates['submit'] = 1;
+      updates['editflag'] = 1;
       var snid = localStorage.snid;
       if(localStorage.user == "true"){
         snid = parseInt(snid);
@@ -1156,6 +1171,12 @@ var controller = {
             $("#snid"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
           }
 
+          $("#sitevisists_details_date").html($("#sitevisit_date").val());
+          $("#sitevisists_details_summary").html($("#sitevisit_summary").val());
+          
+          devtracnodes.countSitevisits().then(function(size) {
+            $("#sitevisit_count").html(size);
+          });
 
           $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
         });

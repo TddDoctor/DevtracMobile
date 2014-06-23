@@ -101,6 +101,9 @@ var auth = {
 
               //show panel set up urls button
               $('#setup_urls').show();
+              
+              //hide user details
+              $('.user_details').hide();
 
               $('.refresh-button').hide();
 
@@ -120,9 +123,12 @@ var auth = {
               //hide and show panel auth buttons
               $('.panel_login').hide();
               $('.panel_logout').show();
+              
+              //show user details
+              $('.user_details').show();
 
-              //hide panel urls button
-              $('.setup_urls').hide();
+              //show panel urls button
+              $('.setup_urls').show();
 
               $('.refresh-button').show();
 
@@ -183,6 +189,10 @@ var auth = {
               });
             }
 
+            //show user details
+            $('.user_details').show();
+            $('.user_details').html("Hi "+name);
+            
             localStorage.username = name;
             localStorage.pass = pass;
             localStorage.uid = data.user.uid;
@@ -264,8 +274,15 @@ var auth = {
             $('#logindiv').show();
 
             //clear login credentials
-            $("#page_login_name").val('');
-            $("#page_login_pass").val('');
+            
+            if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){
+              $("#page_login_name").val(window.localStorage.getItem("usernam"));
+              $("#page_login_pass").val(window.localStorage.getItem("passw"));  
+            }else
+            {
+              $("#page_login_name").val('');
+              $("#page_login_pass").val('');  
+            }
 
             //hide or show panel auth buttons 
             $('.panel_login').show();
@@ -276,6 +293,9 @@ var auth = {
 
             //hide refresh button
             $('.refresh-button').hide();
+            
+            //hide user details
+            $('.user_details').html("");
 
             //set closing message
             $("#username").html("Goodbye, "+localStorage.username+" !");

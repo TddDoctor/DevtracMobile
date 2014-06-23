@@ -14,8 +14,8 @@ var controller = {
 
       //set application url if its not set
       //if (!localStorage.appurl) {
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-      l//ocalStorage.appurl = "http://localhost/dt11";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.114/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
@@ -40,6 +40,10 @@ var controller = {
 
 
         }).fail(function () {
+          if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){
+            $("#page_login_name").val(window.localStorage.getItem("usernam"));
+            $("#page_login_pass").val(window.localStorage.getItem("passw"));  
+          }
           $('#list_fieldtrips').attr('data-filter',false);
           $('#homeForm').trigger('create');
           //$.mobile.changePage("#home_page", "slide", true, false);
@@ -404,8 +408,8 @@ var controller = {
       //cancel url dialog
       $('.panel_login').bind("click", function (event, ui) {
         if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
-          $("#page_login_name").val(window.localStorage.getItem("usernam"));
-          $("#page_login_pass").val(window.localStorage.getItem("password"));  
+          $("#page_login_name").val(window.localStorage.getItem("username"));
+          $("#page_login_pass").val(window.localStorage.getItem("pass"));  
         }
 
       });
@@ -423,11 +427,11 @@ var controller = {
 
             if($("#checkbox-mini-0").is(":checked")){
               window.localStorage.setItem("usernam", $("#page_login_name").val());
-              window.localStorage.setItem("password", $("#page_login_pass").val());
+              window.localStorage.setItem("passw", $("#page_login_pass").val());
 
             }else{
               window.localStorage.removeItem("usernam");
-              window.localStorage.removeItem("password");
+              window.localStorage.removeItem("passw");
             }
 
             controller.fetchAllData().then(function(){
@@ -443,6 +447,7 @@ var controller = {
       //handle logout click event from dialog
       $('#page_logout_submit').bind("click", function (event, ui) {
         //todo: check for internet connection before request
+       
         auth.logout().then(function(){
 
         });

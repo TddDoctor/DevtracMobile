@@ -14,9 +14,9 @@ var controller = {
 
       //set application url if its not set
       //if (!localStorage.appurl) {
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-      localStorage.appurl = "http://localhost/dt11";
-      //localStorage.appurl = "http://192.168.38.114/dt11";
+      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://localhost/dt11";
+      //localStorage.appurl = "http://192.168.38.113/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //}
@@ -517,7 +517,7 @@ var controller = {
         controller.base64Images.push(image.src);
         controller.filesizes.push(~~(file.size/1024));
         
-        $("#uploadPreview").html('').append('<div>'+n+" "+~~(file.size/1024)+'kb</div>');
+        $("#uploadPreview").append('<div>'+n+" "+~~(file.size/1024)+'kb</div>');
       };
 
     },

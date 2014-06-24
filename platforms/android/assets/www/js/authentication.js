@@ -58,7 +58,7 @@ var auth = {
     //check if user is logged in
     loginStatus: function() {
       var d = $.Deferred();
-      controller.loadingMsg("Please Wait..", 0);
+      
       auth.getToken().then(function(token){
         // Call system connect with session token.
         $.ajax({

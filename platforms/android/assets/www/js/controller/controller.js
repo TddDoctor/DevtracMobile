@@ -12,11 +12,12 @@ var controller = {
     initialize: function () {
       $(window).bind('orientationchange pageshow pagechange resize', mapctlr.resizeMapIfVisible);
 
+      controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
       //if (!localStorage.appurl) {
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://localhost/dt11";
-      //localStorage.appurl = "http://192.168.38.113/dt11";
+      localStorage.appurl = "http://192.168.38.113/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //}
@@ -58,13 +59,12 @@ var controller = {
           //load field trip details from the database if its one and the list if there's more.
           controller.loadFieldTripList();
 
-          //update upload counter
-          controller.uploadCounter(); 
         }else {
           controller.loadingMsg("Please connect to the internet to login and download your devtrac data.", 2000);
           //hide logout button and show login button when offline
           $('#logoutdiv').hide();
           $('#logindiv').show();
+          $.unblockUI();
         }
       }
 
@@ -746,6 +746,20 @@ var controller = {
             $("#fieldtrip_details_status").html('').append(fObject['field_fieldtrip_status']['und'][0]['value']);
             $("#fieldtrip_details_start").html('').append(formatedstartdate);
             $("#fieldtrip_details_end").html('').append(formatedenddate);
+            
+            
+            var list = $("<li></li>");
+            var anch = $("<a href='#page_fieldtrip_details' id='fnid" + fObject['nid'] + "' onclick='controller.onFieldtripClick(this)'></a>");
+            var h2 = $("<h1 class='heada1'>" + fObject['title'] + "</h1>");
+            var para = $("<p class='para1'>Start Date: " + formatedstartdate + "</p>");
+
+            anch.append(h2);
+            anch.append(para);
+            list.append(anch);
+            fieldtripList.append(list);
+
+            fieldtripList.listview().listview('refresh');
+
 
             var sitevisitcount = 0;
             devtrac.indexedDB.open(function (db) {
@@ -1560,13 +1574,11 @@ var controller = {
             for (var k in locations) {
               if (locations[k]['user-added'] && locations[k]['nid'] == updates[0]['nid']) {
                 updates[0]['nid'] = locations[k]['nid'] + 1;
-                locationcount = locationcount + 1;
+                
               }
             }
 
             devtrac.indexedDB.addPlacesData(db, updates);
-            locationcount = locationcount + 1;
-            $("#location_count").html(locationcount);
 
             controller.createSitevisitfromlocation(updates[0]['nid'], $('#location_name').val());
 
@@ -1673,6 +1685,7 @@ var controller = {
       });  
     },    
 
+    //save sitevisit
     onSavesitevisit: function () {
       var sitevisitscount = 0;
       if ($("#form_sitevisit_add").valid()) {
@@ -1763,6 +1776,7 @@ var controller = {
       }
     },
 
+    //save comment
     onSavecomment: function() {
       if ($("#actionitem_comment").valid()) {
         var anid = "";
@@ -1775,7 +1789,7 @@ var controller = {
           anid = localStorage.anid;  
         }
         var list_comment = $('#list_comments');
-        //list_comment.empty();
+        
         var comment = {};
 
         comment['comment_body'] = {};
@@ -1883,7 +1897,7 @@ var controller = {
       return d;
     },
 
-    //build select from downloaded valuesbuild
+    //create opt group element for OECD codes
     buildSelect: function (vocabulary, categoryValues, categories) {
       if(vocabulary == "p"){
         voca = 'placetypes';
@@ -1930,6 +1944,7 @@ var controller = {
 
     },
 
+    //length of javascript object
     sizeme : function(obj) {
       var size = 0, key;
       for (key in obj) {
@@ -1938,23 +1953,7 @@ var controller = {
       return size;
     },
 
-    uploadCounter: function() {
-      var locationcount = 0;
-      devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getAllplaces(db, function (locations) {
-          for(var location in locations){
-            if(locations[location]['user-added'] == true && locations[location]['submit'] == 0) {
-              locationcount = locationcount + 1; 
-            }
-          }
-
-          $("#location_count").html(locationcount);
-
-        });
-
-      });  
-    },
-
+    //message to the user about current running process
     loadingMsg: function(msg, t){
       $.blockUI({ 
         message: msg, 

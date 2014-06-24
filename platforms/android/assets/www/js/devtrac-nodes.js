@@ -1,5 +1,5 @@
 var devtracnodes = {
-
+    
     updateNode: function(nid, node, siteid) {
       var d = $.Deferred();
       var updates = {};
@@ -388,39 +388,44 @@ var devtracnodes = {
 
       return d;
     },
+    
+    //recursive node update for all images images
+    updateNodeHelper: function (ftrid, y, fd, names, sdate, callback) {
+      var pack = "node[field_ftritem_images][und]["+y+"][fid]="+fd[y]+"&node[field_ftritem_images][und]["+y+"][title]="+names[y]+"&node[field_ftritem_date_visited][und][0][value][date]="+sdate;
+      devtracnodes.updateNode(ftrid, pack).then(function(updates, sid, uid) {
+        console.log("node updated");
+        y = y+1;
+        if(y == names.length )  {
+          callback(updates, uid);
+        }else{
+          devtracnodes.updateNodeHelper(ftrid, y, fd, names, sdate, callback);
+        }
+      }).fail(function(e) {
+        callback(e);
+      });
+    },
 
-    imagehelper: function (nid, imagearr, vd, siteid) {
-      var d = $.Deferred();
-      var fids = [];
-      var filenames = [];
-      var nodeids = [];
+    //loop through and upload all images
+    imagehelper: function (nid, index, fds, fdn, imagearr, sid_date, callback) {
       var imagestring = "";
-      var counter = 0;
+      
+      devtracnodes.postImageFile(imagearr, index , imagearr[index], nid).then(function (fd, imagename, ftrid) {
 
-      var flag = imagearr['names'].length - 1;
+        index = index + 1;
+        fds.push(fd);
+        fdn.push(imagename);
 
-      for (var x = 0; x < imagearr['base64s'].length; x++) {
-        devtracnodes.postImageFile(imagearr, x , nid).then(function (fid, imagename, ftritemnid, y) {
+        if(parseInt(index, 10) === parseInt(imagearr.length, 10)){
+          callback(fds, fdn, ftrid, sid_date);  
+        }else{
+          devtracnodes.imagehelper(nid, index, fds, fdn, imagearr, sid_date, callback);
+        }
 
-          flag = flag - 1;
-          imagestring = imagestring+"&node[field_ftritem_images][und]["+counter+"][fid]="+fid+"&node[field_ftritem_images][und]["+counter+"][title]="+imagename;
-          counter = counter + 1;
-          fids[y]= fid;
-          filenames[y]= imagename;
-          nodeids[y]= ftritemnid;
+      }).fail(function(e){
+        console.log("rejected post image file error");
+        callback(e);
 
-
-          if (flag < 0) {
-            d.resolve(fids, filenames, nodeids, imagestring, nid, vd, siteid);         
-          }
-
-        }).fail(function(e){
-          d.reject(e);
-        });
-      }
-
-      return d;
-
+      });
 
     },
 
@@ -470,43 +475,48 @@ var devtracnodes = {
           devtracnodes.getSitevisitString(sitevisits[k]).then(function(jsonstring, active_sitereport, date, siteid) {
             devtracnodes.postNode(jsonstring, active_sitereport, date, siteid).then(function(updates, x, y, z, active_ftritem, datevisited) {
               devtrac.indexedDB.getImage(db, parseInt(active_ftritem['nid']), updates['nid'], datevisited, y).then(function(image, nid, vdate, sid) {
-                devtracnodes.imagehelper(nid, image, vdate, sid).then(function(fids, filenames, nodeids, imagestring, nid, visitdate, ftrid){
+                //nid, index, fds, fdn, imagearr, callback
+                var indx = 0;
+                var imageid = [];
+                var imagename = [];
 
-                  date_visited = "&node[field_ftritem_date_visited][und][0][value][date]="+visitdate;
-                  imagestring = imagestring + date_visited; 
-                  devtracnodes.updateNode(nid, imagestring, ftrid).then(function(updates, ftritemid) {
-
-                    /*todo: */  devtrac.indexedDB.editSitevisit(db, ftritemid, updates).then(function() {
-                      var count_container = $("#sitevisit_count").html().split(" ");
-                      if(typeof parseInt(count_container[0]) == "number") {
-                        var updated_count = parseInt(count_container[0]) - 1;
-                        $("#sitevisit_count").html(updated_count);
-                      }
-                      else
-                      {                      
-                        $("#sitevisit_count").html(0);
-                      }
-
-                      controller.refreshSitevisits();
-                      d.resolve();
-                    });
-                    d.resolve()
-                  }).fail(function(e){
-                    if(e == "Unauthorized: CSRF validation failed" || e == "Unauthorized") {
-                      auth.getToken().then(function(token) {
-                        localStorage.usertoken = token;
-                        devtracnodes.uploadsitevisits(db, sitevisits);
-                      });  
-                    }else
-                    {
-                      d.reject(e);
-                    }
-                  })
-                }).fail(function(e){
-                  console.log("the image is error is "+e);
-                  if(e.indexOf("Could not create destination directory") != -1) {
+                devtracnodes.imagehelper(sid, indx, imageid, imagename, image, vdate, function(fds, fdn, ftrid, ftrdate) {
+                  
+                  if(fds.indexOf("Could not create destination directory") != -1) {
                     devtracnodes.uploadsitevisits(db, sitevisits);
+                  }else{
+
+                    var y = 0;
+                    devtracnodes.updateNodeHelper(ftrid, y, fds, fdn, ftrdate, function(ftritemid) {
+
+                      if(ftritemid.indexOf('"Unauthorized') != -1){
+                        auth.getToken().then(function(token) {
+                          localStorage.usertoken = token;
+                          devtracnodes.uploadsitevisits(db, sitevisits);
+                        });
+                      }else if(typeof parseInt(ftritemid) == "number"){
+                        /*todo: */  devtrac.indexedDB.editSitevisit(db, ftritemid, updates).then(function() {
+                          var count_container = $("#sitevisit_count").html().split(" ");
+                          if(typeof parseInt(count_container[0]) == "number") {
+                            var updated_count = parseInt(count_container[0]) - 1;
+                            $("#sitevisit_count").html(updated_count);
+                          }
+                          else
+                          {                      
+                            $("#sitevisit_count").html(0);
+                          }
+
+                          controller.refreshSitevisits();
+                          d.resolve();
+                        });
+                                                
+                      }else{
+                        
+                      }
+
+                    });                   
                   }
+
                 });
 
               });

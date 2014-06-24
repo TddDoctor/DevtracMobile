@@ -32,9 +32,6 @@ var controller = {
             //load field trip details from the database if its one and the list if there's more.
             controller.loadFieldTripList();
 
-            //update upload counter
-            controller.uploadCounter();
-
             //set welcome message
             $("#username").html("Welcome " + localStorage.username);
           });

@@ -390,15 +390,15 @@ var devtracnodes = {
     },
     
     //recursive node update for all images images
-    updateNodeHelper: function (ftrid, y, fd, names, sdate, callback) {
+    updateNodeHelper: function (ftrid, y, fd, names, sdate, upId, callback) {
       var pack = "node[field_ftritem_images][und]["+y+"][fid]="+fd[y]+"&node[field_ftritem_images][und]["+y+"][title]="+names[y]+"&node[field_ftritem_date_visited][und][0][value][date]="+sdate;
       devtracnodes.updateNode(ftrid, pack).then(function(updates, sid, uid) {
         console.log("node updated");
         y = y+1;
         if(y == names.length )  {
-          callback(updates, uid);
+          callback(updates, uid, upId);
         }else{
-          devtracnodes.updateNodeHelper(ftrid, y, fd, names, sdate, callback);
+          devtracnodes.updateNodeHelper(ftrid, y, fd, names, sdate, upId, callback);
         }
       }).fail(function(e) {
         callback(e);
@@ -406,19 +406,19 @@ var devtracnodes = {
     },
 
     //loop through and upload all images
-    imagehelper: function (nid, index, fds, fdn, imagearr, sid_date, callback) {
+    imagehelper: function (nid, index, fds, fdn, imagearr, sid_date, sid, callback) {
       var imagestring = "";
       
-      devtracnodes.postImageFile(imagearr, index , imagearr[index], nid).then(function (fd, imagename, ftrid) {
+      devtracnodes.postImageFile(imagearr, index, nid).then(function (fd, imagename, ftrid) {
 
         index = index + 1;
         fds.push(fd);
         fdn.push(imagename);
 
-        if(parseInt(index, 10) === parseInt(imagearr.length, 10)){
-          callback(fds, fdn, ftrid, sid_date);  
+        if(parseInt(index, 10) === parseInt(imagearr['base64s'].length, 10)){
+          callback(fds, fdn, ftrid, sid_date, sid);  
         }else{
-          devtracnodes.imagehelper(nid, index, fds, fdn, imagearr, sid_date, callback);
+          devtracnodes.imagehelper(nid, index, fds, fdn, imagearr, sid_date, sid, callback);
         }
 
       }).fail(function(e){
@@ -480,22 +480,19 @@ var devtracnodes = {
                 var imageid = [];
                 var imagename = [];
 
-                devtracnodes.imagehelper(sid, indx, imageid, imagename, image, vdate, function(fds, fdn, ftrid, ftrdate) {
+                devtracnodes.imagehelper(nid, indx, imageid, imagename, image, vdate, sid, function(fds, fdn, ftrid, ftrdate, updateId) {
                   
                   if(fds.indexOf("Could not create destination directory") != -1) {
                     devtracnodes.uploadsitevisits(db, sitevisits);
+                  }else if(fdn == undefined) {
+                    d.reject(fds);
                   }else{
 
                     var y = 0;
-                    devtracnodes.updateNodeHelper(ftrid, y, fds, fdn, ftrdate, function(ftritemid) {
+                    devtracnodes.updateNodeHelper(ftrid, y, fds, fdn, ftrdate, updateId, function(updates, ftritemid, activeid) {
 
-                      if(ftritemid.indexOf('"Unauthorized') != -1){
-                        auth.getToken().then(function(token) {
-                          localStorage.usertoken = token;
-                          devtracnodes.uploadsitevisits(db, sitevisits);
-                        });
-                      }else if(typeof parseInt(ftritemid) == "number"){
-                        /*todo: */  devtrac.indexedDB.editSitevisit(db, ftritemid, updates).then(function() {
+                      if(ftritemid != undefined) {
+                        /*todo: */  devtrac.indexedDB.editSitevisit(db, activeid, updates).then(function() {
                           var count_container = $("#sitevisit_count").html().split(" ");
                           if(typeof parseInt(count_container[0]) == "number") {
                             var updated_count = parseInt(count_container[0]) - 1;
@@ -510,8 +507,14 @@ var devtracnodes = {
                           d.resolve();
                         });
                                                 
-                      }else{
-                        
+                      }else if(updates.indexOf('Unauthorized') != -1){
+                        auth.getToken().then(function(token) {
+                          localStorage.usertoken = token;
+                          devtracnodes.uploadsitevisits(db, sitevisits);
+                        });
+                      }
+                      else{
+                        d.reject(updates);
                       }
 
                     });                   
@@ -534,7 +537,7 @@ var devtracnodes = {
             });
 
           });
-//stopped here need to pass the correct ftritem nid to updateNode function
+
         }else if(sitevisits[k]['user-added'] == undefined && sitevisits[k]['editflag'] == 1) { //if its a sitevisit created from devtrac
           devtracnodes.getSitevisitString(sitevisits[k]).then(function(jsonstring, active_sitereport, date, siteid) {
             devtrac.indexedDB.open(function (db) {

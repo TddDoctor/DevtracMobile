@@ -381,17 +381,13 @@
           <option value="211">Human Interest Story</option>
           <option value="210">Roadside Observation</option>
           <option value="209">Site Visit</option>
-        </select> <label for="location_district">District</label> <input type='text'
-          value='' id='location_district' name='location_district' required />
-
+        </select>
+        
         <input type='text' value='' id='location_latlon' name='location_latlon'
           required style="display: none" /> <label for="map_district"
-          style="color: red;" id="map_district_error"></label> <a
-          data-role="button" href="#mappage" id="map_district"
-          onclick="var state=true; mapctlr.initMap(null, null, state); mapctlr.resizeMapIfVisible();"
-          data-theme='b'>Map District</a> <a id="submit_sitereporttype"
+          style="color: red;" id="map_district_error"></label><a id="submit_sitereporttype"
           data-role="button" href=""
-          onclick="controller.submitSitereporttype();" data-theme='a'>Submit</a>
+          onclick="controller.submitSitereporttype();" data-theme='b' data-mini="true">Submit</a>
       </form>
 
     </div>

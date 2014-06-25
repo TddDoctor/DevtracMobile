@@ -12,12 +12,21 @@ var controller = {
     initialize: function () {
       $(window).bind('orientationchange pageshow pagechange resize', mapctlr.resizeMapIfVisible);
 
+      //todo: using default coordinates change to mobile device coordinates
+      var lat = "0.28316";
+      var lon = "32.45168";
+      
+      localStorage.ftritemlatlon = lon +" "+lat;
+      localStorage.latlon = lon +" "+lat;
+      
+      $("#location_latlon").val(localStorage.latlon);
+      
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
       //if (!localStorage.appurl) {
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://localhost/dt11";
-      //localStorage.appurl = "http://192.168.38.113/dt11";
+        localStorage.appurl = "http://192.168.38.113/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //}
@@ -959,7 +968,6 @@ var controller = {
 
         localStorage.ftritemdistrict = $("#location_district").val();
         localStorage.ftritemlatlon = localStorage.latlon;
-
         if(localStorage.ftritemtype == "210") {
           $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
         }
@@ -978,7 +986,7 @@ var controller = {
       }
       else
       {
-        $("#map_district_error").html("Please add location from map");
+        $("#map_district_error").html("Please make sure that your GPS is switched on");
       }
 
     },
@@ -1017,12 +1025,19 @@ var controller = {
 
           if(fObject['field_ftritem_place'] != undefined && fObject['field_ftritem_place']['und'] != undefined) {
             localStorage.pnid = fObject['field_ftritem_place']['und'][0]['target_id'];
-            pnid = localStorage.pnid; 
+            if(fObject['user-added'] == true) {
+              
+              pnid = parseInt(localStorage.pnid);
+            }else{
+              
+              pnid = localStorage.pnid;
+            }
+             
 
           }else{
             if(fObject['user-added'] == true) {
               pnid = parseInt(localStorage.pnid);
-            }else{
+            }else{//needs work
               pnid = "RV";
             }
           }
@@ -1704,7 +1719,6 @@ var controller = {
         updates['submit'] = 0;
         updates['uid'] = localStorage.uid;
 
-        //get site visit type
         updates['taxonomy_vocabulary_7'] = {};
         updates['taxonomy_vocabulary_7']['und'] = [];
         updates['taxonomy_vocabulary_7']['und'][0] = {};
@@ -1848,6 +1862,7 @@ var controller = {
 
     // device ready event handler
     onDeviceReady: function () {
+      
       /*var options = {
           enableHighAccuracy: true
       };

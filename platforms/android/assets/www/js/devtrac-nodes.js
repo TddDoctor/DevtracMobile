@@ -287,6 +287,29 @@ var devtracnodes = {
 
       return d;
     },
+    
+    
+    countFieldtrips: function() {
+      var d = $.Deferred();
+
+      devtrac.indexedDB.open(function (db) {
+        devtrac.indexedDB.getAllFieldtripItems(db, function(tripsy) {
+    
+          if(tripsy.length > 0) {
+            d.resolve();  
+          }else
+          {
+            d.reject();
+          }
+
+        });  
+
+        
+
+      });
+
+      return d;
+    },
 
     checkActionitems: function() {
       var d = $.Deferred();

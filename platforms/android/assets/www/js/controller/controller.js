@@ -19,30 +19,30 @@ var controller = {
       localStorage.ftritemlatlon = lon +" "+lat;
       localStorage.latlon = lon +" "+lat;
       
-      $("#location_latlon").val(localStorage.latlon);
-      
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
       //if (!localStorage.appurl) {
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://localhost/dt11";
-        localStorage.appurl = "http://192.168.38.113/dt11";
+        //localStorage.appurl = "http://192.168.38.113/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //}
 
       if(controller.connectionStatus) {
         auth.loginStatus().then(function () {
-          $('#list_fieldtrips').attr('data-filter',true);
-          $('#homeForm').trigger('create');
-
-          //download all devtrac data for user.
-          controller.fetchAllData().then(function(){
-            //load field trip details from the database if its one and the list if there's more.
+          devtracnodes.countFieldtrips().then(function(){
+          //load field trip details from the database if its one and the list if there's more.
             controller.loadFieldTripList();
+            
+          }).fail(function(){
+          //download all devtrac data for user.
+            controller.fetchAllData().then(function(){
+              
+            //load field trip details from the database if its one and the list if there's more.
+              controller.loadFieldTripList();
+          });
 
-            //set welcome message
-            $("#username").html("Welcome " + localStorage.username);
           });
 
 
@@ -51,10 +51,7 @@ var controller = {
             $("#page_login_name").val(window.localStorage.getItem("usernam"));
             $("#page_login_pass").val(window.localStorage.getItem("passw"));  
           }
-          $('#list_fieldtrips').attr('data-filter',false);
-          $('#homeForm').trigger('create');
-          //$.mobile.changePage("#home_page", "slide", true, false);
-          //$("#username").html("Please login to use the application");
+          
         });
 
       }else
@@ -266,12 +263,6 @@ var controller = {
         rules: {
           sitevisit_add_type: {
             required: true,
-          },
-          location_district: {
-            required: true
-          },
-          location_latlon: {
-            required: true
           }
 
         }
@@ -963,7 +954,7 @@ var controller = {
 
     //handle submit of site report type
     submitSitereporttype: function() {
-      if ($("#form_sitereporttype").valid() && $("#location_latlon").val().length > 0) {
+      if ($("#form_sitereporttype").valid()) {
         localStorage.ftritemtype = $("#sitevisit_add_type").val();
 
         localStorage.ftritemdistrict = $("#location_district").val();
@@ -982,12 +973,9 @@ var controller = {
           $.mobile.changePage("#page_add_location", "slide", true, false); 
         }
         controller.resetForm($('#form_sitereporttype'));
-        $("#map_district_error").html("");
+        
       }
-      else
-      {
-        $("#map_district_error").html("Please make sure that your GPS is switched on");
-      }
+      
 
     },
 
@@ -1983,7 +1971,7 @@ var controller = {
           backgroundColor: '#000', 
           '-webkit-border-radius': '10px', 
           '-moz-border-radius': '10px', 
-          opacity: .6, 
+          opacity: .8, 
           color: '#fff' 
         } 
       }); 

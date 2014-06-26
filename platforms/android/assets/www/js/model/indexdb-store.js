@@ -8,14 +8,6 @@ devtrac.indexedDBopen = function(callback) {
   var version = 5;
   var request = indexedDB.open("e1", version);
   
-  var req = indexedDB.deleteDatabase('eeee');
-  req.onsuccess = function () {
-      console.log("Deleted database successfully");
-  };
-  req.onerror = function () {
-      console.log("Couldn't delete database");
-  }
-  
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
     callback(devtrac.indexedDB.db);

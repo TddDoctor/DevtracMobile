@@ -79,10 +79,11 @@
 
   <!-- Fieldtrips details -->
   <div data-role="page" id="page_fieldtrip_details">
-    <div data-role="controlgroup">
+    
       <div data-role="panel" id="navpanel2" data-theme="b" data-display="reveal"
         data-position="left">
         <ul data-role="listview">
+        <li><img src="img/person.png"/><span><strong class="username"></strong><br><small class="user_title">Web &amp; Mobile Developer</small></span></li>
           <li><a href="#home_page" data-role="button" class="panel_home">Home</a></li>
           <li><a href="#setup_urls_page" data-role="button"
             data-rel="dialog" class="setup_urls">Setup URLS</a></li>
@@ -90,7 +91,6 @@
             data-rel="dialog">Login</a></li>
           <li><a id="panel2" class="panel_logout" data-role="button">Logout</a></li>
       </div>
-    </div>
 
     <div data-role="header">
       <a data-icon="bars" class="ui-btn-left" style="margin-top: 2.5px;"
@@ -159,10 +159,10 @@
   <!-- Application Home page  -->
   <div data-role="page" id="home_page">
 
-    <div data-role="controlgroup">
       <div data-role="panel" id="navpanel" data-theme="b" data-display="reveal"
         data-position="left">
         <ul data-role="listview">
+        <li><img src="../assets/www/img/person.png"/><span><strong class="username"></strong><br><small class="user_title">Web &amp; Mobile Developer</small></span></li>
           <li><a href="#setup_urls_page" data-role="button"
             data-rel="dialog" class="setup_urls">Setup URLS</a></li>
           <li><a href="#page_login" class="panel_login" data-role="button"
@@ -172,8 +172,6 @@
         </ul>
 
       </div>
-
-    </div>
 
     <div data-role="header">
       <a class="bars-button" data-icon="bars" class="ui-btn-left"
@@ -261,36 +259,36 @@
         <fieldset class="ui-grid-a">
           <div class="ui-block-a">
             <div class="ui-bar" style="width: 70%">
-            <div class="ui-field-contain">
+            <!-- <div class="ui-field-contain"> -->
     <label for="sitevisists_details_title"><b>Title:</b></label>
               <p id="sitevisists_details_title" required></p>          
-        </div>
+        <!-- </div> -->
         
-        <div class="ui-field-contain">
+        <!-- <div class="ui-field-contain"> -->
               <label for="sitevisists_details_date"><b>Date Visited:
               </b></label>
               <p id="sitevisists_details_date" required></p>
               
-        </div>
+        <!-- </div> -->
 
 
-    <div class="ui-field-contain">
+    <!-- <div class="ui-field-contain"> -->
               <label for="sitevisists_details_type"><b>Type: </b></label>
               <p id="sitevisists_details_type" required></p>
               
-        </div>
+        <!-- </div> -->
 
-    <div class="ui-field-contain">
+    <!-- <div class="ui-field-contain"> -->
               <label for="sitevisists_details_summary"><b>Summary: </b></label>
               <p id="sitevisists_details_summary" required></p>
               
-        </div>
+        <!-- </div> -->
         
-            <div class="ui-field-contain">
+            <!-- <div class="ui-field-contain"> -->
               <label for="sitevisists_details_location"><b>Location
                   Name: </b></label>
               <p id="sitevisists_details_location" required></p>      
-        </div>
+        <!-- </div> -->
         
             </div>
           </div>
@@ -376,17 +374,10 @@
           <option value="211">Human Interest Story</option>
           <option value="210">Roadside Observation</option>
           <option value="209">Site Visit</option>
-        </select> <label for="location_district">District</label> <input type='text'
-          value='' id='location_district' name='location_district' required />
+        </select> 
 
-        <input type='text' value='' id='location_latlon' name='location_latlon'
-          required style="display: none" /> <label for="map_district"
-          style="color: red;" id="map_district_error"></label> <a
-          data-role="button" href="#mappage" id="map_district"
-          onclick="var state=true; mapctlr.initMap(null, null, state); mapctlr.resizeMapIfVisible();"
-          data-theme='b'>Map District</a> <a id="submit_sitereporttype"
-          data-role="button" href=""
-          onclick="controller.submitSitereporttype();" data-theme='a'>Submit</a>
+          <a id="submit_sitereporttype" data-role="button" href=""
+          onclick="controller.submitSitereporttype();" data-theme='b'>Submit</a>
       </form>
 
     </div>

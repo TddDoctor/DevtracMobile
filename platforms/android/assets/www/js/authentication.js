@@ -13,7 +13,6 @@ var auth = {
       // Obtain session token.
       $.ajax({
         url: localStorage.appurl+"/services/session/token",
-        // url: "http://jenkinsge.mountbatten.net/devtracmanual/services/session/token",
         type:"get",
         dataType:"text",
         error:function (jqXHR, textStatus, errorThrown) {
@@ -112,6 +111,12 @@ var auth = {
             { 
               //user is logged in
 
+              //set username in menu
+              $(".username").html("Hi, "+localStorage.username+" !");
+              
+              //set user title in menu
+              $(".user_title").html(localStorage.usertitle);
+              
               //show panel options
               $('.panel_oecd').show();
               $('.panel_placetype').show();
@@ -124,8 +129,6 @@ var auth = {
               $('.panel_login').hide();
               $('.panel_logout').show();
               
-              //show user details
-              $('.user_details').show();
 
               //show panel urls button
               $('.setup_urls').show();
@@ -189,22 +192,30 @@ var auth = {
               });
             }
 
-            //show user details
-            $('.user_details').show();
-            $('.user_details').html("Hi "+name);
             
             localStorage.username = name;
             localStorage.pass = pass;
             localStorage.uid = data.user.uid;
             
             localStorage.realname = data.user.realname
+            
+            if(data.user.field_user_title.length > 0){
+              localStorage.usertitle = data.user.field_user_title.und[0].value;  
+            }else if(data.user.mail.length > 0){
+              localStorage.usertitle = data.user.mail;
+            }else{
+              localStorage.usertitle = "Unavailable";
+            }
 
             // Obtain session token.
             auth.getToken().then(function (token) {
               localStorage.usertoken = token;
-
-              //set welcome message
-              $("#username").html("Welcome "+localStorage.username);
+              
+              //set username in menu
+              $(".username").html("Hi, "+localStorage.username+" !");
+              
+              //set user title in menu
+              $(".user_title").html(localStorage.usertitle);
 
               //show panel options
               $('.panel_oecd').show();
@@ -226,8 +237,7 @@ var auth = {
 
               //refresh panel
               $( ".navpanel" ).trigger( "updatelayout" );
-              //save username and passwords on sdcard
-              // window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, savePasswords, failsavePass);
+              
               d.resolve();
             });
 
@@ -297,14 +307,10 @@ var auth = {
             //hide user details
             $('.user_details').html("");
 
-            //set closing message
-            $("#username").html("Goodbye, "+localStorage.username+" !");
-
             $.mobile.changePage("#page_login", "slide", true, false);
 
             d.resolve();
-            //clear passwords from file
-            //window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, clearPasswords, failclearPass);
+            
           }
         });
 

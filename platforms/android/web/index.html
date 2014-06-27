@@ -28,7 +28,10 @@
 <!-- Default Theme -->
 <link rel="stylesheet" href="../assets/www/libs/owl-carousel/owl.theme.css">
 
-<link rel="stylesheet" href="../assets/www/css/font-awesome.css">
+<!-- <link rel="stylesheet" href="../assets/www/css/font-awesome.css"> -->
+
+<link rel="stylesheet" href="../assets/www/libs/FontAwesome/css/font-awesome.min.css">
+
 
 </head>
 <body>
@@ -36,7 +39,7 @@
   <!-- Page Login  -->
   <div data-role="page" id="page_login">
     <div data-role="header">
-      <h1 title="Login">Login</h1>
+      <h1 title="Login">Devtrac Mobile</h1>
     </div>
     <!-- /header -->
 
@@ -58,20 +61,19 @@
             placeholder="password" required />
         </div>
 
-        <p>
-          <input type="checkbox" name="checkbox-mini-0" id="checkbox-mini-0"
-            data-mini="true"> <label for="checkbox-mini-0">Remember
-            me</label>
-        </p>
-        <br>
-
         <div id='logindiv'>
-          <button type="button" data-theme="b" id="page_login_submit" data-mini="true">Login</button>
+          <button type="button" data-theme="a" id="page_login_submit" data-mini="true">Sign In</button>
         </div>
 
         <div id='logoutdiv'>
-          <button type="button" data-theme="b" id="page_logout_submit" data-mini="true">Logout</button>
+          <button type="button" data-theme="a" id="page_logout_submit" data-mini="true">Logout</button>
         </div>
+                <p>
+          <input type="checkbox" data-theme="b" name="checkbox-mini-0" id="checkbox-mini-0"
+            data-mini="true"> <label for="checkbox-mini-0">Remember
+            Me</label>
+        </p>
+        
       </form>
     </div>
     <!-- /content -->
@@ -88,25 +90,23 @@
     
         <ul data-role="listview">
         <li><img src="../assets/www/img/person.png"/><span><strong class="username"></strong><br><small class="user_title"></small></span></li>
-          <li><a href="#home_page" data-role="button" class="panel_home">Home</a></li>
+          <li><a href="#home_page" data-role="button" class="panel_home"><i class="fa fa-home fa-fw"></i>&nbsp Home</a></li>
           <li><a href="#setup_urls_page" data-role="button"
-            data-rel="dialog" class="setup_urls">Setup URLS</a></li>
-          <li><a href="#page_login" class="panel_login" data-role="button"
-            data-rel="dialog">Login</a></li>
-          <li><a id="panel2" class="panel_logout" data-role="button">Logout</a></li>
+            data-rel="dialog" class="setup_urls"><i class="fa fa-gear fa-fw"></i>&nbsp Setup URLS</a></li>
+          <li><a id="panel2" class="panel_logout" data-role="button"><i class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a></li>
           </ul>
           
       </div>
     
     <div data-role="header">
-      <a class="ui-btn-left" href="#navpanel2" data-iconpos="notext" data-icon="bars"></a> <a class="ui-btn-right"
-        data-role="button" data-icon="edit" id="edit_fieldtrip"
+      <a class="ui-btn-left" href="#navpanel2" data-role="button" data-iconpos="notext"><i class="fa fa-bars fa-lg"></i></a> <a class="ui-btn-right"
+        data-role="button" id="edit_fieldtrip"
         href="#page_fieldtrip_edit" data-rel="dialog" data-iconpos="notext"
-        style="margin-right: 100px;"></a> <a href="#page_site_report_type"
+        style="margin-right: 100px;"><i class="fa fa-edit fa-lg"></i></a> <a href="#page_site_report_type"
         data-rel="dialog" class="ui-btn-right" data-role="button"
-        data-icon="plus" data-iconpos="notext" style="margin-right: 50px;"></a>
+        data-iconpos="notext" style="margin-right: 51px;"><i class="fa fa-plus-square fa-lg"></i></a>
       <a class="ui-btn-right refresh-button" data-role="button"
-        data-icon="refresh" data-iconpos="notext" style="margin-right: 1px;"></a>
+        data-iconpos="notext" style="margin-right: 1px;"><i class="fa fa-refresh fa-lg"></i></a>
 
       <h1>FieldTrip Details</h1>
 
@@ -169,11 +169,10 @@
         <ul data-role="listview">
         <li><img src="../assets/www/img/person.png"/><span><strong class="username"></strong><br><small class="user_title">Web &amp; Mobile Developer</small></span></li>
           <li><a href="#setup_urls_page" data-role="button"
-            data-rel="dialog" class="setup_urls">Setup URLS</a></li>
-          <li><a href="#page_login" class="panel_login" data-role="button"
-            data-rel="dialog">Login</a></li>
+            data-rel="dialog" class="setup_urls"><i class="fa fa-gear fa-fw"></i>&nbsp Setup URLS</a></li>
+          
           <li><a href="#" id="panel1" class="panel_logout"
-            data-role="button">Logout</a></li>
+            data-role="button"><i class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a></li>
         </ul>
 
       </div>
@@ -232,24 +231,25 @@
   <!-- Site visits details -->
   <div data-role="page" id="page_sitevisits_details">
     <div data-role="header">
+
       <a id="" class="ui-btn-left" href="#page_fieldtrip_details" data-role="button"
-        data-icon="back" data-iconpos="notext"></a>
-      <a href="#page_sitevisit_edits" class="ui-btn-right" data-role="button" id="editsitevisit" data-rel="dialog" data-iconpos="notext" style="margin-right: 50px;" data-icon="edit"></a>
+        data-iconpos="notext"><i class="fa fa-chevron-circle-left fa-lg"></i></a>
+      <a href="#page_sitevisit_edits" class="ui-btn-right" data-role="button" id="editsitevisit" data-rel="dialog" data-iconpos="notext" style="margin-right: 50px;"><i class="fa fa-edit fa-lg"></i></a>
                     
-      <a href="#page_add_actionitems" class="ui-btn-right" data-role="button" data-icon="plus" id="addactionitem"
-                  data-rel="dialog" data-iconpos="notext" style="margin-right: 1px;"></a>
+      <a href="#page_add_actionitems" class="ui-btn-right" data-role="button" id="addactionitem"
+                  data-rel="dialog" data-iconpos="notext" style="margin-right: 1px;"><i class="fa fa-plus-square fa-lg"></i></a>
       
         
       <h3>Site Report</h3>
       
-      <div data-role="navbar" data-theme="b">
+      <div data-role="navbar" data-theme="a">
     <ul>
         <li><a data-role="button" data-mini="true"
-                  id="addquestionnaire"><i class="icon-book"></i>&nbsp&nbsp
+                  id="addquestionnaire"><i class="fa fa-list-alt fa-lg"></i>&nbsp&nbsp
                     Questionnaire</a></li>
         <li><a href="#mappage" data-role="button" class="panel_map"
                   onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i
-                    class="icon-map-marker"></i>&nbsp&nbsp Map</a></li>
+                    class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li>
     </ul>
 </div><!-- /navbar -->
     </div>
@@ -297,7 +297,7 @@
           </div>
           <div class="ui-block-b">
 
-            <div data-role="collapsible" data-theme="b">
+            <div data-role="collapsible" data-theme="a">
               <h4>Upload Status</h4>
               <ul data-role="listview" id="uploads_listview">
                 <li><a data-role="button" data-mini="true" data-icon=""
@@ -316,7 +316,7 @@
 
                 <li><a data-role="button" data-mini="true" data-icon=""
                   onclick="devtracnodes.syncAll()" style="text-align: center"><i
-                    class="icon-upload-alt icon-large"></i>&nbsp&nbsp Sync All</a></li>
+                    class="fa fa-upload fa-lg"></i>&nbsp&nbsp Sync All</a></li>
 
               </ul>
             </div>
@@ -445,7 +445,7 @@
     <div data-role="header">
 
       <a id="" href="#page_site_report_type" data-rel="dialog"
-        data-role="button" data-icon="back" data-iconpos="notext"></a>
+        data-role="button" data-iconpos="notext"><i class="fa fa-chevron-circle-left fa-lg"></i></a>
       <h3>Add Site Visit</h3>
 
     </div>
@@ -552,8 +552,8 @@
   <!-- Action items details -->
   <div data-role="page" id="page_actionitems_details">
     <div data-role="header">
-      <a id="" data-rel="back" data-role="button" data-icon="back"
-        data-iconpos="notext"></a>
+      <a id="" data-rel="back" data-role="button"
+        data-iconpos="notext"><i class="fa fa-chevron-circle-left fa-lg"></i></a>
       <h3 title="Action Item">Action Item</h3>
     </div>
     <!-- /header -->
@@ -671,8 +671,8 @@
 
     <div data-role="header">
 
-      <a id="" href="#page_site_report_type" data-role="button" data-icon="back"
-        data-iconpos="notext" data-rel="dialog"></a>
+      <a id="" href="#page_site_report_type" data-role="button"
+        data-iconpos="notext" data-rel="dialog"><i class="fa fa-chevron-circle-left fa-lg"></i></a>
 
       <h3>Create Location</h3>
 

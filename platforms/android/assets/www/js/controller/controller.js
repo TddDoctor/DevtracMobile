@@ -22,15 +22,17 @@ var controller = {
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
       //if (!localStorage.appurl) {
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //}
 
       if(controller.connectionStatus) {
         auth.loginStatus().then(function () {
+          $("#panel1").listview().listview("refresh");
+          $("#panel2").listview().listview("refresh");
+          
           devtracnodes.countFieldtrips().then(function(){
           //load field trip details from the database if its one and the list if there's more.
             controller.loadFieldTripList();
@@ -47,6 +49,9 @@ var controller = {
 
 
         }).fail(function () {
+          $("#panel1").listview().listview("refresh");
+          $("#panel2").listview().listview("refresh");
+          
           if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){
             $("#page_login_name").val(window.localStorage.getItem("usernam"));
             $("#page_login_pass").val(window.localStorage.getItem("passw"));  

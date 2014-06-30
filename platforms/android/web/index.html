@@ -85,17 +85,17 @@
   <!-- Fieldtrips details -->
   <div data-role="page" id="page_fieldtrip_details">
     
-      <div data-role="panel" id="navpanel2" data-theme="b" data-display="reveal"
+      <div data-role="panel" id="navpanel2" data-theme="b"
         data-position="left">
     
-        <ul data-role="listview">
+        <ul data-role="listview" id="panel2">
         <li><img src="../assets/www/img/person.png"/><span><strong class="username"></strong><br><small class="user_title"></small></span></li>
-          <li><a href="#home_page" data-role="button" class="panel_home"><i class="fa fa-home fa-fw"></i>&nbsp Home</a></li>
-          <li><a href="#setup_urls_page" data-role="button"
+          <li><a href="#home_page" class="panel_home"><i class="fa fa-home fa-fw"></i>&nbsp Home</a></li>
+          <li><a href="#setup_urls_page"
             data-rel="dialog" class="setup_urls"><i class="fa fa-gear fa-fw"></i>&nbsp Setup URLS</a></li>
-          <li><a id="panel2" class="panel_logout" data-role="button"><i class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a></li>
+          <li><a id="panel2" class="panel_logout"><i class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a></li>
           </ul>
-          
+    
       </div>
     
     <div data-role="header">
@@ -164,24 +164,35 @@
   <!-- Application Home page  -->
   <div data-role="page" id="home_page">
 
-      <div data-role="panel" id="navpanel" data-theme="b" data-display="reveal"
+      <div data-role="panel" id="navpanel" data-theme="b"
         data-position="left">
-        <ul data-role="listview">
-        <li><img src="../assets/www/img/person.png"/><span><strong class="username"></strong><br><small class="user_title">Web &amp; Mobile Developer</small></span></li>
-          <li><a href="#setup_urls_page" data-role="button"
+        
+        <ul data-role="listview" id="panel1">
+          <li><img src="../assets/www/img/person.png"/><span><strong class="username"></strong><br><small class="user_title">Web &amp; Mobile Developer</small></span></li>
+          <li><a href="#setup_urls_page"
             data-rel="dialog" class="setup_urls"><i class="fa fa-gear fa-fw"></i>&nbsp Setup URLS</a></li>
           
-          <li><a href="#" id="panel1" class="panel_logout"
-            data-role="button"><i class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a></li>
-        </ul>
-
-      </div>
+          <li><a href="#" id="panel1" class="panel_logout"><i class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a></li>
+            
+        </ul> 
+        
+        
+<!-- <fieldset data-role="controlgroup">
+<img src="../assets/www/img/person.png"/><span><strong class="username"></strong><br><small class="user_title">Web &amp; Mobile Developer</small></span></li>
+          <a href="#setup_urls_page" data-role="button"
+            data-rel="dialog" class="setup_urls"><i class="fa fa-gear fa-fw"></i>&nbsp Setup URLS</a>
+          
+          <a href="#" id="panel1" class="panel_logout"
+            data-role="button"><i class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a>
+            
+            </fieldset>
+ -->      </div>
 
     <div data-role="header">
-      <a class="bars-button" data-icon="bars" class="ui-btn-left"
+      <a class="bars-button" class="ui-btn-left"
         style="margin-top: 2.5px;" href="#navpanel" data-iconpos="notext"
-        id="panelIt"></a> <a class="refresh-button" data-icon="refresh"
-        class="ui-btn-right" style="margin-top: 2.5px;" data-iconpos="notext"></a>
+        id="panelIt"><i class="fa fa-bars fa-lg"></i></a> <a class="refresh-button"
+        class="ui-btn-right" style="margin-top: 2.5px;" data-iconpos="notext"><i class="fa fa-refresh fa-lg"></i></a>
 
       <h1 title="Home">Home</h1>
     </div>

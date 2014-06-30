@@ -235,9 +235,6 @@ var auth = {
 
               $('.setup_urls').hide();
 
-              //refresh panel
-              $( ".navpanel" ).trigger( "updatelayout" );
-              
               d.resolve();
             });
 

@@ -23,12 +23,18 @@ var controller = {
       //set application url if its not set
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
-      //localStorage.appurl = "http://192.168.38.113/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://192.168.38.113/dt11";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //}
 
       if(controller.connectionStatus) {
+          devtracnodes.countLocations().then(function (locations) {
+            $("#location_count").html(locations);
+          }).fail(function(locs){
+            $("#location_count").html(locs);
+          });
+        
         auth.loginStatus().then(function () {
           $("#panel1").listview().listview("refresh");
           $("#panel2").listview().listview("refresh");
@@ -637,6 +643,7 @@ var controller = {
     //load field trip list from db
     loadFieldTripList: function () {
       devtrac.indexedDB.open(function (db) {
+        
         devtrac.indexedDB.getAllFieldtripItems(db, function (data) {
           var fieldtripList = $('#list_fieldtrips');
           fieldtripList.empty();

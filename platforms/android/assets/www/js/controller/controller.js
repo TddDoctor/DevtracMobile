@@ -23,6 +23,7 @@ var controller = {
       //set application url if its not set
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
+      //localStorage.appurl = "http://192.168.38.114/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
       localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
@@ -720,24 +721,30 @@ var controller = {
             localStorage.fieldtripstartdate = startdatearray[0] + "/" + startdatearray[1] + "/" + startdatearray[2]; 
 
             var startday = parseInt(startdatearray[2]);
-            var startmonth = parseInt(startdatearray[1])+1;
+            var startmonth = parseInt(startdatearray[1])-1;
             var startyear = parseInt(startdatearray[0]);
 
             var endday = parseInt(enddatearray[2]);
-            var endmonth = parseInt(enddatearray[1])+1;
-            var endyear = parseInt(enddatearray[0]);
+            var endmonth = parseInt(enddatearray[1])-1;
+            var endyear = parseInt(enddatearray[0]);            
 
+            localStorage.fstartday = parseInt(startday);
+            localStorage.fstartmonth = parseInt(startmonth);
+            localStorage.fstartyear = parseInt(startyear);
+
+            localStorage.fendday = parseInt(endday);
+            localStorage.fendmonth = parseInt(endmonth);
+            localStorage.fendyear = parseInt(endyear);
+            
+            $( "#actionitem_date" ).datepicker( "destroy" );
+            $( "#sitevisit_date" ).datepicker( "destroy" );
 
             $("#actionitem_date").datepicker({ 
               dateFormat: "yy/mm/dd", 
               minDate: new Date(startyear, startmonth, startday), 
               maxDate: new Date(endyear, endmonth, endday) 
             });
-            $("#sitevisit_add_date").datepicker({ 
-              dateFormat: "yy/mm/dd", 
-              minDate: new Date(startyear, startmonth, startday), 
-              maxDate: new Date(endyear, endmonth, endday) 
-            });
+            
             $("#sitevisit_date").datepicker({ 
               dateFormat: "yy/mm/dd", 
               minDate: new Date(startyear, startmonth, startday), 
@@ -965,6 +972,21 @@ var controller = {
         localStorage.ftritemdistrict = $("#location_district").val();
         localStorage.ftritemlatlon = localStorage.latlon;
         if(localStorage.ftritemtype == "210") {
+          $( "#sitevisit_add_date" ).datepicker( "destroy" );
+          var startday = parseInt(localStorage.fstartday);
+          var startmonth = parseInt(localStorage.fstartmonth);
+          var startyear = parseInt(localStorage.fstartyear);
+
+          var endday = parseInt(localStorage.fendday);
+          var endmonth = parseInt(localStorage.fendmonth);
+          var endyear = parseInt(localStorage.fendyear);
+
+          $("#sitevisit_add_date").datepicker({ 
+            dateFormat: "yy/mm/dd", 
+            minDate: new Date(startyear, startmonth, startday), 
+            maxDate: new Date(endyear, endmonth, endday) 
+          });
+          
           $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
         }
         else{

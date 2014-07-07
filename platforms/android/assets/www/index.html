@@ -6,34 +6,36 @@
 <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
 <meta name="viewport"
   content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
-<link href='http://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
-<link rel="stylesheet" type="text/css" href="css/style_light.css"/>
+<link href='http://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet'
+  type='text/css'>
+<link rel="stylesheet" type="text/css" href="css/style_light.css" />
 <link rel="stylesheet" href="css/jquery.mobile-1.4.0.min.css" />
 <link rel="stylesheet" href="css/jquery.mobile.theme-1.4.0.min.css" />
 
 <link rel="stylesheet" href="css/jquery-ui-1.10.4.custom.css" />
-  <link rel="stylesheet" href="css/jquery.mobile.datepicker.css" />
+<link rel="stylesheet" href="css/jquery.mobile.datepicker.css" />
 
- <link rel="stylesheet" href="css/normalize.css"/>
-<link media="screen" href="css/index.css" rel="stylesheet" type="text/css"/> 
+<link rel="stylesheet" href="css/normalize.css" />
+<link media="screen" href="css/index.css" rel="stylesheet" type="text/css" />
 
 <!-- Important Owl stylesheet -->
 <link rel="stylesheet" href="libs/owl-carousel/owl.carousel.css">
- 
+
 <!-- Default Theme -->
 <link rel="stylesheet" href="libs/owl-carousel/owl.theme.css">
 
 <link rel="stylesheet" href="css/font-awesome.css">
 
-<link rel="stylesheet"
-  href="css/jquery.mobile.simpledialog.min.css">
+<link rel="stylesheet" href="css/jquery.mobile.simpledialog.min.css">
 <link rel="stylesheet" href="css/leaflet.css" />
+
+<link rel="stylesheet" href="libs/FontAwesome/css/font-awesome.min.css">
 </head>
 <body>
   <!-- Page Login  -->
   <div data-role="page" id="page_login">
     <div data-role="header">
-      <h1 title="Login">Login</h1>
+      <h1 title="Login">Devtrac Mobile</h1>
     </div>
     <!-- /header -->
 
@@ -55,20 +57,21 @@
             placeholder="password" required />
         </div>
 
-        <p>
-          <input type="checkbox" name="checkbox-mini-0" id="checkbox-mini-0"
-            data-mini="true"> <label for="checkbox-mini-0">Remember
-            me</label>
-        </p>
-        <br>
-
         <div id='logindiv'>
-          <button type="button" data-theme="b" id="page_login_submit" data-mini="true">Login</button>
+          <button type="button" data-theme="a" id="page_login_submit"
+            data-mini="true">Sign In</button>
         </div>
 
         <div id='logoutdiv'>
-          <button type="button" data-theme="b" id="page_logout_submit" data-mini="true">Logout</button>
+          <button type="button" data-theme="a" id="page_logout_submit"
+            data-mini="true">Logout</button>
         </div>
+        <p>
+          <input type="checkbox" data-theme="a" name="checkbox-mini-0"
+            id="checkbox-mini-0" data-mini="true"> <label
+            for="checkbox-mini-0">Remember Me</label>
+        </p>
+
       </form>
     </div>
     <!-- /content -->
@@ -79,29 +82,35 @@
 
   <!-- Fieldtrips details -->
   <div data-role="page" id="page_fieldtrip_details">
-    
-      <div data-role="panel" id="navpanel2" data-theme="b" data-display="reveal"
-        data-position="left">
-        <ul data-role="listview">
-        <li><img src="img/person.png"/><span><strong class="username"></strong><br><small class="user_title">Web &amp; Mobile Developer</small></span></li>
-          <li><a href="#home_page" data-role="button" class="panel_home">Home</a></li>
-          <li><a href="#setup_urls_page" data-role="button"
-            data-rel="dialog" class="setup_urls">Setup URLS</a></li>
-          <li><a href="#page_login" class="panel_login" data-role="button"
-            data-rel="dialog">Login</a></li>
-          <li><a id="panel2" class="panel_logout" data-role="button">Logout</a></li>
-      </div>
+
+    <div data-role="panel" id="navpanel2" data-theme="b" data-position="left">
+
+      <ul data-role="listview" id="panel2">
+        <li><img src="img/person.png" /><span><strong
+            class="username"></strong><br>
+          <small class="user_title"></small></span></li>
+        <li><a href="#home_page" class="panel_home"><i
+            class="fa fa-home fa-fw"></i>&nbsp Home</a></li>
+        <li><a href="#setup_urls_page" data-rel="dialog" class="setup_urls"><i
+            class="fa fa-gear fa-fw"></i>&nbsp Setup URLS</a></li>
+        <li><a id="panel2" class="panel_logout"><i
+            class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a></li>
+      </ul>
+
+    </div>
 
     <div data-role="header">
-      <a data-icon="bars" class="ui-btn-left" style="margin-top: 2.5px;"
-        href="#navpanel2" data-iconpos="notext"></a> <a class="ui-btn-right"
-        data-role="button" data-icon="edit" id="edit_fieldtrip"
+      <a class="ui-btn-left" href="#navpanel2" data-role="button"
+        data-iconpos="notext"><i class="fa fa-bars fa-lg"></i></a> <a
+        class="ui-btn-right" data-role="button" id="edit_fieldtrip"
         href="#page_fieldtrip_edit" data-rel="dialog" data-iconpos="notext"
-        style="margin-right: 100px;"></a> <a href="#page_site_report_type"
-        data-rel="dialog" class="ui-btn-right" data-role="button"
-        data-icon="plus" data-iconpos="notext" style="margin-right: 50px;"></a>
-      <a class="ui-btn-right refresh-button" data-role="button"
-        data-icon="refresh" data-iconpos="notext" style="margin-right: 1px;"></a>
+        style="margin-right: 100px;"><i class="fa fa-edit fa-lg"></i></a> <a
+        href="#page_site_report_type" data-rel="dialog" class="ui-btn-right"
+        data-role="button" data-iconpos="notext" style="margin-right: 51px;"><i
+        class="fa fa-plus-square fa-lg"></i></a> <a
+        class="ui-btn-right refresh-button" data-role="button"
+        data-iconpos="notext" style="margin-right: 1px;"><i
+        class="fa fa-refresh fa-lg"></i></a>
 
       <h1>FieldTrip</h1>
 
@@ -159,25 +168,39 @@
   <!-- Application Home page  -->
   <div data-role="page" id="home_page">
 
-      <div data-role="panel" id="navpanel" data-theme="b" data-display="reveal"
-        data-position="left">
-        <ul data-role="listview">
-        <li><img src="../assets/www/img/person.png"/><span><strong class="username"></strong><br><small class="user_title">Web &amp; Mobile Developer</small></span></li>
-          <li><a href="#setup_urls_page" data-role="button"
-            data-rel="dialog" class="setup_urls">Setup URLS</a></li>
-          <li><a href="#page_login" class="panel_login" data-role="button"
-            data-rel="dialog">Login</a></li>
-          <li><a href="#" id="panel1" class="panel_logout"
-            data-role="button">Logout</a></li>
-        </ul>
+    <div data-role="panel" id="navpanel" data-theme="b" data-position="left">
 
-      </div>
+      <ul data-role="listview" id="panel1">
+        <li><img src="img/person.png" /><span><strong
+            class="username"></strong><br>
+          <small class="user_title">Web &amp; Mobile Developer</small></span></li>
+        <li><a href="#setup_urls_page" data-rel="dialog" class="setup_urls"><i
+            class="fa fa-gear fa-fw"></i>&nbsp Setup URLS</a></li>
+
+        <li><a href="#" id="panel1" class="panel_logout"><i
+            class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a></li>
+
+      </ul>
+
+
+      <!-- <fieldset data-role="controlgroup">
+<img src="../assets/www/img/person.png"/><span><strong class="username"></strong><br><small class="user_title">Web &amp; Mobile Developer</small></span></li>
+          <a href="#setup_urls_page" data-role="button"
+            data-rel="dialog" class="setup_urls"><i class="fa fa-gear fa-fw"></i>&nbsp Setup URLS</a>
+          
+          <a href="#" id="panel1" class="panel_logout"
+            data-role="button"><i class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a>
+            
+            </fieldset>
+ -->
+    </div>
 
     <div data-role="header">
-      <a class="bars-button" data-icon="bars" class="ui-btn-left"
-        style="margin-top: 2.5px;" href="#navpanel" data-iconpos="notext"
-        id="panelIt"></a> <a class="refresh-button" data-icon="refresh"
-        class="ui-btn-right" style="margin-top: 2.5px;" data-iconpos="notext"></a>
+      <a class="bars-button" class="ui-btn-left" style="margin-top: 2.5px;"
+        href="#navpanel" data-iconpos="notext" id="panelIt"><i
+        class="fa fa-bars fa-lg"></i></a> <a class="refresh-button"
+        class="ui-btn-right" style="margin-top: 2.5px;" data-iconpos="notext"><i
+        class="fa fa-refresh fa-lg"></i></a>
 
       <h1 title="Home">Home</h1>
     </div>
@@ -185,8 +208,6 @@
 
     <div data-role="content" class='content'>
       <form class="cmxform" id="homeForm" method="" action="">
-        <p id="username"></p>
-
         <ul data-role="listview" id="list_fieldtrips">
 
         </ul>
@@ -229,26 +250,30 @@
   <!-- Site visits details -->
   <div data-role="page" id="page_sitevisits_details">
     <div data-role="header">
-      <a id="" class="ui-btn-left" href="#page_fieldtrip_details" data-role="button"
-        data-icon="back" data-iconpos="notext"></a>
-      <a href="#page_sitevisit_edits" class="ui-btn-right" data-role="button" id="editsitevisit" data-rel="dialog" data-iconpos="notext" style="margin-right: 50px;" data-icon="edit"></a>
-                    
-      <a href="#page_add_actionitems" class="ui-btn-right" data-role="button" data-icon="plus" id="addactionitem"
-                  data-rel="dialog" data-iconpos="notext" style="margin-right: 1px;"></a>
-      
-        
+
+      <a id="" class="ui-btn-left" href="#page_fieldtrip_details"
+        data-role="button" data-iconpos="notext"><i
+        class="fa fa-chevron-circle-left fa-lg"></i></a> <a
+        href="#page_sitevisit_edits" class="ui-btn-right" data-role="button"
+        id="editsitevisit" data-rel="dialog" data-iconpos="notext"
+        style="margin-right: 50px;"><i class="fa fa-edit fa-lg"></i></a> <a
+        href="#page_add_actionitems" class="ui-btn-right" data-role="button"
+        id="addactionitem" data-rel="dialog" data-iconpos="notext"
+        style="margin-right: 1px;"><i class="fa fa-plus-square fa-lg"></i></a>
+
+
       <h3>Site Report</h3>
-      
-      <div data-role="navbar" data-theme="b">
-    <ul>
-        <li><a data-role="button" data-mini="true"
-                  id="addquestionnaire"><i class="icon-book"></i>&nbsp&nbsp
-                    Questionnaire</a></li>
-        <li><a href="#mappage" data-role="button" class="panel_map"
-                  onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i
-                    class="icon-map-marker"></i>&nbsp&nbsp Map</a></li>
-    </ul>
-</div><!-- /navbar -->
+
+      <div data-role="navbar" data-theme="a">
+        <ul>
+          <li><a data-role="button" data-mini="true" id="addquestionnaire"><i
+              class="fa fa-list-alt fa-lg"></i>&nbsp&nbsp Questionnaire</a></li>
+          <li><a href="#mappage" data-role="button" class="panel_map"
+            onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i
+              class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li>
+        </ul>
+      </div>
+      <!-- /navbar -->
     </div>
     <!-- /header -->
 
@@ -259,42 +284,42 @@
         <fieldset class="ui-grid-a">
           <div class="ui-block-a">
             <div class="ui-bar" style="width: 70%">
-            <!-- <div class="ui-field-contain"> -->
-    <label for="sitevisists_details_title"><b>Title:</b></label>
-              <p id="sitevisists_details_title" required></p>          
-        <!-- </div> -->
-        
-        <!-- <div class="ui-field-contain"> -->
+              <!-- <div class="ui-field-contain"> -->
+              <label for="sitevisists_details_title"><b>Title:</b></label>
+              <p id="sitevisists_details_title" required></p>
+              <!-- </div> -->
+
+              <!-- <div class="ui-field-contain"> -->
               <label for="sitevisists_details_date"><b>Date Visited:
               </b></label>
               <p id="sitevisists_details_date" required></p>
-              
-        <!-- </div> -->
+
+              <!-- </div> -->
 
 
-    <!-- <div class="ui-field-contain"> -->
+              <!-- <div class="ui-field-contain"> -->
               <label for="sitevisists_details_type"><b>Type: </b></label>
               <p id="sitevisists_details_type" required></p>
-              
-        <!-- </div> -->
 
-    <!-- <div class="ui-field-contain"> -->
+              <!-- </div> -->
+
+              <!-- <div class="ui-field-contain"> -->
               <label for="sitevisists_details_summary"><b>Summary: </b></label>
               <p id="sitevisists_details_summary" required></p>
-              
-        <!-- </div> -->
-        
-            <!-- <div class="ui-field-contain"> -->
+
+              <!-- </div> -->
+
+              <!-- <div class="ui-field-contain"> -->
               <label for="sitevisists_details_location"><b>Location
                   Name: </b></label>
-              <p id="sitevisists_details_location" required></p>      
-        <!-- </div> -->
-        
+              <p id="sitevisists_details_location" required></p>
+              <!-- </div> -->
+
             </div>
           </div>
           <div class="ui-block-b">
 
-            <div data-role="collapsible" data-theme="b">
+            <div data-role="collapsible" data-theme="a">
               <h4>Upload Status</h4>
               <ul data-role="listview" id="uploads_listview">
                 <li><a data-role="button" data-mini="true" data-icon=""
@@ -313,7 +338,7 @@
 
                 <li><a data-role="button" data-mini="true" data-icon=""
                   onclick="devtracnodes.syncAll()" style="text-align: center"><i
-                    class="icon-upload-alt"></i>&nbsp&nbsp Sync All</a></li>
+                    class="fa fa-upload fa-lg"></i>&nbsp&nbsp Sync All</a></li>
 
               </ul>
             </div>
@@ -337,7 +362,8 @@
   <div data-role="page" id="page_location_list">
     <div data-role="header">
       <a id="" href="#page_sitevisits_details" data-role="button"
-        data-icon="back" data-iconpos="notext"></a>
+        data-icon="" data-iconpos="notext"><i
+        class="fa fa-chevron-circle-left fa-lg"></i></a>
       <h3 title="Locations">Locations</h3>
     </div>
     <!-- /header -->
@@ -374,10 +400,12 @@
           <option value="211">Human Interest Story</option>
           <option value="210">Roadside Observation</option>
           <option value="209">Site Visit</option>
-        </select> 
-
-          <a id="submit_sitereporttype" data-role="button" href=""
-          onclick="controller.submitSitereporttype();" data-theme='b'>Submit</a>
+        </select> <input type='text' value='' id='location_latlon' name='location_latlon'
+          required style="display: none" /> <label for="map_district"
+          style="color: red;" id="map_district_error"></label><a
+          id="submit_sitereporttype" data-role="button" href=""
+          onclick="controller.submitSitereporttype();" data-theme='b'
+          data-mini="true">Submit</a>
       </form>
 
     </div>
@@ -439,7 +467,8 @@
     <div data-role="header">
 
       <a id="" href="#page_site_report_type" data-rel="dialog"
-        data-role="button" data-icon="back" data-iconpos="notext"></a>
+        data-role="button" data-iconpos="notext"><i
+        class="fa fa-chevron-circle-left fa-lg"></i></a>
       <h3>Add Site Visit</h3>
 
     </div>
@@ -472,6 +501,7 @@
         </div>
         <br>
         <div id="uploadPreview"></div>
+        <div id="uploaderror" style="color: red"></div>
         <br> <a data-inline="true" data-role="button" data-theme='b'
           data-mini="true" id='sitevisit_add_save'>Save</a> <a
           data-role="button" data-rel="dialog" data-theme='b'
@@ -545,8 +575,8 @@
   <!-- Action items details -->
   <div data-role="page" id="page_actionitems_details">
     <div data-role="header">
-      <a id="" data-rel="back" data-role="button" data-icon="back"
-        data-iconpos="notext"></a>
+      <a id="" data-rel="back" data-role="button" data-iconpos="notext"><i
+        class="fa fa-chevron-circle-left fa-lg"></i></a>
       <h3 title="Action Item">Action Item</h3>
     </div>
     <!-- /header -->
@@ -664,8 +694,9 @@
 
     <div data-role="header">
 
-      <a id="" href="#page_site_report_type" data-role="button" data-icon="back"
-        data-iconpos="notext" data-rel="dialog"></a>
+      <a id="" href="#page_site_report_type" data-role="button"
+        data-iconpos="notext" data-rel="dialog"><i
+        class="fa fa-chevron-circle-left fa-lg"></i></a>
 
       <h3>Create Location</h3>
 
@@ -705,12 +736,14 @@
   <!-- Map page -->
   <div data-role="page" id="mappage">
     <div data-role="header">
-      <a id="addlocation_back" data-icon="back" data-rel="dialog"
-        class="ui-btn-left" href="#page_site_report_type" data-iconpos="notext"></a>
-      <a id="viewlocation_back" data-icon="back" data-rel="dialog" class="ui-btn-left" href="#page_sitevisits_details"
-        data-iconpos="notext"></a>
-
+      <a id="addlocation_back" data-icon="" data-rel="dialog"
+        class="ui-btn-left" href="#page_site_report_type" data-iconpos="notext"><i
+        class="fa fa-chevron-circle-left fa-lg"></i></a>
       <h3 id="mapheader"></h3>
+      <a id="viewlocation_back" data-icon="" data-rel="dialog"
+        class="ui-btn-left" href="#page_sitevisits_details"
+        data-iconpos="notext"><i
+        class="fa fa-chevron-circle-left fa-lg"></i></a>
     </div>
     <!-- /header -->
 
@@ -727,8 +760,9 @@
   <div data-role="page" id="page_add_questionnaire">
 
     <div data-role="header" id='qtnaireheader'>
-      <a id="" data-rel="back" data-icon="back" data-iconpos="notext"
-        data-role="button" style="margin-top: 2.5px;">Back</a>
+      <a id="" data-icon="" data-iconpos="notext" href="#page_sitevisits_details"
+        data-role="button" style="margin-top: 2.5px;"><i
+        class="fa fa-chevron-circle-left fa-lg"></i></a>
       <h3 id="qtn_title" title="Questionnaire">Questionnaire</h3>
     </div>
     <!-- /header -->
@@ -744,32 +778,33 @@
   <script src="libs/jquery-1.7.2.min.js"></script>
   <script src="libs/jquery-ui-1.10.4.custom.js"></script>
   <script type="text/javascript" src="cordova.js"></script>
-  
+
   <!-- Include js plugin -->
   <script src="libs/owl-carousel/owl.carousel.js"></script>
   <script src="libs/jquery.mobile-1.4.0.min.js"></script>
   <script src="libs/jquery.mobile.datepicker.js"></script>
-  
+
   <script src="js/ttw-notification-menu.js" type="text/javascript"></script>
   <script src="js/notify.js" type="text/javascript"></script>
-  
+
   <script src="libs/jquery.validate.min.js"></script>
   <script src="libs/additional-methods.min.js"></script>
   <script src="libs/leaflet.js"></script>
   <script src="libs/jquery.blockUI.js"></script>
   <script src="libs/jquery.mobile.simpledialog2.min.js"></script>
 
-  <script type="text/javascript" src="libs/IndexedDBShim-master/dist/IndexedDBShim.js"></script>
+  <script type="text/javascript"
+    src="libs/IndexedDBShim-master/dist/IndexedDBShim.js"></script>
   <script type="text/javascript" src="js/model/indexdb-store.js"></script>
   <script src="libs/movies-app.js"></script>
-  
+
   <script type="text/javascript" src="js/controller/map-controller.js"></script>
-  
+
   <script type="text/javascript" src="js/authentication.js"></script>
   <script type="text/javascript" src="js/vocabularies.js"></script>
   <script type="text/javascript" src="js/devtrac-nodes.js"></script>
   <script type="text/javascript" src="js/controller/controller.js"></script>
-  
+
   <script type="text/javascript">
       controller.initialize();
       

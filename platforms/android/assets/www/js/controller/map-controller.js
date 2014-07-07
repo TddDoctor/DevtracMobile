@@ -121,6 +121,10 @@ var mapctlr = {
         $("#viewlocation_back").show();
         $("#addlocation_back").hide();
         
+
+        $("#viewlocation_back").attr("class", "");
+        $("#viewlocation_back").attr("class", "ui-btn-left");
+        
         mapctlr.MAP.addLayer(mapctlr.BASEMAPS['mapbox']);
         mapctlr.LOCATION.addTo(mapctlr.MAP);
         

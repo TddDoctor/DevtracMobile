@@ -24,6 +24,7 @@ var controller = {
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       localStorage.appurl = "http://192.168.38.113/dt11";
+      //localStorage.appurl = "http://192.168.38.114/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //}
@@ -1078,7 +1079,12 @@ var controller = {
 
           //get location name
           devtrac.indexedDB.getPlace(db, pnid, function (place) {
-
+            
+            //$("#viewlocation_back").attr("class", "");
+            //$("#viewlocation_back").attr("class", "ui-btn-left");
+            
+            //$("#mapheader").html("Map");
+            
             if (place != undefined) {
               localStorage.ptitle = place['title'];
 
@@ -1205,8 +1211,8 @@ var controller = {
           $("#sitevisists_details_date").html($("#sitevisit_date").val());
           $("#sitevisists_details_summary").html($("#sitevisit_summary").val());
           
-          devtracnodes.countSitevisits().then(function(size) {
-            $("#sitevisit_count").html(size);
+          devtracnodes.countSitevisits().then(function(scount) {
+            $("#sitevisit_count").html(scount);
           });
 
           $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
@@ -1593,6 +1599,10 @@ var controller = {
             devtrac.indexedDB.addPlacesData(db, updates);
 
             controller.createSitevisitfromlocation(updates[0]['nid'], $('#location_name').val());
+            
+            devtracnodes.countLocations().then(function(count) {
+              $("#location_count").html(count);
+            })
 
             $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
           });
@@ -1604,8 +1614,6 @@ var controller = {
     },
 
     createSitevisitfromlocation: function (pnid, title) {
-      var sitevisitscount = 0;
-
       var ftritemtype = "";
 
       switch (localStorage.ftritemtype) {
@@ -1677,7 +1685,6 @@ var controller = {
           for (var k in sitevisits) {
             if (sitevisits[k]['user-added'] == true && sitevisits[k]['nid'] == updates['nid']) {
               updates['nid'] = sitevisits[k]['nid'] + 1;
-              sitevisitscount = sitevisitscount + 1;
             }
           }
 
@@ -1688,8 +1695,9 @@ var controller = {
 
           });
 
-          sitevisitscount = sitevisitscount + 1;
-          $("#sitevisit_count").html(sitevisitscount);
+          devtracnodes.countSitevisits().then(function(count){
+            $("#sitevisit_count").html(count);
+          });
 
           controller.resetForm($("#form_add_location"));
         });
@@ -1699,7 +1707,7 @@ var controller = {
 
     //save sitevisit
     onSavesitevisit: function () {
-      var sitevisitscount = 0;
+      
       if ($("#form_sitevisit_add").valid()) {
         //save added site visits
 
@@ -1759,7 +1767,7 @@ var controller = {
             for (var k in sitevisits) {
               if (sitevisits[k]['user-added'] && sitevisits[k]['nid'] == updates['nid']) {
                 updates['nid'] = sitevisits[k]['nid'] + 1;
-                sitevisitscount = sitevisitscount + 1;
+                
               }
             }
 
@@ -1778,8 +1786,10 @@ var controller = {
               $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);  
             });
 
-            sitevisitscount = sitevisitscount + 1;
-            $("#sitevisit_count").html(sitevisitscount);
+            
+            countSitevisits().then(function(scount){
+              $("#sitevisit_count").html(scount);
+            });
 
           });
 

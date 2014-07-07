@@ -35,6 +35,8 @@
   <!-- Page Login  -->
   <div data-role="page" id="page_login">
     <div data-role="header">
+    <a class="ui-btn-left" data-mini="true" href="#setup_urls_page" data-role="button"
+            data-rel="dialog" class="setup_urls" data-iconpos="notext"><i class="fa fa-gear fa-lg"></i></a>
       <h1 title="Login">Devtrac Mobile</h1>
     </div>
     <!-- /header -->
@@ -91,8 +93,7 @@
           <small class="user_title"></small></span></li>
         <li><a href="#home_page" class="panel_home"><i
             class="fa fa-home fa-fw"></i>&nbsp Home</a></li>
-        <li><a href="#setup_urls_page" data-rel="dialog" class="setup_urls"><i
-            class="fa fa-gear fa-fw"></i>&nbsp Setup URLS</a></li>
+        
         <li><a id="panel2" class="panel_logout"><i
             class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a></li>
       </ul>
@@ -174,8 +175,7 @@
         <li><img src="img/person.png" /><span><strong
             class="username"></strong><br>
           <small class="user_title">Web &amp; Mobile Developer</small></span></li>
-        <li><a href="#setup_urls_page" data-rel="dialog" class="setup_urls"><i
-            class="fa fa-gear fa-fw"></i>&nbsp Setup URLS</a></li>
+        
 
         <li><a href="#" id="panel1" class="panel_logout"><i
             class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a></li>
@@ -218,7 +218,7 @@
   </div>
   <!-- /page -->
 
-  <!-- Setup urls page  -->
+    <!-- Setup urls page  -->
   <div data-role="page" id="setup_urls_page">
     <div data-role="header">
       <h1 title="Set Url">Set Url</h1>
@@ -228,13 +228,30 @@
     <div data-role="content" class='content'>
       <form class="cmxform" id="urlForm" method="" action="">
         <fieldset data-role="controlgroup">
-          <input type="radio" name="url" id="ug" class="url" value="Uganda">
-          <label for="ug">Devtrac Uganda</label> <input type="radio" name="url"
+          <legend>Either select a url from the list or type in a prefered url below:</legend>
+          <input type="radio" name="url"
             id="localhost" class="url" value="localhost"> <label
-            for="localhost">Change URL to localhost</label> <input type="radio"
+            for="localhost">Demo(localhost)</label> 
+            
+            <input type="radio" name="url"
+            id="113" class="url" value="113"> <label
+            for="113">Demo(192.168.38.113)</label>
+            
+            <input type="radio" name="url"
+            id="114" class="url" value="114"> <label
+            for="114">Demo(192.168.38.114)</label>
+            
+            <input type="radio"
             name="url" id="dmanual" class="url" value="DevtracManual"> <label
-            for="dmanual">Change URL to Devtrac Manual</label>
+            for="dmanual">Devtrac Manual</label>
+            
+            <input type="radio" name="url" id="ug" class="url" value="DevtracUg">
+          <label for="ug">Devtrac Uganda</label>
+          
         </fieldset>
+        <label for="myurl">Custom Url</label>
+        <input type="url" placeholder="Start with http:// and remove trailing slash" name="myurl" id="myurl" value="">
+          
         <div id='urldiv'>
           <a href="#" data-role="button" data-inline="true" data-theme="b"
             id='save_url'>Save</a>

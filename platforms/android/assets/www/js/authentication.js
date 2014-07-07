@@ -24,8 +24,10 @@ var auth = {
           //hide and show panel auth buttons
           $('.panel_login').show();
           $('.panel_logout').hide();
-
-          alert(errorThrown);
+          
+          if(errorThrown == ""){
+            controller.loadingMsg("Selected Url "+localStorage.appurl+" is Unavailable. Make sure you have an internet connection or try another url.", 5000)  
+          }
 
           d.reject();
         },
@@ -76,7 +78,6 @@ var auth = {
             $('.panel_login').show();
             $('.panel_logout').hide();
 
-            alert(errorThrown);
 
           },
           success : function(data) {
@@ -261,11 +262,13 @@ var auth = {
           headers: {'X-CSRF-Token': token},
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
-            d.reject();
-            alert(errorThrown);
+
             //hide and show dialog auth buttons
             $('#logindiv').hide();
             $('#logoutdiv').show();
+
+            d.reject();
+            
           },
           success : function(data) {
             $.unblockUI();

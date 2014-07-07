@@ -21,13 +21,13 @@ var controller = {
       
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
-      //if (!localStorage.appurl) {
+      if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://192.168.38.113/dt11";
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://192.168.38.113/dt11";
+      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
-      //}
+      }
 
       if(controller.connectionStatus) {
         auth.loginStatus().then(function () {
@@ -371,32 +371,58 @@ var controller = {
       //save url dialog
       $('#save_url').bind("click", function (event, ui) {
         var url = null;
-        $('.url').each(function () {
-          if ($(this).attr('checked')) {
-            url = $(this).val();
+        if($("#myurl").val().length > 0){
+          localStorage.appurl = $("#myurl").val();
+        }else{
+        
+          $('.url').each(function () {
+            if ($(this).attr('checked')) {
+              url = $(this).val();
+            }
+          });
+          //      validate url textfield
+          //      if(form.valid()) {
+          switch (url) {
+          case "113":
+            localStorage.appurl = "http://192.168.38.113/dt11";
+            break;
+          case "114":
+            localStorage.appurl = "http://192.168.38.114/dt11";
+            break;
+          case "DevtracManual":
+            localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+            
+            break;
+          case "DevtracUg":
+            localStorage.appurl = "http://devtrac.ug";
+            
+            break;
+          case "localhost":
+            localStorage.appurl = "http://localhost/dt11";
+            break;
+          case "android":
+            localStorage.appurl = "http://10.0.2.2/dt11";
+            break;
+          default:
+            break;
           }
-        });
-        //      validate url textfield
-        //      if(form.valid()) {
-        switch (url) {
-        case "Uganda":
-          localStorage.appurl = "http://192.168.38.114/dt11";
-          break;
-        case "DevtracManual":
-          localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-          
-          break;
-        case "localhost":
-          localStorage.appurl = "http://localhost/dt11";
-          break;
-        case "android":
-          localStorage.appurl = "http://10.0.2.2/dt11";
-          break;
-        default:
-          break;
+
         }
-        $.mobile.changePage("#home_page", "slide", true, false);
-        //      }
+        
+        $.mobile.changePage("#page_login", "slide", true, false);
+        
+      });
+      
+      //on select url checkbox setting, clear textfield
+      $('.url').bind("click", function (event, ui) {
+        $("#myurl").val("");
+      });
+
+      
+      //on click url text field setting, clear checkboxes
+      $("#myurl").bind("click", function (event, ui) {
+        
+        controller.resetForm($("#urlForm"));
       });
 
       //cancel url dialog
@@ -408,7 +434,7 @@ var controller = {
         $('#url').val("");
       });
 
-      //cancel url dialog
+      
       $('.panel_login').bind("click", function (event, ui) {
         if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
           $("#page_login_name").val(window.localStorage.getItem("username"));
@@ -443,6 +469,7 @@ var controller = {
 
           }).fail(function (errorThrown) {
             $.unblockUI();
+            
           });
         }
       });

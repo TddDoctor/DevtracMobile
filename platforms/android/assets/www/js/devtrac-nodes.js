@@ -753,10 +753,11 @@ var devtracnodes = {
             devtracnodes.uploadFtritemswithLocations(names, new_nids, old_nids, dbs).then(function(sitevisits) {
 
               ftritems_locs = true;
-              if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){
+/*              if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){
                 $.unblockUI();
 
-              }
+              }*/
+              $.unblockUI();
             }).fail(function(){
               ftritems_locs = true;
               if(ftritems_locs = true && ftritems == true && fieldtrips == true && actionitems == true){

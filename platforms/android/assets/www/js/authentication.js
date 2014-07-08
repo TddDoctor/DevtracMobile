@@ -27,6 +27,8 @@ var auth = {
           
           if(errorThrown == ""){
             controller.loadingMsg("Selected Url "+localStorage.appurl+" is Unavailable. Make sure you have an internet connection or try another url.", 5000)  
+          }else{
+            controller.loadingMsg("Error: "+errorThrown+" Try another url.", 5000)
           }
 
           d.reject();
@@ -294,19 +296,9 @@ var auth = {
               $("#page_login_pass").val('');  
             }
 
-            //hide or show panel auth buttons 
-            $('.panel_login').show();
-            $('.panel_logout').hide();
-
-            //show set panel urls button
-            $('.setup_urls').show();
-
             //hide refresh button
             $('.refresh-button').hide();
             
-            //hide user details
-            $('.user_details').html("");
-
             $.mobile.changePage("#page_login", "slide", true, false);
 
             d.resolve();

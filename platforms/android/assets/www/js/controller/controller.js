@@ -64,7 +64,7 @@ var controller = {
       {
         
         if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
-          controller.loadingMsg("You are offline, cannot upload data. Now using offline data", 5000);
+          controller.loadingMsg("You are offline, cannot upload data. Now using offline data", 6000);
           //load field trip details from the database if its one and the list if there's more.
           controller.loadFieldTripList();
 
@@ -117,6 +117,7 @@ var controller = {
 
     //Bind any events that are required on startup
     bindEvents: function () {
+      $("#seturlselect").chosen({width: "100%"}); 
 
       document.addEventListener("deviceready", controller.onDeviceReady, false);
 
@@ -386,8 +387,8 @@ var controller = {
           case "113":
             localStorage.appurl = "http://192.168.38.113/dt11";
             break;
-          case "114":
-            localStorage.appurl = "http://192.168.38.114/dt11";
+          case "demo":
+            localStorage.appurl = "http://demo.devtrac.ug";
             break;
           case "DevtracManual":
             localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
@@ -414,7 +415,7 @@ var controller = {
       });
       
       //on select url checkbox setting, clear textfield
-      $('.url').bind("click", function (event, ui) {
+      $('#seturlselect').bind("click", function (event, ui) {
         $("#myurl").val("");
       });
 

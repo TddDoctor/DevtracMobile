@@ -32,6 +32,8 @@
 
 <link rel="stylesheet" href="../assets/www/libs/FontAwesome/css/font-awesome.min.css">
 
+<link rel="stylesheet" href="../assets/www/css/chosen.css">
+
 
 </head>
 <body>
@@ -76,6 +78,30 @@
             Me</label>
         </p>
         
+  <form class="cmxform" id="urlForm" method="" action="">
+        
+          <label>Either select a url from the list or type in a prefered url below:</lable>
+        <div data-enhance="false">
+        <select data-placeholder="Choose Url ..." id="seturlselect" data-role="none">
+        <option value="DevtracManual">Devtrac Manual</option>
+        <option value="DevtracUg" disabled="disabled">Devtrac Uganda</option>
+        <option value="demo">Demo</option>
+        <option value="113">Localhost</option>
+  
+        </select>
+        </div>
+  
+        <p>
+        <label for="myurl">Custom Url</label>
+        <input type="url" placeholder="Start with http:// and remove trailing slash" name="myurl" id="myurl" value="">
+          
+        </p>  
+        
+        </form>
+        
+        
+        
+              
       </form>
     </div>
     <!-- /content -->
@@ -217,7 +243,7 @@
     <!-- /header -->
 
     <div data-role="content" class='content'>
-      <form class="cmxform" id="urlForm" method="" action="">
+      <form class="cmxform" id="" method="" action="">
         <fieldset data-role="controlgroup">
           <legend>Either select a url from the list or type in a prefered url below:</legend>
           <input type="radio" name="url"
@@ -781,6 +807,7 @@
   <!-- Include js plugin -->
   <script src="../assets/www/libs/owl-carousel/owl.carousel.js"></script>
   <script src="../assets/www/libs/jquery.mobile-1.4.0.min.js"></script>
+  <script src="../assets/www/libs/chosen.jquery.js"></script>
   <script src="../assets/www/libs/jquery.mobile.datepicker.js"></script>
 
   <script src="../assets/www/js/ttw-notification-menu.js" type="text/javascript"></script>

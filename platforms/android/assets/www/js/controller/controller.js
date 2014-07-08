@@ -15,36 +15,36 @@ var controller = {
       //todo: using default coordinates change to mobile device coordinates
       var lat = "0.28316";
       var lon = "32.45168";
-      
+
       localStorage.ftritemlatlon = lon +" "+lat;
       localStorage.latlon = lon +" "+lat;
-      
+
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
       if (!localStorage.appurl) {
-      //localStorage.appurl = "http://localhost/dt11";
-      //localStorage.appurl = "http://192.168.38.114/dt11";
-      //localStorage.appurl = "http://192.168.38.113/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-      //localStorage.appurl = "http://10.0.2.2/dt11";
+        //localStorage.appurl = "http://localhost/dt11";
+        //localStorage.appurl = "http://192.168.38.114/dt11";
+        //localStorage.appurl = "http://192.168.38.113/dt11";
+        localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+        //localStorage.appurl = "http://10.0.2.2/dt11";
       }
 
       if(controller.connectionStatus) {
         auth.loginStatus().then(function () {
           $("#panel1").listview().listview("refresh");
           $("#panel2").listview().listview("refresh");
-          
+
           devtracnodes.countFieldtrips().then(function(){
-          //load field trip details from the database if its one and the list if there's more.
-            controller.loadFieldTripList();
-            
-          }).fail(function(){
-          //download all devtrac data for user.
-            controller.fetchAllData().then(function(){
-              
             //load field trip details from the database if its one and the list if there's more.
+            controller.loadFieldTripList();
+
+          }).fail(function(){
+            //download all devtrac data for user.
+            controller.fetchAllData().then(function(){
+
+              //load field trip details from the database if its one and the list if there's more.
               controller.loadFieldTripList();
-          });
+            });
 
           });
 
@@ -52,17 +52,17 @@ var controller = {
         }).fail(function () {
           $("#panel1").listview().listview("refresh");
           $("#panel2").listview().listview("refresh");
-          
+
           if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){
             $("#page_login_name").val(window.localStorage.getItem("usernam"));
             $("#page_login_pass").val(window.localStorage.getItem("passw"));  
           }
-          
+
         });
 
       }else
       {
-        
+
         if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
           controller.loadingMsg("You are offline, cannot upload data. Now using offline data", 6000);
           //load field trip details from the database if its one and the list if there's more.
@@ -160,7 +160,7 @@ var controller = {
 
       //redownload the devtrac data
       $('.refresh-button').bind('click', function () {
-        
+
         //provide a dialog to ask the user if he wants to log in anonymously.
         $('<div>').simpledialog2({
           mode : 'button',
@@ -310,10 +310,10 @@ var controller = {
       });
 
       $('input[type=file]').on('change', function(event, ui) {
-          if(this.disabled) return alert('File upload not supported!');
-          var F = this.files;
-          if(F && F[0]) for(var i=0; i<F.length; i++) controller.readImage( F[i] );  
-        
+        if(this.disabled) return alert('File upload not supported!');
+        var F = this.files;
+        if(F && F[0]) for(var i=0; i<F.length; i++) controller.readImage( F[i] );  
+
       });
 
       //handle edit sitevisit click event
@@ -372,58 +372,54 @@ var controller = {
       //save url dialog
       $('#save_url').bind("click", function (event, ui) {
         var url = null;
-        if($("#myurl").val().length > 0){
+        if($("#myurl").val().length > 0) {
           localStorage.appurl = $("#myurl").val();
-        }else{
-        
-          $('.url').each(function () {
-            if ($(this).attr('checked')) {
-              url = $(this).val();
-            }
-          });
+          controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+        }else
+        {
+          url = $('a.chosen-single span').html();
+
           //      validate url textfield
           //      if(form.valid()) {
           switch (url) {
-          case "113":
+          case "IP113":
             localStorage.appurl = "http://192.168.38.113/dt11";
+            controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
             break;
-          case "demo":
+          case "Demo":
             localStorage.appurl = "http://demo.devtrac.ug";
+            controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
             break;
           case "DevtracManual":
             localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-            
+            controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
             break;
-          case "DevtracUg":
+          case "DevtracUganda":
             localStorage.appurl = "http://devtrac.ug";
+            controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+            break;
+          case "Choose Url ...":
             
+            controller.loadingMsg("Please select one url", 2000);
             break;
-          case "localhost":
+          case "Localhost":
             localStorage.appurl = "http://localhost/dt11";
-            break;
-          case "android":
-            localStorage.appurl = "http://10.0.2.2/dt11";
+            controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
             break;
           default:
             break;
           }
 
         }
-        
-        $.mobile.changePage("#page_login", "slide", true, false);
-        
-      });
-      
-      //on select url checkbox setting, clear textfield
-      $('#seturlselect').bind("click", function (event, ui) {
-        $("#myurl").val("");
       });
 
+      //on select url checkbox setting, clear textfield
+      $('.seturlselect').bind("click", function (event, ui) {
+        $("#myurl").val("");
+      });
       
-      //on click url text field setting, clear checkboxes
-      $("#myurl").bind("click", function (event, ui) {
-        
-        controller.resetForm($("#urlForm"));
+      $('#myurl').bind("click", function (event, ui) {
+        $("a.chosen-single span").html("Choose Url ...");
       });
 
       //cancel url dialog
@@ -435,7 +431,7 @@ var controller = {
         $('#url').val("");
       });
 
-      
+
       $('.panel_login').bind("click", function (event, ui) {
         if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
           $("#page_login_name").val(window.localStorage.getItem("username"));
@@ -450,7 +446,7 @@ var controller = {
       //handle login click event from dialog
       $('#page_login_submit').bind("click", function (event, ui) {
         if ($("#page_login_name").valid() && $("#page_login_pass").valid()) {
-          
+
           //todo: check for internet connection before request
           auth.login($('#page_login_name').val(), $('#page_login_pass').val()).then(function () {
             $.mobile.changePage("#home_page", "slide", true, false);
@@ -470,7 +466,7 @@ var controller = {
 
           }).fail(function (errorThrown) {
             $.unblockUI();
-            
+
           });
         }
       });
@@ -478,7 +474,7 @@ var controller = {
       //handle logout click event from dialog
       $('#page_logout_submit').bind("click", function (event, ui) {
         //todo: check for internet connection before request
-       
+
         auth.logout().then(function(){
 
         });
@@ -547,7 +543,7 @@ var controller = {
         controller.filenames.push(n);
         controller.base64Images.push(image.src);
         controller.filesizes.push(~~(file.size/1024));
-        
+
         $("#uploadPreview").append('<div>'+n+" "+~~(file.size/1024)+'kb</div>');
       };
 
@@ -711,7 +707,7 @@ var controller = {
 
             });
 
-            
+
             $.mobile.changePage("#home_page", "slide", true, false);
             $.unblockUI();
           } else if (data.length == 1) {
@@ -763,7 +759,7 @@ var controller = {
             localStorage.fendday = parseInt(endday);
             localStorage.fendmonth = parseInt(endmonth);
             localStorage.fendyear = parseInt(endyear);
-            
+
             $( "#actionitem_date" ).datepicker( "destroy" );
             $( "#sitevisit_date" ).datepicker( "destroy" );
 
@@ -772,7 +768,7 @@ var controller = {
               minDate: new Date(startyear, startmonth, startday), 
               maxDate: new Date(endyear, endmonth, endday) 
             });
-            
+
             $("#sitevisit_date").datepicker({ 
               dateFormat: "yy/mm/dd", 
               minDate: new Date(startyear, startmonth, startday), 
@@ -783,8 +779,8 @@ var controller = {
             $("#fieldtrip_details_status").html('').append(fObject['field_fieldtrip_status']['und'][0]['value']);
             $("#fieldtrip_details_start").html('').append(formatedstartdate);
             $("#fieldtrip_details_end").html('').append(formatedenddate);
-            
-            
+
+
             var list = $("<li></li>");
             var anch = $("<a href='#page_fieldtrip_details' id='fnid" + fObject['nid'] + "' onclick='controller.onFieldtripClick(this)'></a>");
             var h2 = $("<h1 class='heada1'>" + fObject['title'] + "</h1>");
@@ -833,7 +829,7 @@ var controller = {
                 $("#fieldtrip_count").html(count);
                 $("#sitevisit_count").html(sitevisitcount);
                 sitevisitList.listview().listview('refresh');
-                
+
                 $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
                 $.unblockUI();
               });
@@ -1014,7 +1010,7 @@ var controller = {
             minDate: new Date(startyear, startmonth, startday), 
             maxDate: new Date(endyear, endmonth, endday) 
           });
-          
+
           $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
         }
         else{
@@ -1028,9 +1024,9 @@ var controller = {
           $.mobile.changePage("#page_add_location", "slide", true, false); 
         }
         controller.resetForm($('#form_sitereporttype'));
-        
+
       }
-      
+
 
     },
 
@@ -1069,13 +1065,13 @@ var controller = {
           if(fObject['field_ftritem_place'] != undefined && fObject['field_ftritem_place']['und'] != undefined) {
             localStorage.pnid = fObject['field_ftritem_place']['und'][0]['target_id'];
             if(fObject['user-added'] == true) {
-              
+
               pnid = parseInt(localStorage.pnid);
             }else{
-              
+
               pnid = localStorage.pnid;
             }
-             
+
 
           }else{
             if(fObject['user-added'] == true) {
@@ -1247,7 +1243,7 @@ var controller = {
 
           $("#sitevisists_details_date").html($("#sitevisit_date").val());
           $("#sitevisists_details_summary").html($("#sitevisit_summary").val());
-          
+
           devtracnodes.countSitevisits().then(function(size) {
             $("#sitevisit_count").html(size);
           });
@@ -1629,7 +1625,7 @@ var controller = {
             for (var k in locations) {
               if (locations[k]['user-added'] && locations[k]['nid'] == updates[0]['nid']) {
                 updates[0]['nid'] = locations[k]['nid'] + 1;
-                
+
               }
             }
 
@@ -1843,7 +1839,7 @@ var controller = {
           anid = localStorage.anid;  
         }
         var list_comment = $('#list_comments');
-        
+
         var comment = {};
 
         comment['comment_body'] = {};
@@ -1905,7 +1901,7 @@ var controller = {
 
     // device ready event handler
     onDeviceReady: function () {
-      
+
       /*var options = {
           enableHighAccuracy: true
       };
@@ -2017,7 +2013,7 @@ var controller = {
         timeout: t,
 
         css: { 
-          width: '250px', 
+          width: '300px', 
           top : ($(window).height()) / 2 + 'px',
           left : ($(window).width() - 225) / 2 + 'px',
           right: '10px', 

@@ -77,27 +77,33 @@
             data-mini="true"> <label for="checkbox-mini-0">Remember
             Me</label>
         </p>
+  
+  
+        <label for="myurl style='font-size: small'">Either Type in a url or Select one from the list below: </label>
+        <input type="url" placeholder="Start with http:// and remove trailing slash" name="myurl" id="myurl" value="">
+        <br>
+        <div>
         
-  <form class="cmxform" id="urlForm" method="" action="">
-        
-          <label>Either select a url from the list or type in a prefered url below:</lable>
-        <div data-enhance="false">
+        <form id="urlForm">
+        <div data-enhance="false" class="seturlselect">
         <select data-placeholder="Choose Url ..." id="seturlselect" data-role="none">
-        <option value="DevtracManual">Devtrac Manual</option>
-        <option value="DevtracUg" disabled="disabled">Devtrac Uganda</option>
+        <option value="">Choose Url ...</option>
+        <option value="DevtracManual">DevtracManual</option>
+        <option value="DevtracUg" disabled="disabled">DevtracUganda</option>
         <option value="demo">Demo</option>
         <option value="113">Localhost</option>
+        <option value="113">IP113</option>
   
         </select>
-        </div>
-  
-        <p>
-        <label for="myurl">Custom Url</label>
-        <input type="url" placeholder="Start with http:// and remove trailing slash" name="myurl" id="myurl" value="">
-          
-        </p>  
-        
+        </div>    
         </form>
+        
+        <div id='urldiv'>
+          <a href="#" data-role="button" data-inline="true" data-theme="b" data-mini="true"
+            id='save_url'>Save Url</a>
+        </div>
+    
+        </div>
         
         
         

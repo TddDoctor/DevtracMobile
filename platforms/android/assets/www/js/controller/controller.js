@@ -143,6 +143,14 @@ var controller = {
 
       });
 
+     //On click of sync from fieldtrips
+      $('#fieldtrip_syncall').bind('click', function () { 
+        $.mobile.changePage("#syncall_page", "slide", true, false);
+        $("#sync_back").attr("href", "#page_fieldtrip_details");
+        
+      });
+
+      
       //on view fieldtrip location click
       $('.panel_map').bind('click', function () { 
         $('#viewlocation_back').show();

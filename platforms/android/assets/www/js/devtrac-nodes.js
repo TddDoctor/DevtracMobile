@@ -441,7 +441,7 @@ var devtracnodes = {
             var updated_count = parseInt(count_container) - 1;
             $("#location_count").html(updated_count);
 
-            postNodeHelper(postarray,);
+            //postNodeHelper(postarray,);
             //devtrac.indexedDB.deletePlace(db, parseInt(pid));
             
           });
@@ -460,7 +460,7 @@ var devtracnodes = {
         callback();
       }
       
-    }
+    },
     
     //recursive node update for all images images
     updateNodeHelper: function (ftrid, y, fd, names, sdate, upId, callback) {

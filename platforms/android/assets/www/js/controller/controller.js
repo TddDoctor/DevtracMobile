@@ -10,6 +10,30 @@ var controller = {
 
     // Application Constructor
     initialize: function () {
+      //initialise section for templates
+      var leftMenu = Handlebars.compile($("#leftmenu-tpl").html()); 
+      $(".leftmenu").html(leftMenu());
+      
+      var header = Handlebars.compile($("#header-tpl").html());
+      $("#fieldtrip_details_header").html(header({id: "fieldtrip", title: "Fieldtrip Details"}));
+      $("#header_login").html(header({id: "login", title: "Devtrac Mobile"}));
+      $("#header_home").html(header({id: "home", title: "Home"}));
+      $("#header_sync").html(header({id: "sync", title: "Sync Nodes"}));
+      $("#header_sitereports").html(header({id: "sitereport", title: "Site Report"}));
+      $("#header_location").html(header({id: "location", title: "Locations"}));
+      $("#header_addlocation").html(header({id: "addlocation", title: "Locations"})); 
+      
+      //$("#header_ftritemtype").html(header({id: "ftritemtype", title: "Select Site Report Type"})); 
+     // $("#header_editsitevisit").html(header({id: "editsitevisit", title: "Edit Site Visit"})); 
+      //$("#header_editfieldtrip").html(header({id: "editfieldtrip", title: "Edit Fieldtrip"})); 
+      $("#header_addsitereport").html(header({id: "addsitereport", title: "Add Site Visit"}));
+
+      $("#header_actionitemdetails").html(header({id: "addsitereport", title: "Add Site Visit"}));
+      
+      $("#header_qtnr").html(header({id: "qtnr", title: "Questionnaire"}));
+      $("#header_settings").html(header({id: "settings", title: "Settings"}));
+      $("#header_download").html(header({id: "download", title: "Download Nodes"}));
+      
       $(window).bind('orientationchange pageshow pagechange resize', mapctlr.resizeMapIfVisible);
 
       //todo: using default coordinates change to mobile device coordinates
@@ -23,8 +47,8 @@ var controller = {
       //set application url if its not set
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
-      localStorage.appurl = "http://192.168.38.113/dt11";
-      //localStorage.appurl = "http://192.168.38.114/dt11";
+      //localStorage.appurl = "http://192.168.38.113/dt11";
+      localStorage.appurl = "http://192.168.38.114/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //}
@@ -144,9 +168,16 @@ var controller = {
       });
 
      //On click of sync from fieldtrips
-      $('#fieldtrip_syncall').bind('click', function () { 
+      $('.fieldtrip_syncall').bind('click', function () { 
         $.mobile.changePage("#syncall_page", "slide", true, false);
         $("#sync_back").attr("href", "#page_fieldtrip_details");
+        
+      });
+      
+    //On click of sync from fieldtrips
+      $('.go_download').bind('click', function () { 
+        $.mobile.changePage("#page_download", "slide", true, false);
+        //$("#sync_back").attr("href", "#page_fieldtrip_details");
         
       });
 
@@ -1088,11 +1119,6 @@ var controller = {
           //get location name
           devtrac.indexedDB.getPlace(db, pnid, function (place) {
             
-            //$("#viewlocation_back").attr("class", "");
-            //$("#viewlocation_back").attr("class", "ui-btn-left");
-            
-            //$("#mapheader").html("Map");
-            
             if (place != undefined) {
               localStorage.ptitle = place['title'];
 
@@ -1177,8 +1203,8 @@ var controller = {
           }
 
           $("#actionitem_count").html(actionitemcount);
-          $("#uploads_listview").listview('refresh');
-          actionitemList.listview('refresh');
+          $("#uploads_listview").listview().listview('refresh');
+          actionitemList.listview().listview('refresh');
         });
       });
 
@@ -1795,7 +1821,7 @@ var controller = {
             });
 
             
-            countSitevisits().then(function(scount){
+            devtracnodes.countSitevisits().then(function(scount){
               $("#sitevisit_count").html(scount);
             });
 

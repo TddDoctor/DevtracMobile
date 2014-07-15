@@ -28,7 +28,7 @@ var controller = {
       //$("#header_editfieldtrip").html(header({id: "editfieldtrip", title: "Edit Fieldtrip"})); 
       $("#header_addsitereport").html(header({id: "addsitereport", title: "Add Site Visit"}));
 
-      $("#header_actionitemdetails").html(header({id: "addsitereport", title: "Add Site Visit"}));
+      $("#header_actionitemdetails").html(header({id: "actionitemdetails", title: "Action Item"}));
       
       $("#header_qtnr").html(header({id: "qtnr", title: "Questionnaire"}));
       $("#header_settings").html(header({id: "settings", title: "Settings"}));

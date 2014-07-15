@@ -16,8 +16,9 @@ var owlhandler = {
         paginationSpeed : 400,
         singleItem:true,
         pagination : false,
-        paginationNumbers: false,
-        navigation : true
+        paginationNumbers: true,
+        navigation : false,
+        responsive: true
 
       });
       

@@ -34,28 +34,62 @@
   href="../assets/www/libs/FontAwesome/css/font-awesome.min.css">
 
 <style type="text/css">
- /* Attempt to fix the flicker of page transitions */
-        body {
-            /* Setting body margins to 0 to have proper positioning of #container div */
-            margin: 0;
-        }
- 
-            /* #container div with absolute position and 100% width and height so it takes up whole window */
-        #container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-        }
- 
-    </style>
+/* Attempt to fix the flicker of page transitions */
+body {
+  /* Setting body margins to 0 to have proper positioning of #container div */
+  margin: 0;
+}
+
+/* #container div with absolute position and 100% width and height so it takes up whole window */
+#container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+</style>
 
 </head>
 <body>
 
+  <!-- 
+     Here we have some handle bars templates like the menu and the top bar
+-->
+  <script id="leftmenu-tpl" type="text/template">
+<ul data-role="listview" >
+  <li><img src="../assets/www/img/person.png" /><span><strong
+      class="username"></strong><br> <small class="user_title"></small></span></li>
+  <li><a href="#home_page" class="settings_panel_home"><i
+      class="fa fa-home fa-fw"></i>&nbsp Home</a></li>
+  <li><a class="" href="#syncall_page"><i class="fa fa-upload fa-fw"></i>&nbsp
+      Upload</a></li>
+  <li><a href="#page_download" class=""><i class="fa fa-upload fa-fw"></i>&nbsp
+      Download</a></li>
+
+  <li><a id="set" href="#page_add_settings" class="panel_add_dwon"><i
+      class="fa fa-gear fa-fw"></i>&nbsp Settings</a></li>
+  <li><a id="" class="panel_logout"><i class="fa fa-sign-out fa-fw"></i>&nbsp
+      Logout</a></li>
+</ul>
+</script>
+
+
+<script id="header-tpl" type="text/template">
+  <a class="ui-btn-left" href="#navpanel_{{id}}" data-role="button"
+  data-iconpos="notext"><i class="fa fa-bars fa-lg"></i></a> 
+  <h1>{{ title }}</h1>
+  {{extra_buttons}}
+</script>
+  <!--
+      end of templates 
+-->
+
+
   <!-- Page Login  -->
   <div data-role="page" id="page_login">
-    <div data-role="header">
-      <h1 title="Login">Devtrac Mobile</h1>
+  <div data-role="panel" id="navpanel_login" data-theme="b"
+      data-position="left" class="leftmenu"></div>
+  
+    <div data-role="header" id="header_login">
     </div>
     <!-- /header -->
 
@@ -103,76 +137,55 @@
   <!-- Fieldtrips details -->
   <div data-role="page" id="page_fieldtrip_details">
 
-    <div data-role="panel" id="navpanel2" data-theme="b" data-position="left">
+    <div data-role="panel" id="navpanel_fieldtrip" data-theme="b"
+      data-position="left" class="leftmenu"></div>
 
-      <ul data-role="listview" id="panel2">
-        <li><img src="../assets/www/img/person.png" /><span><strong
-            class="username"></strong><br> <small class="user_title"></small></span></li>
-        <li><a href="#home_page" class="panel_home"><i
-            class="fa fa-home fa-fw"></i>&nbsp Home</a></li>
-        <li><a id="fieldtrip_syncall"><i
-            class="fa fa-upload fa-fw"></i>&nbsp Sync</a></li>
-        <li><a id="panel2" class="panel_logout"><i
-            class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a></li>
-      </ul>
-
-    </div>
-
-    <div data-role="header">
-      <a class="ui-btn-left" href="#navpanel2" data-role="button"
-        data-iconpos="notext"><i class="fa fa-bars fa-lg"></i></a> <a
-        class="ui-btn-right" data-role="button" id="edit_fieldtrip"
-        href="#page_fieldtrip_edit" data-rel="dialog" data-iconpos="notext"
-        style="margin-right: 100px;"><i class="fa fa-edit fa-lg"></i></a> <a
-        href="#page_site_report_type" data-rel="dialog" class="ui-btn-right"
-        data-role="button" data-iconpos="notext" style="margin-right: 51px;"><i
-        class="fa fa-plus-square fa-lg"></i></a> <a
-        class="ui-btn-right refresh-button" data-role="button"
-        data-iconpos="notext" style="margin-right: 1px;"><i
-        class="fa fa-refresh fa-lg"></i></a>
-
-      <h1>FieldTrip Details</h1>
-
-      <div data-role="navbar" id="notify-nav">
-        <ul class="ttw-notification-menu" id="notify" style="width: 100%">
-          <li id="refreshme" class="notification-menu-item first-item"><a
-            href="" id="notify-anchor">Notifications</a></li>
-        </ul>
-
-      </div>
-      <!-- /navbar -->
-    </div>
+    <div data-role="header" id="fieldtrip_details_header"></div>
     <!-- /header -->
 
     <div data-role="content" class='content fieldtriplist'>
       <form id="form_fieldtrip_details" action="">
 
-        <div class="ui-field-contain">
-          <label for="fieldtrip_details_title"><b>Title: </b></label>
-          <p id="fieldtrip_details_title" required></p>
-
-        </div>
-
-        <div class="ui-field-contain">
-          <label for="fieldtrip_details_status"><b>Status:</b></label>
-          <p id="fieldtrip_details_status" required></p>
-        </div>
-
-        <div class="ui-field-contain">
-          <label for="fieldtrip_details_start"><b>Start:</b></label>
-          <p id="fieldtrip_details_start" required></p>
-
-        </div>
-        <div class="ui-field-contain">
-
-          <label for="fieldtrip_details_end"><b>End:</b></label>
-          <p id="fieldtrip_details_end" required></p>
-
-        </div>
+        <fieldset class="ui-grid-a">
+          <div class="ui-block-a">
+            <label for="fieldtrip_details_title"><b>Title: </b></label>
+            <p id="fieldtrip_details_title" required></p>
 
 
 
-        <h4 align="center">Site Reports</h4>
+
+            <label for="fieldtrip_details_status"><b>Status:</b></label>
+            <p id="fieldtrip_details_status" required></p>
+
+
+
+            <label for="fieldtrip_details_start"><b>Start:</b></label>
+            <p id="fieldtrip_details_start" required></p>
+
+
+
+
+            <label for="fieldtrip_details_end"><b>End:</b></label>
+            <p id="fieldtrip_details_end" required></p>
+
+          </div>
+
+          <div class="ui-block-b">
+            <a class="" data-role="button" id="edit_fieldtrip"
+              href="#page_fieldtrip_edit" data-rel="dialog" data-iconpos=""><i
+              class="fa fa-edit fa-lg"></i>&nbsp&nbsp Edit Fieldtrip</a>
+
+          </div>
+        </fieldset>
+
+        <h4 align="center">
+          Site Reports <a href="#page_site_report_type" data-rel="dialog"
+            class="ui-btn-inline" data-role="button" data-iconpos=""
+            data-inline="true"> <i class="fa fa-plus-square fa-lg"></i>&nbsp&nbsp
+            Add Site Report
+          </a>
+        </h4>
+
         <ul data-role="listview" id="list_sitevisits" data-filter="true">
 
         </ul>
@@ -187,41 +200,15 @@
   <!-- Application Home page  -->
   <div data-role="page" id="home_page">
 
-    <div data-role="panel" id="navpanel" data-theme="b" data-position="left">
+    <div data-role="panel" id="navpanel_home" data-theme="b" data-position="left"
+      class="leftmenu"></div>
 
-      <ul data-role="listview" id="panel1">
-        <li><img src="../assets/www/img/person.png" /><span><strong
-            class="username"></strong><br> <small class="user_title">Web
-              &amp; Mobile Developer</small></span></li>
-        <li><a id="#home_syncall" class="syncall_nodes"><i
-            class="fa fa-upload fa-fw"></i>&nbsp Sync</a></li>
-
-        <li><a href="#" id="panel1" class="panel_logout"><i
-            class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a></li>
-
-      </ul>
-
-
-      <!-- <fieldset data-role="controlgroup">
-<img src="../assets/www/img/person.png"/><span><strong class="username"></strong><br><small class="user_title">Web &amp; Mobile Developer</small></span></li>
-          <a href="#setup_urls_page" data-role="button"
-            data-rel="dialog" class="setup_urls"><i class="fa fa-gear fa-fw"></i>&nbsp Setup URLS</a>
-          
-          <a href="#" id="panel1" class="panel_logout"
-            data-role="button"><i class="fa fa-sign-out fa-fw"></i>&nbsp Logout</a>
-            
-            </fieldset>
- -->
-    </div>
-
-    <div data-role="header">
-      <a class="bars-button" class="ui-btn-left" style="margin-top: 2.5px;"
+    <div data-role="header" id="header_home">
+      <!-- <a class="bars-button" class="ui-btn-left" style="margin-top: 2.5px;"
         href="#navpanel" data-iconpos="notext" id="panelIt"><i
-        class="fa fa-bars fa-lg"></i></a> <a class="refresh-button"
-        class="ui-btn-right" style="margin-top: 2.5px;" data-iconpos="notext"><i
-        class="fa fa-refresh fa-lg"></i></a>
+        class="fa fa-bars fa-lg"></i></a> -->
 
-      <h1 title="Home">Home</h1>
+      
     </div>
     <!-- /header -->
 
@@ -239,19 +226,20 @@
 
   <!-- Syncall page  -->
   <div data-role="page" id="syncall_page">
-    <div data-role="header">
-    <a id="sync_back" class="ui-btn-left" href="#"
-        data-role="button" data-iconpos="notext"><i
-        class="fa fa-chevron-circle-left fa-lg"></i></a>
-      <h1 title="Set Url">Sync Nodes</h1>
+    <div data-role="panel" id="navpanel_sync" data-theme="b" data-position="left"
+      class="leftmenu"></div>
+
+    <div data-role="header" id="header_sync">
+      
     </div>
     <!-- /header -->
 
     <div data-role="content" class='content'>
+
       <form class="syncform" id="syncForm" method="" action="">
-        
+
         <ul data-role="listview" id="uploads_listview">
-        <li data-role="list-divider">Upload Status</li>
+          <li data-role="list-divider">Upload Status</li>
           <li><a data-role="button" data-mini="true" data-icon=""
             onclick="">Site Visits</a>
             <div id="sitevisit_count" class="ui-li-count"></div></li>
@@ -280,28 +268,18 @@
 
   <!-- Site visits details -->
   <div data-role="page" id="page_sitevisits_details">
-    <div data-role="header">
+  <div data-role="panel" id="navpanel_sitereport" data-theme="b"
+      data-position="left" class="leftmenu"></div>
+  
+    <div data-role="header" id="header_sitereports">
 
-      <a id="" class="ui-btn-left" href="#page_fieldtrip_details"
+<!--       <a id="" class="ui-btn-left" href="#page_fieldtrip_details"
         data-role="button" data-iconpos="notext"><i
-        class="fa fa-chevron-circle-left fa-lg"></i></a> <a
-        href="#page_add_actionitems" class="ui-btn-right" data-role="button"
-        id="addactionitem" data-rel="dialog" data-iconpos="notext"
-        style="margin-right: 1px;"><i class="fa fa-plus-square fa-lg"></i></a>
+        class="fa fa-chevron-circle-left fa-lg"></i></a>
 
 
       <h3>Site Report</h3>
-
-      <div data-role="navbar" data-theme="a">
-        <ul>
-          <li><a data-role="button" data-mini="true" id="addquestionnaire"><i
-              class="fa fa-list-alt fa-lg"></i>&nbsp&nbsp Questionnaire</a></li>
-          <li><a href="#mappage" data-role="button" class="panel_map"
-            onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i
-              class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li>
-        </ul>
-      </div>
-      <!-- /navbar -->
+-->
     </div>
     <!-- /header -->
 
@@ -345,17 +323,26 @@
 
             </div>
           </div>
-          
+
           <div class="ui-block-b">
-          <p>
-          <a href="#page_sitevisit_edits" data-role="button"
-        id="editsitevisit" data-rel="dialog"><i class="fa fa-edit fa-lg"></i>&nbsp&nbsp Edit</a>
-          </p>
-            
+            <p>
+              <a href="#page_sitevisit_edits" data-role="button"
+                id="editsitevisit" data-rel="dialog"><i
+                class="fa fa-edit fa-lg"></i>&nbsp&nbsp Edit</a>
+            </p>
+
           </div>
         </fieldset>
 
-        <h4 align="center">Action Items</h4>
+
+        <h4 align="center">
+          Action Items <a href="#page_add_actionitems" class="ui-btn-inline"
+            data-role="button" id="addactionitem" data-rel="dialog"
+            data-inline="true" style="margin-right: 1px;"><i
+            class="fa fa-plus-square fa-lg"></i>&nbsp&nbsp Add Action Item</a>
+
+        </h4>
+
         <ul data-role="listview" id="list_actionitems" data-filter="true">
 
         </ul>
@@ -369,10 +356,10 @@
 
   <!-- List locations -->
   <div data-role="page" id="page_location_list">
-    <div data-role="header">
-      <a id="" href="#page_sitevisits_details" data-role="button"
-        data-icon="back" data-iconpos="notext"></a>
-      <h3 title="Locations">Locations</h3>
+  <div data-role="panel" id="navpanel_location" data-theme="b"
+      data-position="left" class="leftmenu"></div>
+    <div data-role="header" id="header_location">
+      
     </div>
     <!-- /header -->
 
@@ -393,10 +380,10 @@
 
   <!-- Select site report type -->
   <div data-role="page" id="page_site_report_type">
-    <div data-role="header">
-      <a id="" href="#page_fieldtrip_details" data-role="button"
+    <div data-role="header" id="header_ftritemtype">
+      <!-- <a id="" href="#page_fieldtrip_details" data-role="button"
         data-icon="delete" data-iconpos="notext"></a>
-      <h3 title="Select Site Report Type">Select Site Report Type</h3>
+      <h3 title="Select Site Report Type">Select Site Report Type</h3> -->
     </div>
     <!-- /header -->
 
@@ -425,8 +412,8 @@
 
   <!-- Edit site visit details -->
   <div data-role="page" id="page_sitevisit_edits">
-    <div data-role="header">
-      <h3 title="Edit Site Visit">Edit Site Visit</h3>
+    <div data-role="header" id="header_editsitevisit">
+      <!-- <h3 title="Edit Site Visit">Edit Site Visit</h3> -->
     </div>
     <!-- /header -->
 
@@ -456,8 +443,8 @@
 
   <!-- Edit fieldtrips details -->
   <div data-role="page" id="page_fieldtrip_edit">
-    <div data-role="header">
-      <h3 title="Edit FieldTrip">Edit Fieldtrip</h3>
+    <div data-role="header" id="header_editfieldtrip">
+      <!-- <h3 title="Edit FieldTrip">Edit Fieldtrip</h3> -->
     </div>
     <!-- /header -->
 
@@ -472,12 +459,14 @@
 
   <!-- Add site visit details -->
   <div data-role="page" id="page_sitevisit_add">
-    <div data-role="header">
-
+  <div data-role="panel" id="navpanel_add_sitereport" data-theme="b"
+      data-position="left" class="leftmenu"></div>
+    <div data-role="header" id="header_addsitereport">
+<!-- 
       <a id="" href="#page_site_report_type" data-rel="dialog"
         data-role="button" data-iconpos="notext"><i
         class="fa fa-chevron-circle-left fa-lg"></i></a>
-      <h3>Add Site Visit</h3>
+      <h3>Add Site Visit</h3> -->
 
     </div>
     <!-- /header -->
@@ -525,7 +514,9 @@
 
   <!-- Add action items -->
   <div data-role="page" id="page_add_actionitems">
-    <div data-role="header">
+  <div data-role="panel" id="navpanel_addactionitems" data-theme="b"
+      data-position="left" class="leftmenu"></div>
+    <div data-role="header" id="header_addactionitems">
       <h3 title="Add Action Items">Add Action Items</h3>
     </div>
     <!-- /header -->
@@ -581,11 +572,13 @@
   <!-- /page -->
 
   <!-- Action items details -->
-  <div data-role="page" id="page_actionitems_details">
-    <div data-role="header">
-      <a id="" data-rel="back" data-role="button" data-iconpos="notext"><i
+  <div data-role="page" id="page_actionitemdetails">
+  <div data-role="panel" id="navpanel_actionitemdetails" data-theme="b"
+      data-position="left" class="leftmenu"></div>
+    <div data-role="header" id="header_actionitemdetails">
+      <!-- <a id="" data-rel="back" data-role="button" data-iconpos="notext"><i
         class="fa fa-chevron-circle-left fa-lg"></i></a>
-      <h3 title="Action Item">Action Item</h3>
+      <h3 title="Action Item">Action Item</h3> -->
     </div>
     <!-- /header -->
 
@@ -672,8 +665,10 @@
 
   <!-- Edit Location Page -->
   <div data-role="page" id="page_location_edits">
+  <div data-role="panel" id="navpanel_location_edits" data-theme="b"
+      data-position="left" class="leftmenu"></div>
     <div data-role="header">
-      <h3 title="FieldTrip">Edit Locations</h3>
+      <!-- <h3 title="FieldTrip">Edit Locations</h3> -->
     </div>
     <!-- /header -->
 
@@ -699,14 +694,15 @@
 
   <!-- page -->
   <div data-role="page" id="page_add_location">
+<div data-role="panel" id="navpanel_addlocation" data-theme="b"
+      data-position="left" class="leftmenu"></div>
+    <div data-role="header" id="header_addlocation">
 
-    <div data-role="header">
-
-      <a id="" href="#page_site_report_type" data-role="button"
+<!--       <a id="" href="#page_site_report_type" data-role="button"
         data-iconpos="notext" data-rel="dialog"><i
         class="fa fa-chevron-circle-left fa-lg"></i></a>
 
-      <h3>Create Location</h3>
+      <h3>Create Location</h3> -->
 
     </div>
     <!-- /header -->
@@ -764,12 +760,13 @@
 
   <!-- Add questionnaire page -->
   <div data-role="page" id="page_add_questionnaire">
-
-    <div data-role="header" id='qtnaireheader'>
-      <a id="" href="#page_sitevisits_details" data-iconpos="notext"
+<div data-role="panel" id="navpanel_qtnr" data-theme="b"
+      data-position="left" class="leftmenu"></div>
+    <div data-role="header" id='header_qtnr'>
+      <!-- <a id="" href="#page_sitevisits_details" data-iconpos="notext"
         data-role="button" style="margin-top: 2.5px;"><i
-        class="fa fa-chevron-circle-left fa-lg"></i></a>
-      <h3 id="qtn_title" title="Questionnaire">Questionnaire</h3>
+        class="fa fa-chevron-circle-left fa-lg"></i></a> 
+      <h3 id="qtn_title" title="Questionnaire">Questionnaire</h3>-->
     </div>
     <!-- /header -->
 
@@ -780,6 +777,50 @@
 
   </div>
   <!-- /page -->
+
+  <!-- Add page -->
+  <div data-role="page" id="page_add_settings">
+    <div data-role="panel" id="navpanel_settings" data-theme="b"
+      data-position="left" class="leftmenu"></div>
+      
+    <div data-role="header" id='header_settings'>
+      <!-- <a class="ui-btn-left" href="#navpanel4" data-role="button"
+        data-iconpos="notext"><i class="fa fa-bars fa-lg"></i></a>
+      <h3 id="qtn_title" title="Settings">Settings</h3> -->
+    </div>
+    <!-- /header -->
+
+    <div data-role="content" class='content' id='Settingscontent'>
+      <p>Settings go here</p>
+    </div>
+    <!-- /content -->
+
+  </div>
+  <!-- /page -->
+
+  <!-- Add page -->
+  <div data-role="page" id="page_download">
+    <div data-role="panel" id="navpanel_download" data-theme="b"
+      data-position="left" class="leftmenu"></div>
+    <div data-role="header" id='header_download'>
+      <!-- <a class="ui-btn-left" href="#navpanel4" data-role="button"
+        data-iconpos="notext"><i class="fa fa-bars fa-lg"></i></a>
+      <h3 id="" title="download">Downloads</h3> -->
+    </div>
+    <!-- /header -->
+
+    <div data-role="content" class='content' id='downloadcontent'>
+      <p>Downloads go here</p>
+      <a class="refresh-button" data-role="button" data-iconpos="notext"><i
+        class="fa fa-refresh fa-lg"></i></a>
+
+    </div>
+    <!-- /content -->
+
+  </div>
+  <!-- /page -->
+
+
 
   <script src="../assets/www/libs/jquery-1.7.2.min.js"></script>
   <script type="text/javascript">
@@ -794,7 +835,7 @@
  
         });
     </script>
-  
+
   <script src="../assets/www/libs/jquery-ui-1.10.4.custom.js"></script>
 
   <!-- Include js plugin -->
@@ -809,6 +850,8 @@
   <script src="../assets/www/libs/additional-methods.min.js"></script>
   <script src="../assets/www/libs/jquery.blockUI.js"></script>
   <script src="../assets/www/libs/leaflet.js"></script>
+
+  <script src="../assets/www/libs/handlebars-v1.3.0.js"></script>
   <script src="../assets/www/libs/jquery.mobile.simpledialog2.min.js"></script>
 
   <script type="text/javascript" src="../assets/www/js/model/indexdb-store.js"></script>

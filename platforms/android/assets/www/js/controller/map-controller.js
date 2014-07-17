@@ -80,14 +80,14 @@ var mapctlr = {
           crs: L.CRS.EPSG3857
         });
         
-        mapctlr.MAP.addLayer(mapctlr.BASEMAPS['mapbox']);
+        mapctlr.MAP.addLayer(mapctlr.BASEMAPS['cloudmade']);
       }
 
       if(loc) {
         $("#addlocation_back").show();
         $("#viewlocation_back").hide();
         
-        mapctlr.MAP.addLayer(mapctlr.BASEMAPS['mapbox']);
+        mapctlr.MAP.addLayer(mapctlr.BASEMAPS['cloudmade']);
         
         $('#mapheader').html("");
         $('#mapheader').html("Add Location");

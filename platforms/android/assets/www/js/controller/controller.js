@@ -6,6 +6,7 @@ var controller = {
     filenames : [],
     filedimensions: [],
     filesizes : [],
+    watchID : null,
     objectstores: ["oecdobj", "placetype", "fieldtripobj", "sitevisit", "actionitemsobj", "placesitemsobj", "qtnsitemsobj", "qtionairesitemsobj", "commentsitemsobj","images"],
 
     // Application Constructor
@@ -13,36 +14,40 @@ var controller = {
       //initialise section for templates
       var leftMenu = Handlebars.compile($("#leftmenu-tpl").html()); 
       $(".leftmenu").html(leftMenu());
-      
+
       var header = Handlebars.compile($("#header-tpl").html());
       $("#fieldtrip_details_header").html(header({id: "fieldtrip", title: "Fieldtrip Details"}));
-      $("#header_login").html(header({id: "login", title: "Devtrac Mobile"}));
+      $("#header_login").html(header({title: "Devtrac Mobile"}));
       $("#header_home").html(header({id: "home", title: "Home"}));
       $("#header_sync").html(header({id: "sync", title: "Sync Nodes"}));
-      $("#header_sitereports").html(header({id: "sitereport", title: "Site Report"}));
+      $("#header_sitereports").html(header({extra_buttons: '<div data-role="navbar" data-theme="a">'+
+        '<ul>'+
+        '<li><a data-role="button" data-mini="true" id="addquestionnaire"><i class="fa fa-list-alt fa-lg"></i>&nbsp&nbsp Questionnaire</a></li>'+
+        '<li><a href="#mappage" data-role="button" class="panel_map"'+
+        'onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li>'+
+        '</ul>'+
+        '</div>', id: "sitereport", title: "Site Report"}));
+
       $("#header_location").html(header({id: "location", title: "Locations"}));
       $("#header_addlocation").html(header({id: "addlocation", title: "Locations"})); 
-      
-      //$("#header_ftritemtype").html(header({id: "ftritemtype", title: "Select Site Report Type"})); 
-     // $("#header_editsitevisit").html(header({id: "editsitevisit", title: "Edit Site Visit"})); 
-      //$("#header_editfieldtrip").html(header({id: "editfieldtrip", title: "Edit Fieldtrip"})); 
+
       $("#header_addsitereport").html(header({id: "addsitereport", title: "Add Site Visit"}));
 
       $("#header_actionitemdetails").html(header({id: "actionitemdetails", title: "Action Item"}));
-      
+
       $("#header_qtnr").html(header({id: "qtnr", title: "Questionnaire"}));
       $("#header_settings").html(header({id: "settings", title: "Settings"}));
       $("#header_download").html(header({id: "download", title: "Download Nodes"}));
-      
+
       $(window).bind('orientationchange pageshow pagechange resize', mapctlr.resizeMapIfVisible);
 
       //todo: using default coordinates change to mobile device coordinates
       var lat = "0.28316";
       var lon = "32.45168";
-      
+
       localStorage.ftritemlatlon = lon +" "+lat;
       localStorage.latlon = lon +" "+lat;
-      
+
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
       //if (!localStorage.appurl) {
@@ -54,27 +59,27 @@ var controller = {
       //}
 
       if(controller.connectionStatus) {
-          devtracnodes.countLocations().then(function (locations) {
-            $("#location_count").html(locations);
-          }).fail(function(locs){
-            $("#location_count").html(locs);
-          });
-        
+        devtracnodes.countLocations().then(function (locations) {
+          $("#location_count").html(locations);
+        }).fail(function(locs){
+          $("#location_count").html(locs);
+        });
+
         auth.loginStatus().then(function () {
           $("#panel1").listview().listview("refresh");
           $("#panel2").listview().listview("refresh");
-          
+
           devtracnodes.countFieldtrips().then(function(){
-          //load field trip details from the database if its one and the list if there's more.
-            controller.loadFieldTripList();
-            
-          }).fail(function(){
-          //download all devtrac data for user.
-            controller.fetchAllData().then(function(){
-              
             //load field trip details from the database if its one and the list if there's more.
+            controller.loadFieldTripList();
+
+          }).fail(function(){
+            //download all devtrac data for user.
+            controller.fetchAllData().then(function(){
+
+              //load field trip details from the database if its one and the list if there's more.
               controller.loadFieldTripList();
-          });
+            });
 
           });
 
@@ -82,17 +87,17 @@ var controller = {
         }).fail(function () {
           $("#panel1").listview().listview("refresh");
           $("#panel2").listview().listview("refresh");
-          
+
           if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){
             $("#page_login_name").val(window.localStorage.getItem("usernam"));
             $("#page_login_pass").val(window.localStorage.getItem("passw"));  
           }
-          
+
         });
 
       }else
       {
-        
+
         if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
           controller.loadingMsg("You are offline, cannot upload data. Now using offline data", 5000);
           //load field trip details from the database if its one and the list if there's more.
@@ -153,12 +158,52 @@ var controller = {
       document.addEventListener("offline", controller.onOffline, false);
       document.addEventListener("online", controller.online, false);
 
+      //start gps
+      $( "#page_add_location" ).bind("pagebeforeshow", function( event ) {
+        console.log("inside page add location");        
+        $("#location_item_save").button('disable');  
+        $("#location_item_save").button('refresh');  
+
+        if(controller.checkCordova() != undefined) {
+          console.log("can use cordova");
+
+          if(controller.watchID == null){
+            console.log("watch id is null");
+            var options = { maximumAge: 5000, timeout: 10000, enableHighAccuracy: true };
+            controller.watchID = navigator.geolocation.watchPosition(controller.onSuccess, controller.onError, options);
+            console.log("watch id is "+controller.watchID);
+
+          }else{
+            console.log("watch id is not null");
+          }
+
+        }else{
+          console.log("cannot use cordova here");
+          $("#location_item_save").button('enable');  
+          $("#location_item_save").button('refresh');  
+        }
+
+      });
+
+      $("#cancel_addlocation").on('click', function(){
+        
+        controller.clearWatch();
+
+      });
+
       $("#sitevisit_add_save").bind('click', function(){
         controller.onSavesitevisit();
       });
 
+      //apply jquerymobile styles b4 this page is displayed
       $("#page_fieldtrip_details").bind('pagebeforeshow', function(){
         $("#page_fieldtrip_details").trigger("create");
+      });
+
+      //clear the watch before this page is displayed
+      $("#page_site_report_type").bind('pagebeforeshow', function(){
+
+        controller.clearWatch();
       });
 
       // on cancel action item click
@@ -167,21 +212,21 @@ var controller = {
 
       });
 
-     //On click of sync from fieldtrips
+      //On click of sync from fieldtrips
       $('.fieldtrip_syncall').bind('click', function () { 
         $.mobile.changePage("#syncall_page", "slide", true, false);
         $("#sync_back").attr("href", "#page_fieldtrip_details");
-        
+
       });
-      
-    //On click of sync from fieldtrips
+
+      //On click of sync from fieldtrips
       $('.go_download').bind('click', function () { 
         $.mobile.changePage("#page_download", "slide", true, false);
         //$("#sync_back").attr("href", "#page_fieldtrip_details");
-        
+
       });
 
-      
+
       //on view fieldtrip location click
       $('.panel_map').bind('click', function () { 
         $('#viewlocation_back').show();
@@ -204,7 +249,7 @@ var controller = {
 
       //redownload the devtrac data
       $('.refresh-button').bind('click', function () {
-        
+
         //provide a dialog to ask the user if he wants to log in anonymously.
         $('<div>').simpledialog2({
           mode : 'button',
@@ -354,10 +399,10 @@ var controller = {
       });
 
       $('input[type=file]').on('change', function(event, ui) {
-          if(this.disabled) return alert('File upload not supported!');
-          var F = this.files;
-          if(F && F[0]) for(var i=0; i<F.length; i++) controller.readImage( F[i] );  
-        
+        if(this.disabled) return alert('File upload not supported!');
+        var F = this.files;
+        if(F && F[0]) for(var i=0; i<F.length; i++) controller.readImage( F[i] );  
+
       });
 
       //handle edit sitevisit click event
@@ -429,7 +474,7 @@ var controller = {
           break;
         case "DevtracManual":
           localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-          
+
           break;
         case "localhost":
           localStorage.appurl = "http://localhost/dt11";
@@ -468,7 +513,7 @@ var controller = {
       //handle login click event from dialog
       $('#page_login_submit').bind("click", function (event, ui) {
         if ($("#page_login_name").valid() && $("#page_login_pass").valid()) {
-          
+
           //todo: check for internet connection before request
           auth.login($('#page_login_name').val(), $('#page_login_pass').val()).then(function () {
             $.mobile.changePage("#home_page", "slide", true, false);
@@ -495,7 +540,7 @@ var controller = {
       //handle logout click event from dialog
       $('#page_logout_submit').bind("click", function (event, ui) {
         //todo: check for internet connection before request
-       
+
         auth.logout().then(function(){
 
         });
@@ -512,6 +557,44 @@ var controller = {
         auth.logout();
       });
 
+    },
+
+    onSuccess: function(position) {
+      var element_gps = $("#gpserror").html("");
+
+      var element = $("#latlon");
+      var lat = position.coords.latitude;
+      var lon = position.coords.longitude;
+      var acc =  position.coords.accuracy; //smaller the value the more accurate
+
+      localStorage.ftritemlatlon = lon +" "+lat;
+      localStorage.latlon = lon +" "+lat;
+
+      element.val(lat +","+ lon+", and accuracy "+acc);
+
+      $("#location_item_save").button('enable');  
+      $("#location_item_save").button('refresh');
+    },
+
+    // onError Callback receives a PositionError object
+    onError: function(error) {
+      console.log("gps error "+error.message);
+      var element_gps = $("#gpserror");
+      element_gps.html('code: '    + error.code    + '\n' +
+          'message: ' + error.message + '\n');
+    },
+
+    //clear the watch that was started earlier
+    clearWatch: function() {
+
+      if (controller.watchID != null)
+      {
+        console.log("clearing the watch");
+        navigator.geolocation.clearWatch(controller.watchID);
+        controller.watchID = null;
+      }else{
+        console.log("No watch to clear");
+      }
     },
 
     editlocations: function(anchor){
@@ -547,6 +630,11 @@ var controller = {
       });
     },
 
+    checkCordova: function() {
+      var networkState = navigator.connection;
+      return networkState;
+    },
+
     //read from files
     readImage: function(file) {
       var di = {};
@@ -564,7 +652,7 @@ var controller = {
         controller.filenames.push(n);
         controller.base64Images.push(image.src);
         controller.filesizes.push(~~(file.size/1024));
-        
+
         $("#uploadPreview").append('<div>'+n+" "+~~(file.size/1024)+'kb</div>');
       };
 
@@ -683,7 +771,7 @@ var controller = {
     //load field trip list from db
     loadFieldTripList: function () {
       devtrac.indexedDB.open(function (db) {
-        
+
         devtrac.indexedDB.getAllFieldtripItems(db, function (data) {
           var fieldtripList = $('#list_fieldtrips');
           fieldtripList.empty();
@@ -729,7 +817,7 @@ var controller = {
 
             });
 
-            
+
             $.mobile.changePage("#home_page", "slide", true, false);
             $.unblockUI();
           } else if (data.length == 1) {
@@ -795,8 +883,8 @@ var controller = {
             $("#fieldtrip_details_status").html('').append(fObject['field_fieldtrip_status']['und'][0]['value']);
             $("#fieldtrip_details_start").html('').append(formatedstartdate);
             $("#fieldtrip_details_end").html('').append(formatedenddate);
-            
-            
+
+
             var list = $("<li></li>");
             var anch = $("<a href='#page_fieldtrip_details' id='fnid" + fObject['nid'] + "' onclick='controller.onFieldtripClick(this)'></a>");
             var h2 = $("<h1 class='heada1'>" + fObject['title'] + "</h1>");
@@ -845,7 +933,7 @@ var controller = {
                 $("#fieldtrip_count").html(count);
                 $("#sitevisit_count").html(sitevisitcount);
                 sitevisitList.listview().listview('refresh');
-                
+
                 $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
                 $.unblockUI();
               });
@@ -1012,11 +1100,19 @@ var controller = {
         localStorage.ftritemdistrict = $("#location_district").val();
         localStorage.ftritemlatlon = localStorage.latlon;
         if(localStorage.ftritemtype == "210") {
-          $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
+
+          devtrac.indexedDB.open(function (db) {
+            devtrac.indexedDB.getAllTaxonomyItems(db, "oecdobj", function (categoryValues, categories) {
+              controller.buildSelect("o", categoryValues, categories);
+              $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
+            });
+
+          });
+
         }
         else{
           devtrac.indexedDB.open(function (db) {
-            devtrac.indexedDB.getAllPlacetypesItems(db, function (categoryValues, categories) {
+            devtrac.indexedDB.getAllTaxonomyItems(db, "placetype", function (categoryValues, categories) {
               controller.buildSelect("p", categoryValues, categories);
             });
 
@@ -1025,9 +1121,9 @@ var controller = {
           $.mobile.changePage("#page_add_location", "slide", true, false); 
         }
         controller.resetForm($('#form_sitereporttype'));
-        
+
       }
-      
+
 
     },
 
@@ -1066,13 +1162,13 @@ var controller = {
           if(fObject['field_ftritem_place'] != undefined && fObject['field_ftritem_place']['und'] != undefined) {
             localStorage.pnid = fObject['field_ftritem_place']['und'][0]['target_id'];
             if(fObject['user-added'] == true) {
-              
+
               pnid = parseInt(localStorage.pnid);
             }else{
-              
+
               pnid = localStorage.pnid;
             }
-             
+
 
           }else{
             if(fObject['user-added'] == true) {
@@ -1099,12 +1195,16 @@ var controller = {
           var sitevisittype = null;
           $("#sitevisists_details_date").html(formatedsitedate);
 
+          $('#sitevisists_details_location').show();
+          $('#sitevisists_details_location').prev("label").show();
           switch (fObject['taxonomy_vocabulary_7']['und'][0]['tid']) {
           case "209":
             $("#sitevisists_details_type").html("Site Visit");
             break;
           case "210":
             $("#sitevisists_details_type").html("Roadside Observation");
+            $('#sitevisists_details_location').hide();
+            $('#sitevisists_details_location').prev("label").hide();
             break;
           case "211":
             $("#sitevisists_details_type").html("Human Interest Story");
@@ -1118,7 +1218,7 @@ var controller = {
 
           //get location name
           devtrac.indexedDB.getPlace(db, pnid, function (place) {
-            
+
             if (place != undefined) {
               localStorage.ptitle = place['title'];
 
@@ -1244,7 +1344,7 @@ var controller = {
 
           $("#sitevisists_details_date").html($("#sitevisit_date").val());
           $("#sitevisists_details_summary").html($("#sitevisit_summary").val());
-          
+
           devtracnodes.countSitevisits().then(function(scount) {
             $("#sitevisit_count").html(scount);
           });
@@ -1626,14 +1726,16 @@ var controller = {
             for (var k in locations) {
               if (locations[k]['user-added'] && locations[k]['nid'] == updates[0]['nid']) {
                 updates[0]['nid'] = locations[k]['nid'] + 1;
-                
+
               }
             }
 
             devtrac.indexedDB.addPlacesData(db, updates);
 
             controller.createSitevisitfromlocation(updates[0]['nid'], $('#location_name').val());
-            
+
+            controller.clearWatch();
+
             devtracnodes.countLocations().then(function(count) {
               $("#location_count").html(count);
             })
@@ -1741,7 +1843,7 @@ var controller = {
 
     //save sitevisit
     onSavesitevisit: function () {
-      
+
       if ($("#form_sitevisit_add").valid()) {
         //save added site visits
 
@@ -1801,7 +1903,7 @@ var controller = {
             for (var k in sitevisits) {
               if (sitevisits[k]['user-added'] && sitevisits[k]['nid'] == updates['nid']) {
                 updates['nid'] = sitevisits[k]['nid'] + 1;
-                
+
               }
             }
 
@@ -1820,7 +1922,7 @@ var controller = {
               $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);  
             });
 
-            
+
             devtracnodes.countSitevisits().then(function(scount){
               $("#sitevisit_count").html(scount);
             });
@@ -1844,7 +1946,7 @@ var controller = {
           anid = localStorage.anid;  
         }
         var list_comment = $('#list_comments');
-        
+
         var comment = {};
 
         comment['comment_body'] = {};
@@ -1906,7 +2008,7 @@ var controller = {
 
     // device ready event handler
     onDeviceReady: function () {
-      
+
       /*var options = {
           enableHighAccuracy: true
       };
@@ -1952,9 +2054,22 @@ var controller = {
       }
       return d;
     },
+    
+    //recursive build taxonomy select groups
+    buildSelect: function (vocabulary, optgroup, options, categoryValues, categories) {
+      var optgroup = optgroup;
+      optgroup = optgroup + "<optgroup label=" + categories[0]['name'] + ">";
+      for(var k = 0; k < categoryValues.length; k++) {
+        
+        if(categories[0]['htid'] == categoryValues[k]['tid']) {
+          
+          options = "<option value=" + categoryValues[k]['tid'] + ">" + categoryValues[k]['name'] + "</option>" + options;
+        }  
+      }
+    },
 
     //create opt group element for OECD codes
-    buildSelect: function (vocabulary, categoryValues, categories) {
+/*    buildSelect: function (vocabulary, categoryValues, categories) {
       if(vocabulary == "p"){
         voca = 'placetypes';
       }else{
@@ -1962,28 +2077,40 @@ var controller = {
       }
       var select = "<div class='ui-field-contain'><select name='select_"+voca+"' id='select_"+voca+"' data-theme='b' data-mini='true' required>";
       var optgroup = "";
-      var options = "<optgroup label='OECD Codes'>OECD Codes</optgroup>";
-      var flag = false;
+      var options = "";
+      var categoryInValuesflag = false;
+      var categoriesInValues = [];
 
       for (var key in categories) {
-        optgroup = optgroup + "<optgroup label=" + categories[key] + ">";
-
-        for (var mark in categoryValues) {
-          if (flag) {
-            flag = false;
-            optgroup = optgroup + options + "</optgroup>";
-            options = "";
-            break;
+        for (var marker = 0; marker < categoryValues.length; marker++) {
+          if(categories[key]['name'] == categoryValues[marker]['name']) {
+            categoryInValuesflag = true;
+            categoriesInValues.push(categories[key]);
           }
-          for (var item in categoryValues[mark]) {
-            if (mark == key) {
-              options = "<option value=" + categoryValues[mark][item] + ">" + categoryValues[mark][item] + "</option>" + options;
-              flag = true;
-            } else {
+          
+        }
+        
+        if(!categoryInValuesflag) { //if category is not found in the values then create a category
+          optgroup = optgroup + "<optgroup label=" + categories[key]['name'] + ">"; 
+          
+          for (var mark = 0; mark < categoryValues.length; mark++) {
+
+            if (categories[key]['htid'] == categoryValues[mark]['htid']) {
+              
+              options = "<option value=" + categoryValues[mark]['tid'] + ">" + categoryValues[mark]['name'] + "</option>" + options;
+            } 
+
+            if (mark == categoryValues.length - 1) {
+              optgroup = optgroup + options + "</optgroup>";
+              options = "";
               break;
             }
           }
+        }else
+        {
+                    
         }
+
       }
       optgroup = optgroup + options + "</optgroup>";
       select = select + optgroup + "</select></div>";
@@ -1994,11 +2121,11 @@ var controller = {
         $('#location_placetypes').empty().append(selectGroup).trigger('create');
         $('#sitevisists_details_subjects').empty().append(selectGroup).trigger('create');
       } else {
-        //      create oecd codes optgroup
-
+        //create oecd codes optgroup
+        $('#select_oecds').empty().append(selectGroup).trigger('create');
       }
 
-    },
+    },*/
 
     //length of javascript object
     sizeme : function(obj) {

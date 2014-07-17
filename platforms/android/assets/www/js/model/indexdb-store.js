@@ -5,8 +5,8 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDBopen = function(callback) {
-  var version = 21;
-  var request = indexedDB.open("e1", version);
+  var version = 7;
+  var request = indexedDB.open("f1", version);
   
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -18,8 +18,8 @@ devtrac.indexedDBopen = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 21;
-  var request = indexedDB.open("e1", version);
+  var version = 7;
+  var request = indexedDB.open("f1", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -62,6 +62,7 @@ devtrac.indexedDB.open = function(callback) {
     }
 
     var store = db.createObjectStore("oecdobj", {autoIncrement: true});
+    
     var placetypesstore = db.createObjectStore("placetype", {autoIncrement: true});
 
     var fieldtripstore = db.createObjectStore("fieldtripobj", {keyPath: "nid"});
@@ -101,66 +102,26 @@ devtrac.indexedDB.open = function(callback) {
   request.onerror = devtrac.indexedDB.onerror;
 };
 
-//adding oecd data to object store
-devtrac.indexedDB.addOecdData = function(db, oecdObj) {  
+//adding taxonomy data to object store
+devtrac.indexedDB.addTaxonomyData = function(db, storename, pObj) {
   var d = $.Deferred();
-  var trans = db.transaction("oecdobj", "readwrite");
-  var store = trans.objectStore("oecdobj");
-  var request;
-
-  if(oecdObj.length > 0) {
-    for (var i in oecdObj) {
-      request = store.add({
-        "hname": oecdObj[i]['taxonomy_term_data_taxonomy_term_hierarchy_name'],
-        "hvid" : oecdObj[i]['taxonomy_term_data_taxonomy_term_hierarchy_vid'],
-        "htid": oecdObj[i]['taxonomy_term_data_taxonomy_term_hierarchy_tid'],
-        "htaxonomyvocabulary": oecdObj[i]['taxonomy_term_data_taxonomy_term_hierarchy__taxonomy_vocabul'], 
-        "dname": oecdObj[i]['taxonomy_term_data_name'], 
-        "dvid": oecdObj[i]['taxonomy_term_data_vid'], 
-        "vocabularymachinename": oecdObj[i]['taxonomy_vocabulary_machine_name'], 
-        "tid": oecdObj[i]['tid']
-      });
-    }
-
-    request.onsuccess = function(e) {
-      console.log('we have saved the oecd data');
-      d.resolve();
-    };
-
-    request.onerror = function(e) {
-      console.log(e.value);
-      d.resolve();
-    };
-  }else{
-    console.log("Server returned no oecds");
-    d.resolve();
-  }
-  return d;
-};
-
-//adding placetypes data to object store
-devtrac.indexedDB.addPlacetypesData = function(db, pObj) {
-  var d = $.Deferred();
-  var trans = db.transaction("placetype", "readwrite");
-  var store = trans.objectStore("placetype");
+  var trans = db.transaction(storename, "readwrite");
+  var store = trans.objectStore(storename);
   var request;
 
   if(pObj.length > 0) {
     for (var i in pObj) {
       request = store.add({
-        "hname": pObj[i]['taxonomy_term_data_taxonomy_term_hierarchy_name'],
-        "hvid" : pObj[i]['taxonomy_term_data_taxonomy_term_hierarchy_vid'],
-        "htid": pObj[i]['taxonomy_term_data_taxonomy_term_hierarchy_tid'],
-        "htaxonomyvocabulary": pObj[i]['taxonomy_term_data_taxonomy_term_hierarchy__taxonomy_vocabul'], 
-        "dname": pObj[i]['taxonomy_term_data_name'], 
-        "dvid": pObj[i]['taxonomy_term_data_vid'], 
-        "vocabularymachinename": pObj[i]['taxonomy_vocabulary_machine_name'], 
-        "tid": pObj[i]['tid']
+        "hname": pObj[i]['parent name'],
+        "htid": pObj[i]['parent term id'],
+        "dname": pObj[i]['name'], 
+        "weight": pObj[i]['weight'], 
+        "tid": pObj[i]['term id']
       });
     }
 
     request.onsuccess = function(e) {
-      console.log('we have saved the placetypes data');
+      console.log('we have saved the '+storename+' data');
       d.resolve();
     };
 
@@ -169,7 +130,7 @@ devtrac.indexedDB.addPlacetypesData = function(db, pObj) {
       d.resolve();
     };
   }else{
-    console.log("Server returned no placetypes");
+    console.log("Server returned no "+storename);
     d.resolve();
   }
   return d;
@@ -420,16 +381,18 @@ devtrac.indexedDB.addPlacesData = function(db, placeObj) {
   return d;
 };
 
-//query oecd data from datastore
-devtrac.indexedDB.getAllOecdItems = function(db, callback) {
-  var trans = db.transaction(["oecdobj"], "readonly");
-  var store = trans.objectStore("oecdobj");
+//query taxonomy data from datastore
+devtrac.indexedDB.getAllTaxonomyItems = function(db, storename, callback) {
+  var trans = db.transaction([storename], "readonly");
+  var store = trans.objectStore(storename);
 
   var categories = [];
-  var categoryValues = {}; 
+  var categoryValues = []; 
   var category = "";
   var htid;
   var flag = false;
+  var categoryflag = false;
+  var keyval;
 
   var i = 0;
 
@@ -445,102 +408,59 @@ devtrac.indexedDB.getAllOecdItems = function(db, callback) {
     }
     i = i + 1;
 
-    var anchor = $(result.value["dname"]);
-    var title = anchor.html();
-
-    //if term categories are available
-    if(category != result.value["hname"]  && result.value["hname"] != undefined) {
+    if(category != result.value["hname"]) {
       category = result.value["hname"];
-      categories[result.value["htid"]] = result.value["hname"];
-      htid = result.value["htid"];
-
-      //create array if it doesnot exist to hold terms that belong to category with given htid
-      if(!categoryValues[htid]) {
-        categoryValues[htid] = [];
-      }
-
-      //save term if it has not been saved before
-      if(categoryValues[htid][i] != result.value["dname"]) {
-        categoryValues[htid][i] = result.value["dname"];
-      }
-
-      //cater for undefined categories in results
-    }else if(category != title) {
-      category = title;
-      categories[i] = title;
-      htid = i;
-      if(!categoryValues[htid]) {
-        categoryValues[htid] = [];
-      }
-      categoryValues[htid][htid] = title;
-    }
-
-    result["continue"]();
-  };
-
-  cursorRequest.onerror = devtrac.indexedDB.onerror;
-};
-
-
-//query placetypes data from datastore
-devtrac.indexedDB.getAllPlacetypesItems = function(db, callback) {
-  var trans = db.transaction(["placetype"], "readonly");
-  var store = trans.objectStore("placetype");
-
-  var categories = [];
-  var categoryValues = {}; 
-  var category = "";
-  var htid;
-  var flag = false;
-
-  var i = 0;
-
-  // Get everything in the store;
-  var keyRange = IDBKeyRange.lowerBound(0);
-  var cursorRequest = store.openCursor(keyRange);
-
-  cursorRequest.onsuccess = function(e) {
-    var result = e.target.result;
-    if(!!result == false) {
-      callback(categoryValues, categories);
-      return;
-    }
-    i = i + 1;
-
-    var anchor = $(result.value["dname"]);
-    var title = anchor.html();
-
-    if(category != result.value["hname"]  && result.value["hname"] != undefined) {
-      category = result.value["hname"];
-      categories[result.value["htid"]] = result.value["hname"];
-      htid = result.value["htid"];
-      if(!categoryValues[htid]) {
-        categoryValues[htid] = [];
-      }
-
-      for(var key in categoryValues[htid]) {
-        if(categoryValues[htid][key] == result.value["dname"]) {
-          flag = true;
+      
+      /*for(var key in categories) {
+        if(categories[key][name] == result.value["hname"]) {
+          categoryflag = true;
+          keyval = key;
           break;
         }else {
           continue;
         }
-      }
+      }*/
+      
+/*      if(categoryflag) {
+        var childname = result.value["dname"];
+        var childobject = {keyval: {"name":childname, "level":2 }};
+        categoryValues[keyval].push(childobject);
+        
+      }else{*/
+      
+        htid = result.value["htid"];
+        var category_name = category;
+        var category_object = {"name": category_name, "level": 0, "htid": htid};
+        
+        categories.push(category_object);
 
-      if(!flag) {
-        categoryValues[htid][i] = result.value["dname"];
-      }else {
-        flag = false;
-      }
+        /*for(var key in categoryValues) {
+          if(categoryValues[key]['name'] == result.value["dname"]) {
+            flag = true;
+            break;
+          }else {
+            
+            continue;
+          }
+        }*/
 
-    }else if(category != title) {
-      category = title;
-      categories[i] = title;
-      htid = i;
-      if(!categoryValues[htid]) {
-        categoryValues[htid] = [];
-      }
-      categoryValues[htid][htid] = title;
+        //if(!flag) {
+          var childname = result.value["dname"];
+          var childId = result.value["tid"];
+          var childobject = {"name":childname, "level": 1 , "tid": childId, "htid": htid };
+          categoryValues.push(childobject);
+         /* 
+        }else {
+          
+          flag = false;
+        }*/ 
+      //}
+
+    }else{
+      var childname = result.value["dname"];
+      var childId = result.value["tid"];
+      var childobject = {"name":childname, "level":1 , "tid": childId, "htid": htid };
+      categoryValues.push(childobject);
     }
 
     result["continue"]();

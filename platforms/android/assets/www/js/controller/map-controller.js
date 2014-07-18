@@ -80,14 +80,14 @@ var mapctlr = {
           crs: L.CRS.EPSG3857
         });
         
-        mapctlr.MAP.addLayer(mapctlr.BASEMAPS['mapbox']);
+        mapctlr.MAP.addLayer(mapctlr.BASEMAPS['cloudmade']);
       }
 
       if(loc) {
         $("#addlocation_back").show();
         $("#viewlocation_back").hide();
         
-        mapctlr.MAP.addLayer(mapctlr.BASEMAPS['mapbox']);
+        mapctlr.MAP.addLayer(mapctlr.BASEMAPS['cloudmade']);
         
         $('#mapheader').html("");
         $('#mapheader').html("Add Location");
@@ -120,6 +120,10 @@ var mapctlr = {
         
         $("#viewlocation_back").show();
         $("#addlocation_back").hide();
+        
+
+        $("#viewlocation_back").attr("class", "");
+        $("#viewlocation_back").attr("class", "ui-btn-left");
         
         mapctlr.MAP.addLayer(mapctlr.BASEMAPS['mapbox']);
         mapctlr.LOCATION.addTo(mapctlr.MAP);

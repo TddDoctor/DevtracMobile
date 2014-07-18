@@ -22,14 +22,17 @@ var vocabularies = {
             //create bubble notification
             devtracnodes.notify("Oecds data downloaded.");
           }
+          
+          devtrac.indexedDB.open(function (dbs) {
+            devtrac.indexedDB.addTaxonomyData(dbs, "oecdobj", data).then(function() {
+              d.resolve();
+            }).fail(function(err) {
+              d.resolve();
 
-          devtrac.indexedDB.addOecdData(db, data).then(function(){
-            //devtracnodes.notify("Oecds data saved.");
-            d.resolve();
-          }).fail(function(err) {
-            d.resolve();
-
+            });
           });
+          
+          
         }
       });
 
@@ -56,12 +59,15 @@ var vocabularies = {
             devtracnodes.notify("Placetypes Data Unavailable.");
           }else{
             
-            devtrac.indexedDB.addPlacetypesData(db, data).then(function(){
-              devtracnodes.notify("Placetypes Data Saved.");
-              d.resolve();
-            }).fail(function(){
-              d.resolve();
+            devtrac.indexedDB.open(function (dbs) {
+              devtrac.indexedDB.addTaxonomyData(dbs, "placetype", data).then(function() {
+                d.resolve();
+              }).fail(function(err) {
+                d.resolve();
+
+              });
             });
+
           }
           
         }

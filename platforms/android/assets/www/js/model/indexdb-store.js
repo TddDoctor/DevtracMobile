@@ -7,7 +7,7 @@ devtrac.indexedDB.db = null;
 devtrac.indexedDBopen = function(callback) {
   var version = 7;
   var request = indexedDB.open("f1", version);
-  
+
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
     callback(devtrac.indexedDB.db);
@@ -62,7 +62,7 @@ devtrac.indexedDB.open = function(callback) {
     }
 
     var store = db.createObjectStore("oecdobj", {autoIncrement: true});
-    
+
     var placetypesstore = db.createObjectStore("placetype", {autoIncrement: true});
 
     var fieldtripstore = db.createObjectStore("fieldtripobj", {keyPath: "nid"});
@@ -85,13 +85,13 @@ devtrac.indexedDB.open = function(callback) {
 
     var commentsitemstore = db.createObjectStore("commentsitemsobj", {autoIncrement: true});
     commentsitemstore.createIndex('nid', 'nid', { unique: false });
-    
+
     var images = db.createObjectStore("images", {keyPath: "nid"});
     images.createIndex('nid', 'nid', { unique: true });
-    
+
     var submittedlocations = db.createObjectStore("sublocations", {keyPath: "nid"});
     submittedlocations.createIndex('nid', 'nid', { unique: true });
-    
+
   };
 
   request.onsuccess = function(e) {
@@ -228,9 +228,9 @@ devtrac.indexedDB.addSiteVisitsData = function(db, sObj) {
       if(!(sObj[i]['dbsavetime'] && sObj[i]['editflag'])){
         sObj[i]['dbsavetime'] = timestamp;
         sObj[i]['editflag'] = 0;
-        
+
       }
-      
+
       sitevisitrequest = sitevisitstore.add(sObj[i]);
 
     }
@@ -247,11 +247,11 @@ devtrac.indexedDB.addSiteVisitsData = function(db, sObj) {
   }else{
     console.log("title is "+sObj['title']);
     console.log("nid is "+sObj['nid']);
-    
+
     if(!(sObj['dbsavetime'] && sObj['editflag'])){
       sObj['dbsavetime'] = timestamp;
       sObj['editflag'] = 0;
-      
+
     }
     sitevisitrequest = sitevisitstore.add(sObj);
 
@@ -309,7 +309,7 @@ devtrac.indexedDB.addActionItemsData = function(db, aObj) {
     if(e.target.error.message != "Key already exists in the object store." && e.target.error.message != undefined) {
       devtracnodes.notify("Action Items Error: "+e.target.error.message);
     }
-    
+
     d.resolve(e);
   };
 
@@ -386,13 +386,9 @@ devtrac.indexedDB.getAllTaxonomyItems = function(db, storename, callback) {
   var trans = db.transaction([storename], "readonly");
   var store = trans.objectStore(storename);
 
-  var categories = [];
-  var categoryValues = []; 
+  var taxonomies = [];
   var category = "";
-  var htid;
-  var flag = false;
-  var categoryflag = false;
-  var keyval;
+  var childarray = [];
 
   var i = 0;
 
@@ -403,65 +399,37 @@ devtrac.indexedDB.getAllTaxonomyItems = function(db, storename, callback) {
   cursorRequest.onsuccess = function(e) {
     var result = e.target.result;
     if(!!result == false) {
-      callback(categoryValues, categories);
+      callback(taxonomies);
       return;
     }
     i = i + 1;
 
     if(category != result.value["hname"]) {
       category = result.value["hname"];
-      
-      /*for(var key in categories) {
-        if(categories[key][name] == result.value["hname"]) {
-          categoryflag = true;
-          keyval = key;
-          break;
-        }else {
-          continue;
-        }
-      }*/
-      
-/*      if(categoryflag) {
-        var childname = result.value["dname"];
-        var childobject = {keyval: {"name":childname, "level":2 }};
-        categoryValues[keyval].push(childobject);
-        
-      }else{*/
-      
-        htid = result.value["htid"];
-        var category_name = category;
-        var category_object = {"name": category_name, "level": 0, "htid": htid};
-        
-        categories.push(category_object);
 
-        /*for(var key in categoryValues) {
-          if(categoryValues[key]['name'] == result.value["dname"]) {
-            flag = true;
-            break;
-          }else {
-            
-            continue;
-          }
-        }*/
+      var htid = result.value["htid"];
+      var category_name = result.value["hname"];
 
-        //if(!flag) {
-          var childname = result.value["dname"];
-          var childId = result.value["tid"];
-          var childobject = {"name":childname, "level": 1 , "tid": childId, "htid": htid };
-          categoryValues.push(childobject);
-         /* 
-        }else {
-          
-          flag = false;
-        }*/ 
-      //}
-
-    }else{
       var childname = result.value["dname"];
       var childId = result.value["tid"];
-      var childobject = {"name":childname, "level":1 , "tid": childId, "htid": htid };
-      categoryValues.push(childobject);
+      var childobject = {"cname": childname, "tid": childId};
+
+      childarray = [];
+      childarray.push(childobject);
+      
+      var taxonomyobject = {"hname": category_name, "htid": htid, "children": childarray};
+      taxonomies.push(taxonomyobject);
+
+    }else
+    {
+
+      var childname = result.value["dname"];
+      var childId = result.value["tid"];
+      var childobject = {"cname": childname, "tid": childId};
+      
+      taxonomies[taxonomies.length - 1]['children'].push(childobject);
     }
+
 
     result["continue"]();
   };
@@ -506,14 +474,14 @@ devtrac.indexedDB.getAllQuestionItems = function(db, ftritem, callback) {
 
   cursorRequest.onsuccess = function(e) {
     var result = e.target.result;
-    
+
     if(!!result == false) {
       callback(qtns);
       return;
     }
-    
+
     result["continue"]();
-    
+
     if(ftritem['taxonomy_vocabulary_1'] != undefined) {
       //check for question to retrieve
       if(ftritem['taxonomy_vocabulary_1']['und'] != undefined && result.value.status == 1) {
@@ -521,9 +489,9 @@ devtrac.indexedDB.getAllQuestionItems = function(db, ftritem, callback) {
           qtns.push(result.value);
         }  
       }
-      
+
     }
-    
+
   };
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
@@ -580,16 +548,16 @@ devtrac.indexedDB.getSitevisit = function(db, snid) {
     //d.resolve(event.target.result);
     ftritem = event.target.result;
   };
-  
+
   trans.oncomplete = function(event) {
     d.resolve(ftritem);
   };
-  
+
   trans.error = function(event) {
     //d.resolve(ftritem);
     console.log("get site visit error");
   };
-  
+
   return d;
 };
 
@@ -877,18 +845,18 @@ devtrac.indexedDB.editPlace = function(db, pnid, updates) {
   request.onsuccess = function(event) {
     // Get the old value that we want to update
     var data = request.result;
-    
+
     for(var key in updates){
       if(key == "email"){
         data['field_place_responsible_email']['und'][0]['email'] = updates['email'];
       }else if(key == "responsible"){
         data['field_place_responsible_person']['und'][0]['value'] = updates['responsible']; 
       }else if(key == "title"){
-       data['title'] = updates['title']; 
+        data['title'] = updates['title']; 
       }else if(key == "submit"){
-       data['submit'] = updates['submit']; 
+        data['submit'] = updates['submit']; 
       }else if(key == "nid"){
-       data['new_nid'] = updates['nid']; 
+        data['new_nid'] = updates['nid']; 
       }
     }
 
@@ -923,25 +891,25 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
   request.onsuccess = function(event) {
     // Get the old value that we want to update
     var data = request.result;
-    
+
     for(var key in updates){
-     if(key == "title"){
-       data['title'] = updates['title'];   
-     } 
-     if(key == "date"){
-       data['field_ftritem_date_visited']['und'][0]['value'] = updates['date'];
-     }
-     if(key  == "summary"){
-       data['field_ftritem_public_summary']['und'][0]['value'] = updates['summary'];
-     }
-     if(key == "submit"){
-       data['submit'] = updates['submit'];
-     }
-     if(key == "editflag"){
-       data['editflag'] = updates['editflag'];
-     }
+      if(key == "title"){
+        data['title'] = updates['title'];   
+      } 
+      if(key == "date"){
+        data['field_ftritem_date_visited']['und'][0]['value'] = updates['date'];
+      }
+      if(key  == "summary"){
+        data['field_ftritem_public_summary']['und'][0]['value'] = updates['summary'];
+      }
+      if(key == "submit"){
+        data['submit'] = updates['submit'];
+      }
+      if(key == "editflag"){
+        data['editflag'] = updates['editflag'];
+      }
     }
-    
+
     // Put this updated object back into the database.
     var requestUpdate = store.put(data);
     requestUpdate.onerror = function(event) {
@@ -1034,21 +1002,21 @@ devtrac.indexedDB.deleteAllTables = function(db, objectstore) {
   //Get everything in the store;
   var keyRange = IDBKeyRange.lowerBound(0);
   var cursorRequest = store.openCursor(keyRange);
-  
+
   cursorRequest.onsuccess = function(e) {
     var result = e.target.result;
     if(!!result == false) {
       d.resolve();
       return;
     }
-    
+
     store['delete'](result.key);
     result["continue"]();
   };
-  
+
   cursorRequest.onerror = function(e) {
     d.reject(e);
   }  
-  
+
   return d;
 };

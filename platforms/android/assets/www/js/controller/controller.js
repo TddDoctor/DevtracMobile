@@ -51,11 +51,13 @@ var controller = {
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
       //if (!localStorage.appurl) {
-        //localStorage.appurl = "http://localhost/dt11";
-        localStorage.appurl = "http://192.168.38.114/dt11";
-        //localStorage.appurl = "http://192.168.38.113/dt11";
-        //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-        //localStorage.appurl = "http://10.0.2.2/dt11";
+
+      localStorage.appurl = "http://localhost/dt11";
+      //localStorage.appurl = "http://192.168.38.113/dt11";
+      //localStorage.appurl = "http://192.168.38.114/dt11";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://10.0.2.2/dt11";
+
       //}
 
       if(controller.connectionStatus) {
@@ -187,7 +189,7 @@ var controller = {
       });
 
       $("#cancel_addlocation").on('click', function(){
-        
+
         controller.clearWatch();
 
       });
@@ -1148,9 +1150,9 @@ var controller = {
           });
 
           devtrac.indexedDB.open(function (db) {
-            devtrac.indexedDB.getAllTaxonomyItems(db, "oecdobj", function (categoryValues, categories) {
-              controller.buildSelect("o", categoryValues, categories);
-              $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
+            devtrac.indexedDB.getAllTaxonomyItems(db, "oecdobj", function (taxonomies) {
+              controller.buildSelect("o", "", taxonomies);
+
             });
 
           });
@@ -1158,13 +1160,12 @@ var controller = {
         }
         else{
           devtrac.indexedDB.open(function (db) {
-            devtrac.indexedDB.getAllTaxonomyItems(db, "placetype", function (categoryValues, categories) {
-              controller.buildSelect("p", categoryValues, categories);
+            devtrac.indexedDB.getAllTaxonomyItems(db, "placetype", function (taxonomies) {
+              controller.buildSelect("p", "", taxonomies);
             });
 
           });
 
-          $.mobile.changePage("#page_add_location", "slide", true, false); 
         }
         controller.resetForm($('#form_sitereporttype'));
 
@@ -2102,78 +2103,61 @@ var controller = {
       return d;
     },
     
-    //recursive build taxonomy select groups
-    buildSelect: function (vocabulary, optgroup, options, categoryValues, categories) {
-      var optgroup = optgroup;
-      optgroup = optgroup + "<optgroup label=" + categories[0]['name'] + ">";
-      for(var k = 0; k < categoryValues.length; k++) {
-        
-        if(categories[0]['htid'] == categoryValues[k]['tid']) {
-          
-          options = "<option value=" + categoryValues[k]['tid'] + ">" + categoryValues[k]['name'] + "</option>" + options;
-        }  
-      }
-    },
-
-    //create opt group element for OECD codes
-/*    buildSelect: function (vocabulary, categoryValues, categories) {
-      if(vocabulary == "p"){
-        voca = 'placetypes';
-      }else{
-        voca = 'oecds';
-      }
-      var select = "<div class='ui-field-contain'><select name='select_"+voca+"' id='select_"+voca+"' data-theme='b' data-mini='true' required>";
-      var optgroup = "";
+    buildSelect: function (vocabulary, optgroup, taxonomies) {
+      var flag = false;
       var options = "";
-      var categoryInValuesflag = false;
-      var categoriesInValues = [];
 
-      for (var key in categories) {
-        for (var marker = 0; marker < categoryValues.length; marker++) {
-          if(categories[key]['name'] == categoryValues[marker]['name']) {
-            categoryInValuesflag = true;
-            categoriesInValues.push(categories[key]);
-          }
-          
-        }
-        
-        if(!categoryInValuesflag) { //if category is not found in the values then create a category
-          optgroup = optgroup + "<optgroup label=" + categories[key]['name'] + ">"; 
-          
-          for (var mark = 0; mark < categoryValues.length; mark++) {
+      var select = "<div class='ui-field-contain'><select name='select_"+vocabulary+"' id='select_"+vocabulary+"' data-theme='b' data-mini='true' required>";
+      for(var k = 0; k < taxonomies.length; k++) {
 
-            if (categories[key]['htid'] == categoryValues[mark]['htid']) {
+        optgroup = optgroup + "<optgroup label=" + taxonomies[k]['hname'] + ">";
+        for(var l = 0; l < taxonomies[k]['children'].length; l++ ) {
+
+          
+          for(var m = 0; m < taxonomies.length; m++) {
+            if(taxonomies[k]['children'][l]['tid'] == taxonomies[m]['htid']) {
               
-              options = "<option value=" + categoryValues[mark]['tid'] + ">" + categoryValues[mark]['name'] + "</option>" + options;
-            } 
-
-            if (mark == categoryValues.length - 1) {
-              optgroup = optgroup + options + "</optgroup>";
-              options = "";
+              for(var n = 0; n < taxonomies[m]['children'].length; n++) {
+                options = "<option value=" + taxonomies[m]['children'][n]['tid'] + ">" +"-->"+ taxonomies[m]['children'][n]['cname'] + "</option>" + options;
+                if((n == (taxonomies[m]['children'].length -1))){
+                  taxonomies.splice(m, 1);
+                  break;
+                }
+              }
+              options = "<option disabled='' value=" + taxonomies[k]['children'][l]['tid'] + ">" + taxonomies[k]['children'][l]['cname'] + "</option>" + options;
               break;
             }
+            if((m == (taxonomies.length -1))){
+              options = "<option value=" + taxonomies[k]['children'][l]['tid'] + ">" + taxonomies[k]['children'][l]['cname'] + "</option>" + options;
+            }
           }
-        }else
-        {
-                    
+          
+          if (l == taxonomies[k]['children'].length - 1) {
+            optgroup = optgroup + options + "</optgroup>";
+            options = "";
+            break;
+          }
+          
         }
+        
+        if (k == taxonomies.length - 1) {
+          select = select + optgroup + "</select></div>";
+          var selectGroup = $(select);
 
+          if (vocabulary === "p") {
+            //      create placetypes codes optgroup
+            $('#location_placetypes').empty().append(selectGroup).trigger('create');
+            $('#sitevisists_details_subjects').empty().append(selectGroup).trigger('create');
+            $.mobile.changePage("#page_add_location", "slide", true, false);
+          } else {
+            //create oecd codes optgroup
+            $('#select_oecds').empty().append(selectGroup).trigger('create');
+            $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
+          }
+        }
       }
-      optgroup = optgroup + options + "</optgroup>";
-      select = select + optgroup + "</select></div>";
-      var selectGroup = $(select);
-
-      if (vocabulary === "p") {
-        //      create placetypes codes optgroup
-        $('#location_placetypes').empty().append(selectGroup).trigger('create');
-        $('#sitevisists_details_subjects').empty().append(selectGroup).trigger('create');
-      } else {
-        //create oecd codes optgroup
-        $('#select_oecds').empty().append(selectGroup).trigger('create');
-      }
-
-    },*/
-
+    },
+   
     //length of javascript object
     sizeme : function(obj) {
       var size = 0, key;

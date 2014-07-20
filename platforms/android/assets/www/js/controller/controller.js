@@ -51,10 +51,10 @@ var controller = {
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
       //if (!localStorage.appurl) {
-      localStorage.appurl = "http://localhost/dt11";
+      //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
       //localStorage.appurl = "http://192.168.38.114/dt11";
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //}
 
@@ -1103,7 +1103,7 @@ var controller = {
 
           devtrac.indexedDB.open(function (db) {
             devtrac.indexedDB.getAllTaxonomyItems(db, "oecdobj", function (taxonomies) {
-              controller.buildSelect("o", "", taxonomies);
+              controller.buildSelect("o", "", [], taxonomies);
 
             });
 
@@ -1113,7 +1113,7 @@ var controller = {
         else{
           devtrac.indexedDB.open(function (db) {
             devtrac.indexedDB.getAllTaxonomyItems(db, "placetype", function (taxonomies) {
-              controller.buildSelect("p", "", taxonomies);
+              controller.buildSelect("p", "", [], taxonomies);
             });
 
           });
@@ -2053,62 +2053,84 @@ var controller = {
       }
       return d;
     },
-    
-    buildSelect: function (vocabulary, optgroup, taxonomies) {
+
+    buildSelect: function (vocabulary, optgroup, cparents, taxonomies) {
       var flag = false;
       var options = "";
 
-      var select = "<div class='ui-field-contain'><select name='select_"+vocabulary+"' id='select_"+vocabulary+"' data-theme='b' data-mini='true' required>";
-      for(var k = 0; k < taxonomies.length; k++) {
+      var childparents = cparents;
 
-        optgroup = optgroup + "<optgroup label=" + taxonomies[k]['hname'] + ">";
-        for(var l = 0; l < taxonomies[k]['children'].length; l++ ) {
+      if(taxonomies.length > 0) {
 
-          
+        optgroup = optgroup + "<optgroup class='taxonomyparent "+taxonomies[0]['htid']+"' label=" + taxonomies[0]['hname'] + ">";
+        for(var l = 0; l < taxonomies[0]['children'].length; l++ ) {
+
           for(var m = 0; m < taxonomies.length; m++) {
-            if(taxonomies[k]['children'][l]['tid'] == taxonomies[m]['htid']) {
-              
+            if(taxonomies[0]['children'][l]['tid'] == taxonomies[m]['htid']) {
+
               for(var n = 0; n < taxonomies[m]['children'].length; n++) {
                 options = "<option value=" + taxonomies[m]['children'][n]['tid'] + ">" +"-->"+ taxonomies[m]['children'][n]['cname'] + "</option>" + options;
                 if((n == (taxonomies[m]['children'].length -1))){
-                  taxonomies.splice(m, 1);
+                  
+                  childparents[taxonomies[m]['htid']] = taxonomies[m];
                   break;
                 }
               }
-              options = "<option disabled='' value=" + taxonomies[k]['children'][l]['tid'] + ">" + taxonomies[k]['children'][l]['cname'] + "</option>" + options;
+              options = "<option disabled='' value=" + taxonomies[0]['children'][l]['tid'] + ">" + taxonomies[0]['children'][l]['cname'] + "</option>" + options;
               break;
             }
             if((m == (taxonomies.length -1))){
-              options = "<option value=" + taxonomies[k]['children'][l]['tid'] + ">" + taxonomies[k]['children'][l]['cname'] + "</option>" + options;
+              options = "<option value=" + taxonomies[0]['children'][l]['tid'] + ">" + taxonomies[0]['children'][l]['cname'] + "</option>" + options;
             }
           }
-          
-          if (l == taxonomies[k]['children'].length - 1) {
+
+          if (l == taxonomies[0]['children'].length - 1) {
             optgroup = optgroup + options + "</optgroup>";
             options = "";
+
+            taxonomies.splice(0, 1);
+            controller.buildSelect(vocabulary, optgroup, childparents, taxonomies);
             break;
           }
-          
-        }
-        
-        if (k == taxonomies.length - 1) {
-          select = select + optgroup + "</select></div>";
-          var selectGroup = $(select);
 
-          if (vocabulary === "p") {
-            //      create placetypes codes optgroup
-            $('#location_placetypes').empty().append(selectGroup).trigger('create');
-            $('#sitevisists_details_subjects').empty().append(selectGroup).trigger('create');
-            $.mobile.changePage("#page_add_location", "slide", true, false);
-          } else {
-            //create oecd codes optgroup
-            $('#select_oecds').empty().append(selectGroup).trigger('create');
-            $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
-          }
         }
+
+      }else
+      {
+        var select = "<div class='ui-field-contain'><select name='select_"+vocabulary+"' id='select_"+vocabulary+"' data-theme='b' data-mini='true' required>";
+
+        select = select + optgroup + "</select></div>";
+        var selectGroup = $(select);
+
+        selectGroup.find(".taxonomyparent").each(function(){
+          for(var t in childparents){
+
+            if($(this).attr('class').indexOf(t) != -1){
+
+              $(this).remove();
+
+            }  
+          }
+
+
+        });
+
+        if (vocabulary === "p") {
+
+          //create placetypes codes optgroup
+          $('#location_placetypes').empty().append(selectGroup).trigger('create');
+          $('#sitevisists_details_subjects').empty().append(selectGroup).trigger('create');
+          $.mobile.changePage("#page_add_location", "slide", true, false);
+        } else {
+
+          //create oecd codes optgroup
+          $('#select_oecds').empty().append(selectGroup).trigger('create');
+          $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
+        }
+
       }
     },
-   
+
     //length of javascript object
     sizeme : function(obj) {
       var size = 0, key;

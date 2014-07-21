@@ -206,6 +206,11 @@ var controller = {
         controller.clearWatch();
       });
 
+      //count nodes for upload before page show
+      /*$("#page_fieldtrip_details").bind('pagebeforeshow', function(){
+        $("#page_fieldtrip_details").trigger("create");
+      });*/
+
       // on cancel action item click
       $('#action_item_cancel').bind('click', function () { 
         $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
@@ -1101,22 +1106,12 @@ var controller = {
         localStorage.ftritemlatlon = localStorage.latlon;
         if(localStorage.ftritemtype == "210") {
 
-          devtrac.indexedDB.open(function (db) {
-            devtrac.indexedDB.getAllTaxonomyItems(db, "oecdobj", function (taxonomies) {
-              controller.buildSelect("o", "", [], taxonomies);
-
-            });
-
-          });
+          controller.buildSelect("oecdobj", []);
 
         }
         else{
-          devtrac.indexedDB.open(function (db) {
-            devtrac.indexedDB.getAllTaxonomyItems(db, "placetype", function (taxonomies) {
-              controller.buildSelect("p", "", [], taxonomies);
-            });
 
-          });
+          controller.buildSelect("placetype", []);
 
         }
         controller.resetForm($('#form_sitereporttype'));
@@ -2054,81 +2049,85 @@ var controller = {
       return d;
     },
 
-    buildSelect: function (vocabulary, optgroup, cparents, taxonomies) {
-      var flag = false;
-      var options = "";
+    /**
+     * args
+     *   vocabularyname {oecdcodes, placetypes}
+     *   selectedoptions = options that should already be selected
+     *   
+     *   return: htm select control with preferred taxonomy hierarchy
+     */
+    buildSelect: function (vocabularyname, selectedoptions) {
+      devtrac.indexedDB.open(function (db) {
+        devtrac.indexedDB.getAllTaxonomyItems(db, vocabularyname, function (taxonomies) {
 
-      var childparents = cparents;
+          var optionsarray = controller.fetchOptions(taxonomies);
+      
+          console.log("the build select array has returned");
+        });
 
-      if(taxonomies.length > 0) {
+      });
 
-        optgroup = optgroup + "<optgroup class='taxonomyparent "+taxonomies[0]['htid']+"' label=" + taxonomies[0]['hname'] + ">";
-        for(var l = 0; l < taxonomies[0]['children'].length; l++ ) {// loop through parents
+      
 
-          for(var m = 0; m < taxonomies.length; m++) {//loop through parents checking if any is a child
-            if(taxonomies[0]['children'][l]['tid'] == taxonomies[m]['htid']) {
+      //loop thru array for grand parents
+      /*var html = "<select><options>";
 
-              for(var n = 0; n < taxonomies[m]['children'].length; n++) {//loop through children of children and show them as options
-                options = "<option value=" + taxonomies[m]['children'][n]['tid'] + ">" +"-->"+ taxonomies[m]['children'][n]['cname'] + "</option>" + options;
-                if((n == (taxonomies[m]['children'].length -1))){
-                  //add child parents to array for removal from the dom later
-                  childparents[taxonomies[m]['htid']] = taxonomies[m];
-                  break;
+      foreach in oa as group{
+        html .= '<optgroup ' + group + '>';
+        if group.children {
+          html .= addoptions(group.children, '')
+        }
+      }
+
+      html .= '</options></select>';
+
+      return html;*/
+
+      //recursive add options
+      /*      function addoptions (options, delimiter) {
+        delimiter = delimiter + '--';
+        foreach options as option {
+        html = '<option ' + delimiter + options + '>';
+        if options.children {
+          html =. addoptions (options.children, delimiter);
+        }
+        }
+        return html;
+      }*/
+
+    },
+
+    fetchOptions: function(taxonomies) {
+
+      
+      for(var a in taxonomies) {//loop thru parents
+
+        for(var b in taxonomies[a]['children']){//loop thru children
+
+          for(var c in taxonomies){//loop thru parents and check if equal to children
+            if(taxonomies[a]['children'][b]['tid'] == taxonomies[c]['htid']) {
+              taxonomies[a]['children'][b]['children'] = taxonomies[c]['children'];
+
+              taxonomies.splice(c,0);
+              
+              for(var d in taxonomies[a]['children'][b]['children']) {
+                for(var e in taxonomies){
+                  if(taxonomies[a]['children'][b]['children'][d]['tid'] == taxonomies[e]['htid']) {
+                    taxonomies[a]['children'][b]['children'][d]['children'] = taxonomies[e]['children'];
+                    console.log("3rd level added at "+a);
+                    taxonomies.splice(e, 1);
+                    break;
+                  }
                 }
               }
-              options = "<option disabled='' value=" + taxonomies[0]['children'][l]['tid'] + ">" + taxonomies[0]['children'][l]['cname'] + "</option>" + options;
-              break;
-            }
-            if((m == (taxonomies.length -1))) {
-              options = "<option value=" + taxonomies[0]['children'][l]['tid'] + ">" + taxonomies[0]['children'][l]['cname'] + "</option>" + options;
-            }
-          }
-
-          if (l == taxonomies[0]['children'].length - 1) {
-            optgroup = optgroup + options + "</optgroup>";
-            options = "";
-
-            taxonomies.splice(0, 1);
-            controller.buildSelect(vocabulary, optgroup, childparents, taxonomies);
-            break;
-          }
-
-        }
-
-      }else
-      {
-        var select = "<div class='ui-field-contain'><select name='select_"+vocabulary+"' id='select_"+vocabulary+"' data-theme='b' data-mini='true' required>";
-
-        select = select + optgroup + "</select></div>";
-        var selectGroup = $(select);
-
-        selectGroup.find(".taxonomyparent").each(function(){
-          for(var t in childparents){
-
-            if($(this).attr('class').indexOf(t) != -1) {
-
-              $(this).remove();
-
             }  
           }
 
-
-        });
-
-        if (vocabulary === "p") {
-
-          //create placetypes codes optgroup
-          $('#location_placetypes').empty().append(selectGroup).trigger('create');
-          $('#sitevisists_details_subjects').empty().append(selectGroup).trigger('create');
-          $.mobile.changePage("#page_add_location", "slide", true, false);
-        } else {
-
-          //create oecd codes optgroup
-          $('#select_oecds').empty().append(selectGroup).trigger('create');
-          $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
         }
-
+        
       }
+
+      return taxonomies; 
     },
 
     //length of javascript object

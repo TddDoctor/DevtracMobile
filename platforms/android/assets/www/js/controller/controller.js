@@ -51,10 +51,10 @@ var controller = {
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
       //if (!localStorage.appurl) {
-      //localStorage.appurl = "http://localhost/dt11";
+      localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
       //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //}
 
@@ -1603,12 +1603,12 @@ var controller = {
               list_comment.append(li);
             }
           }
-          list_comment.listview('refresh');
+          list_comment.listview().listview('refresh');
 
         });
       });
 
-      $.mobile.changePage("#page_actionitems_details", "slide", true, false);
+      $.mobile.changePage("#page_actionitemdetails", "slide", true, false);
     },
 
     //todo: potential code to refresh the action item list view after new items have been added
@@ -2063,15 +2063,15 @@ var controller = {
       if(taxonomies.length > 0) {
 
         optgroup = optgroup + "<optgroup class='taxonomyparent "+taxonomies[0]['htid']+"' label=" + taxonomies[0]['hname'] + ">";
-        for(var l = 0; l < taxonomies[0]['children'].length; l++ ) {
+        for(var l = 0; l < taxonomies[0]['children'].length; l++ ) {// loop through parents
 
-          for(var m = 0; m < taxonomies.length; m++) {
+          for(var m = 0; m < taxonomies.length; m++) {//loop through parents checking if any is a child
             if(taxonomies[0]['children'][l]['tid'] == taxonomies[m]['htid']) {
 
-              for(var n = 0; n < taxonomies[m]['children'].length; n++) {
+              for(var n = 0; n < taxonomies[m]['children'].length; n++) {//loop through children of children and show them as options
                 options = "<option value=" + taxonomies[m]['children'][n]['tid'] + ">" +"-->"+ taxonomies[m]['children'][n]['cname'] + "</option>" + options;
                 if((n == (taxonomies[m]['children'].length -1))){
-                  
+                  //add child parents to array for removal from the dom later
                   childparents[taxonomies[m]['htid']] = taxonomies[m];
                   break;
                 }
@@ -2079,7 +2079,7 @@ var controller = {
               options = "<option disabled='' value=" + taxonomies[0]['children'][l]['tid'] + ">" + taxonomies[0]['children'][l]['cname'] + "</option>" + options;
               break;
             }
-            if((m == (taxonomies.length -1))){
+            if((m == (taxonomies.length -1))) {
               options = "<option value=" + taxonomies[0]['children'][l]['tid'] + ">" + taxonomies[0]['children'][l]['cname'] + "</option>" + options;
             }
           }
@@ -2105,7 +2105,7 @@ var controller = {
         selectGroup.find(".taxonomyparent").each(function(){
           for(var t in childparents){
 
-            if($(this).attr('class').indexOf(t) != -1){
+            if($(this).attr('class').indexOf(t) != -1) {
 
               $(this).remove();
 

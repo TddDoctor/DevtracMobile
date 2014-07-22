@@ -17,7 +17,7 @@ var controller = {
 
       var header = Handlebars.compile($("#header-tpl").html());
       $("#fieldtrip_details_header").html(header({id: "fieldtrip", title: "Fieldtrip Details"}));
-      $("#header_login").html(header({title: "Devtrac Mobile"}));
+      $("#header_login").html(header({id: "login", title: "Devtrac Mobile"}));
       $("#header_home").html(header({id: "home", title: "Home"}));
       $("#header_sync").html(header({id: "sync", title: "Sync Nodes"}));
       $("#header_sitereports").html(header({extra_buttons: '<div data-role="navbar" data-theme="a">'+
@@ -40,13 +40,6 @@ var controller = {
       $("#header_download").html(header({id: "download", title: "Download Nodes"}));
 
       $(window).bind('orientationchange pageshow pagechange resize', mapctlr.resizeMapIfVisible);
-
-      //todo: using default coordinates change to mobile device coordinates
-      var lat = "0.28316";
-      var lon = "32.45168";
-
-      localStorage.ftritemlatlon = lon +" "+lat;
-      localStorage.latlon = lon +" "+lat;
 
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
@@ -206,10 +199,27 @@ var controller = {
         controller.clearWatch();
       });
 
+
+      //Hide menu button on login before the page is displayed
+      $("#page_login").bind('pagebeforeshow', function(){
+
+        $("#barsbutton_login").hide();
+      });
+
+
       //count nodes for upload before page show
-      /*$("#page_fieldtrip_details").bind('pagebeforeshow', function(){
-        $("#page_fieldtrip_details").trigger("create");
-      });*/
+      $("#syncall_page").bind('pagebeforeshow', function(){
+
+        devtracnodes.countSitevisits().then(function(scount){
+          $("#sitevisit_count").html(scount);
+        });
+
+        devtracnodes.checkActionitems().then(function(actionitems, items) {
+          $("#actionitem_count").html(items);
+        });
+
+
+      });
 
       // on cancel action item click
       $('#action_item_cancel').bind('click', function () { 
@@ -2054,83 +2064,116 @@ var controller = {
      *   vocabularyname {oecdcodes, placetypes}
      *   selectedoptions = options that should already be selected
      *   
-     *   return: htm select control with preferred taxonomy hierarchy
+     *   return: html select control with preferred taxonomy hierarchy
      */
     buildSelect: function (vocabularyname, selectedoptions) {
+      var select = "<div class='ui-field-contain'><select name='select_"+vocabularyname+"' id='select_"+vocabularyname+"' data-theme='b' data-mini='true' required>";
+      var optgroup = "";
+
+      controller.fetchOptions(vocabularyname).then(function(optionsarray) {
+
+        for(var x in optionsarray) {
+          optgroup = optgroup + "<optgroup label=" + optionsarray[x]['hname'] + ">";
+          if (optionsarray[x]['children'] != undefined) {
+            optgroup =  optgroup + controller.addSelectOptions(optionsarray[x]['children'], '', '') + "</optgroup>";
+          }
+          
+        }
+
+        select = select + optgroup + "</select></div>";
+
+        controller.createOptgroupElement(select, vocabularyname);
+
+      });
+
+    },
+
+    addSelectOptions: function(optionchildren, options, delimeter) {
+      var delimeter = delimeter + '--';
+      var options = options;
+      for(var y in optionchildren) {
+        if(optionchildren[y]["children"] != undefined) {
+          options = '<option disabled="" value=' + optionchildren[y]['tid'] + ">" +delimeter + " " + optionchildren[y]['cname'] + "</option>" + options;
+          
+          options = options + controller.addSelectOptions(optionchildren[y]["children"], options, delimeter);
+        }
+        else {
+          options = options + "<option value=" + optionchildren[y]['tid'] + ">" +delimeter+ optionchildren[y]['cname'] + "</option>";
+
+        }
+      }
+      return options;
+    },
+    
+    createOptgroupElement: function(select, vocabularyname){
+
+      var selectGroup = $(select);
+      if (vocabularyname.indexOf("place") != -1) {
+
+        //create placetypes codes optgroup
+        $('#location_placetypes').empty().append(selectGroup).trigger('create');
+        $('#sitevisists_details_subjects').empty().append(selectGroup).trigger('create');
+        $.mobile.changePage("#page_add_location", "slide", true, false);
+      } 
+      else {
+
+        //create oecd codes optgroup
+        $('#select_oecds').empty().append(selectGroup).trigger('create');
+        $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
+      }
+
+
+    },
+
+    fetchOptions: function(vocabularyname) {
+
+      var g = $.Deferred();
+
+      var vocabularies = [];
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.getAllTaxonomyItems(db, vocabularyname, function (taxonomies) {
 
-          var optionsarray = controller.fetchOptions(taxonomies);
-      
-          console.log("the build select array has returned");
+
+          var markers = [];
+          for(var a in taxonomies) {//loop thru parents
+
+            for(var b in taxonomies[a]['children']){//loop thru children
+
+              for(var c in taxonomies) {//loop thru parents and check if equal to children
+                if(taxonomies[a]['children'][b]['tid'] == taxonomies[c]['htid']) {
+                  taxonomies[a]['children'][b]['children'] = taxonomies[c]['children'];
+
+                  if(a != c) {
+                    markers.push(c);  
+                  }
+                  
+                }  
+              }
+
+            }
+
+            for(var f in markers) {
+              taxonomies.splice(markers[f], 1);
+              markers.splice(f, 1);
+            }
+          }
+
+          /*for(var f in markers) {
+            taxonomies.splice(markers[f], 1);
+          }*/
+
+          vocabularies = taxonomies;
+
+          g.resolve(vocabularies);
+
         });
 
       });
 
-      
-
-      //loop thru array for grand parents
-      /*var html = "<select><options>";
-
-      foreach in oa as group{
-        html .= '<optgroup ' + group + '>';
-        if group.children {
-          html .= addoptions(group.children, '')
-        }
-      }
-
-      html .= '</options></select>';
-
-      return html;*/
-
-      //recursive add options
-      /*      function addoptions (options, delimiter) {
-        delimiter = delimiter + '--';
-        foreach options as option {
-        html = '<option ' + delimiter + options + '>';
-        if options.children {
-          html =. addoptions (options.children, delimiter);
-        }
-        }
-        return html;
-      }*/
-
+      return g;
     },
 
-    fetchOptions: function(taxonomies) {
-
-      
-      for(var a in taxonomies) {//loop thru parents
-
-        for(var b in taxonomies[a]['children']){//loop thru children
-
-          for(var c in taxonomies){//loop thru parents and check if equal to children
-            if(taxonomies[a]['children'][b]['tid'] == taxonomies[c]['htid']) {
-              taxonomies[a]['children'][b]['children'] = taxonomies[c]['children'];
-
-              taxonomies.splice(c,0);
-              
-              for(var d in taxonomies[a]['children'][b]['children']) {
-                for(var e in taxonomies){
-                  if(taxonomies[a]['children'][b]['children'][d]['tid'] == taxonomies[e]['htid']) {
-                    taxonomies[a]['children'][b]['children'][d]['children'] = taxonomies[e]['children'];
-                    console.log("3rd level added at "+a);
-                    taxonomies.splice(e, 1);
-                    break;
-                  }
-                }
-              }
-            }  
-          }
-
-        }
-        
-      }
-
-      return taxonomies; 
-    },
-
-    //length of javascript object
+//  length of javascript object
     sizeme : function(obj) {
       var size = 0, key;
       for (key in obj) {
@@ -2139,7 +2182,7 @@ var controller = {
       return size;
     },
 
-    //message to the user about current running process
+//  message to the user about current running process
     loadingMsg: function(msg, t){
       $.blockUI({ 
         message: msg, 

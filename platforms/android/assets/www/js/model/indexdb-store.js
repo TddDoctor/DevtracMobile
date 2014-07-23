@@ -6,7 +6,8 @@ devtrac.indexedDB.db = null;
 
 devtrac.indexedDBopen = function(callback) {
 
-  var version = 7;
+  var version = 8;
+
   var request = indexedDB.open("f1", version);
 
   request.onsuccess = function(e) {
@@ -20,7 +21,8 @@ devtrac.indexedDBopen = function(callback) {
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
 
-  var version = 7;
+  var version = 8;
+
   var request = indexedDB.open("f1", version);
 
   // We can only create Object stores in a versionchange transaction.
@@ -896,7 +898,7 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
 
     for(var key in updates){
       if(key == "title"){
-        data['title'] = updates['title'];   
+        data['title'] = updates['title'];  
       } 
       if(key == "date"){
         data['field_ftritem_date_visited']['und'][0]['value'] = updates['date'];

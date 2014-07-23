@@ -17,7 +17,7 @@ var controller = {
 
       var header = Handlebars.compile($("#header-tpl").html());
       $("#fieldtrip_details_header").html(header({id: "fieldtrip", title: "Fieldtrip Details"}));
-      $("#header_login").html(header({title: "Devtrac Mobile"}));
+      $("#header_login").html(header({id: "login", title: "Devtrac Mobile"}));
       $("#header_home").html(header({id: "home", title: "Home"}));
       $("#header_sync").html(header({id: "sync", title: "Sync Nodes"}));
       $("#header_sitereports").html(header({extra_buttons: '<div data-role="navbar" data-theme="a">'+
@@ -41,20 +41,13 @@ var controller = {
 
       $(window).bind('orientationchange pageshow pagechange resize', mapctlr.resizeMapIfVisible);
 
-      //todo: using default coordinates change to mobile device coordinates
-      var lat = "0.28316";
-      var lon = "32.45168";
-
-      localStorage.ftritemlatlon = lon +" "+lat;
-      localStorage.latlon = lon +" "+lat;
-
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
       //if (!localStorage.appurl) {
-      //localStorage.appurl = "http://localhost/dt11";
+      localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
       //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
 
       //}
@@ -206,6 +199,28 @@ var controller = {
       $("#page_site_report_type").bind('pagebeforeshow', function(){
 
         controller.clearWatch();
+      });
+
+
+      //Hide menu button on login before the page is displayed
+      $("#page_login").bind('pagebeforeshow', function(){
+
+        $("#barsbutton_login").hide();
+      });
+
+
+      //count nodes for upload before page show
+      $("#syncall_page").bind('pagebeforeshow', function(){
+
+        devtracnodes.countSitevisits().then(function(scount){
+          $("#sitevisit_count").html(scount);
+        });
+
+        devtracnodes.checkActionitems().then(function(actionitems, items) {
+          $("#actionitem_count").html(items);
+        });
+
+
       });
 
       // on cancel action item click
@@ -1147,23 +1162,13 @@ var controller = {
             minDate: new Date(startyear, startmonth, startday), 
             maxDate: new Date(endyear, endmonth, endday) 
           });
-
-          devtrac.indexedDB.open(function (db) {
-            devtrac.indexedDB.getAllTaxonomyItems(db, "oecdobj", function (taxonomies) {
-              controller.buildSelect("o", "", [], taxonomies);
-
-            });
-
-          });
+          
+          controller.buildSelect("oecdobj", []);
 
         }
         else{
-          devtrac.indexedDB.open(function (db) {
-            devtrac.indexedDB.getAllTaxonomyItems(db, "placetype", function (taxonomies) {
-              controller.buildSelect("p", "", [], taxonomies);
-            });
 
-          });
+          controller.buildSelect("placetype", []);
 
         }
         controller.resetForm($('#form_sitereporttype'));
@@ -1651,12 +1656,12 @@ var controller = {
               list_comment.append(li);
             }
           }
-          list_comment.listview('refresh');
+          list_comment.listview().listview('refresh');
 
         });
       });
 
-      $.mobile.changePage("#page_actionitems_details", "slide", true, false);
+      $.mobile.changePage("#page_actionitemdetails", "slide", true, false);
     },
 
     //todo: potential code to refresh the action item list view after new items have been added
@@ -2102,84 +2107,131 @@ var controller = {
       return d;
     },
 
-    buildSelect: function (vocabulary, optgroup, cparents, taxonomies) {
-      var flag = false;
-      var options = "";
+    /**
+     * args
+     *   vocabularyname {oecdcodes, placetypes}
+     *   selectedoptions = options that should already be selected
+     *   
+     *   return: html select control with preferred taxonomy hierarchy
+     */
+    buildSelect: function (vocabularyname, selectedoptions) {
+      var select = "<div class='ui-field-contain'><select name='select_"+vocabularyname+"' id='select_"+vocabularyname+"' data-theme='b' data-mini='true' required>";
+      var optgroup = "";
 
-      var childparents = cparents;
+      controller.fetchOptions(vocabularyname).then(function(optionsarray) {
 
-      if(taxonomies.length > 0) {
-
-        optgroup = optgroup + "<optgroup class='taxonomyparent "+taxonomies[0]['htid']+"' label=" + taxonomies[0]['hname'] + ">";
-        for(var l = 0; l < taxonomies[0]['children'].length; l++ ) {
-
-          for(var m = 0; m < taxonomies.length; m++) {
-            if(taxonomies[0]['children'][l]['tid'] == taxonomies[m]['htid']) {
-
-              for(var n = 0; n < taxonomies[m]['children'].length; n++) {
-                options = "<option value=" + taxonomies[m]['children'][n]['tid'] + ">" +"-->"+ taxonomies[m]['children'][n]['cname'] + "</option>" + options;
-                if((n == (taxonomies[m]['children'].length -1))){
-                  
-                  childparents[taxonomies[m]['htid']] = taxonomies[m];
-                  break;
-                }
-              }
-              options = "<option disabled='' value=" + taxonomies[0]['children'][l]['tid'] + ">" + taxonomies[0]['children'][l]['cname'] + "</option>" + options;
-              break;
-            }
-            if((m == (taxonomies.length -1))){
-              options = "<option value=" + taxonomies[0]['children'][l]['tid'] + ">" + taxonomies[0]['children'][l]['cname'] + "</option>" + options;
-            }
+        for(var x in optionsarray) {
+          optgroup = optgroup + "<optgroup label=" + optionsarray[x]['hname'] + ">";
+          if (optionsarray[x]['children'] != undefined) {
+            optgroup =  optgroup + controller.addSelectOptions(optionsarray[x]['children'], '', '') + "</optgroup>";
           }
-
-          if (l == taxonomies[0]['children'].length - 1) {
-            optgroup = optgroup + options + "</optgroup>";
-            options = "";
-
-            taxonomies.splice(0, 1);
-            controller.buildSelect(vocabulary, optgroup, childparents, taxonomies);
-            break;
-          }
-
+          
         }
 
-      }else
-      {
-        var select = "<div class='ui-field-contain'><select name='select_"+vocabulary+"' id='select_"+vocabulary+"' data-theme='b' data-mini='true' required>";
-
         select = select + optgroup + "</select></div>";
-        var selectGroup = $(select);
 
-        selectGroup.find(".taxonomyparent").each(function(){
-          for(var t in childparents){
+        controller.createOptgroupElement(select, vocabularyname);
 
-            if($(this).attr('class').indexOf(t) != -1){
+      });
 
-              $(this).remove();
+    },
 
-            }  
+    addSelectOptions: function(optionchildren, options, delimeter) {
+      var delimeter = delimeter + '--';
+      var options = options;
+      for(var y in optionchildren) {
+        if(optionchildren[y]["children"] != undefined) {
+          options = '<option disabled="" value=' + optionchildren[y]['tid'] + ">" +delimeter + " " + optionchildren[y]['cname'] + "</option>" + controller.addSelectOptions(optionchildren[y]["children"], options, delimeter);
+          
+        }
+        else {
+          options = "<option value=" + optionchildren[y]['tid'] + ">" +delimeter+ optionchildren[y]['cname'] + "</option>" + options;
+
+        }
+      }
+      return options;
+    },
+    
+    createOptgroupElement: function(select, vocabularyname){
+
+      var selectGroup = $(select);
+      if (vocabularyname.indexOf("place") != -1) {
+
+        //create placetypes codes optgroup
+        $('#location_placetypes').empty().append(selectGroup).trigger('create');
+        $('#sitevisists_details_subjects').empty().append(selectGroup).trigger('create');
+        $.mobile.changePage("#page_add_location", "slide", true, false);
+      } 
+      else {
+
+        //create oecd codes optgroup
+        $('#select_oecds').empty().append(selectGroup).trigger('create');
+        $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
+      }
+
+
+    },
+
+    fetchOptions: function(vocabularyname) {
+
+      var g = $.Deferred();
+
+      var vocabularies = [];
+      devtrac.indexedDB.open(function (db) {
+        devtrac.indexedDB.getAllTaxonomyItems(db, vocabularyname, function (taxonomies) {
+
+
+          var markers = [];
+          for(var a in taxonomies) {//loop thru parents
+
+            for(var b in taxonomies[a]['children']){//loop thru children
+
+              for(var c in taxonomies) {//loop thru parents and check if equal to children
+                if(taxonomies[a]['children'][b]['tid'] == taxonomies[c]['htid'] && (a != c)) {
+                  taxonomies[a]['children'][b]['children'] = taxonomies[c]['children'];
+
+                  markers[taxonomies[c]['htid']] = taxonomies[c]['htid'];
+
+/*                  for(var d in taxonomies[a]['children'][b]['children']) {
+                    for(var e in taxonomies) {
+                      if(taxonomies[a]['children'][b]['children'][d]['tid'] == taxonomies[e]['htid']  && (a != e)) {
+                        taxonomies[a]['children'][b]['children'][d]['children'] = taxonomies[e]['children'];
+                        console.log("3rd level added at "+a);
+
+                        markers.push(e);
+                        break;
+                      }
+                    }
+                  }*/
+                }  
+              }
+
+            }
+
           }
 
+          for(var f in taxonomies) {
+            for(var k in markers) {
+              if(taxonomies[f]['htid'] == markers[k]) {
+                taxonomies.splice(f, 1);    
+                //markers.splice(k, 1);
+              }  
+            }
+            
+          }
+
+          vocabularies = taxonomies;
+
+          g.resolve(vocabularies);
 
         });
 
-        if (vocabulary === "p") {
+      });
 
-          //create placetypes codes optgroup
-          $('#location_placetypes').empty().append(selectGroup).trigger('create');
-          $('#sitevisists_details_subjects').empty().append(selectGroup).trigger('create');
-          $.mobile.changePage("#page_add_location", "slide", true, false);
-        } else {
-
-          //create oecd codes optgroup
-          $('#select_oecds').empty().append(selectGroup).trigger('create');
-          $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
-        }
-
-      }
+      return g;
     },
 
-    //length of javascript object
+//  length of javascript object
     sizeme : function(obj) {
       var size = 0, key;
       for (key in obj) {
@@ -2188,7 +2240,7 @@ var controller = {
       return size;
     },
 
-    //message to the user about current running process
+//  message to the user about current running process
     loadingMsg: function(msg, t){
       $.blockUI({ 
         message: msg, 

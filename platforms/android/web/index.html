@@ -19,6 +19,8 @@
 <link rel="stylesheet" href="../assets/www/css/leaflet.css" />
 <link rel="stylesheet" href="../assets/www/css/index.css">
 
+<link rel="stylesheet" href="../assets/www/css/chosen.css">
+
 <link rel="stylesheet"
   href="../assets/www/css/jquery.mobile.simpledialog.min.css">
 
@@ -131,10 +133,7 @@ body {
         <label for="myurl style='font-size: small'">Either Type in a url or Select one from the list below: </label>
         <input type="url" placeholder="Start with http:// and remove trailing slash" name="myurl" id="myurl" value="">
         <br>
-        <div>
         
-        <form id="urlForm">
-        <div data-enhance="false" class="seturlselect">
         <select data-placeholder="Choose Url ..." id="seturlselect" data-role="none">
         <option value="">Choose Url ...</option>
         <option value="DevtracManual">DevtracManual</option>
@@ -144,16 +143,12 @@ body {
         <option value="113">IP113</option>
   
         </select>
-        </div>    
-        </form>
         
         <div id='urldiv'>
           <a href="#" data-role="button" data-inline="true" data-theme="b" data-mini="true"
             id='save_url'>Save Url</a>
         </div>
     
-        </div>
-        
       </form>
     </div>
     <!-- /content -->

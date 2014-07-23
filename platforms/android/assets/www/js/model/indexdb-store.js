@@ -5,7 +5,7 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDBopen = function(callback) {
-  var version = 8;
+  var version = 9;
   var request = indexedDB.open("f1", version);
 
   request.onsuccess = function(e) {
@@ -18,7 +18,7 @@ devtrac.indexedDBopen = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 8;
+  var version = 9;
   var request = indexedDB.open("f1", version);
 
   // We can only create Object stores in a versionchange transaction.
@@ -495,19 +495,6 @@ devtrac.indexedDB.getAllQuestionItems = function(db, ftritem, callback) {
   };
 
   cursorRequest.onerror = devtrac.indexedDB.onerror;
-};
-
-//search fieldtrips using index of nid
-devtrac.indexedDB.getFieldtrip = function(db, fnid, callback) {
-  var fieldtrips = [];
-  var trans = db.transaction(["fieldtripobj"], "readonly");
-  var store = trans.objectStore("fieldtripobj");
-
-  var index = store.index("nid");
-  index.get(fnid).onsuccess = function(event) {
-    callback(event.target.result);
-  };
-
 };
 
 //get all sitevisits in database

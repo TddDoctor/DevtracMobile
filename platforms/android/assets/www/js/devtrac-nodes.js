@@ -147,7 +147,7 @@ var devtracnodes = {
     },
 
     //upload action items
-    uploadActionItems: function(actionitems){
+    uploadActionItems: function(actionitems, sitevisits){
 
       var d = $.Deferred();
       var nodestring = {};
@@ -159,7 +159,7 @@ var devtracnodes = {
           delete actionitems[x]['submit'];
           localStorage.currentanid = actionitems[x]['nid'];
 
-          devtracnodes.getActionItemString(actionitems[x]).then(function(jsonstring, anid) {
+          devtracnodes.getActionItemString(actionitems[x], sitevisits).then(function(jsonstring, anid) {
 
             devtracnodes.postNode(jsonstring, x, actionitems.length, anid).then(function(updates, status, anid) {
               devtrac.indexedDB.open(function (db) {
@@ -362,7 +362,7 @@ var devtracnodes = {
           if(actionitems.length > 0) {
             d.resolve(actionitems, items);  
           }else{
-            d.reject();
+            d.reject(items);
           }
 
 
@@ -790,8 +790,14 @@ var devtracnodes = {
             var newsitevisits = [];
             devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, function(uploadedftritems) {
               ftritems = true;
+              controller.loadingMsg("Finished Syncing Roadside Sitevisits ...", 0);
+              for(var k = 0; k < names.length; k++) {
+                uploadedftritems[ids[k]] = names[k];
+              }
+              
               if(ftritems_locs = true && ftritems == true) {
-                //devtracnodes.syncActionitems(ftritems, newsitevisits);
+                
+                devtracnodes.syncActionitems(ftritems, uploadedftritems);
 
               }
 
@@ -799,17 +805,17 @@ var devtracnodes = {
           });
 
           //no site visits to upload
-        }).fail(function(){
+        }).fail(function() {
           ftritems = true;
           if(ftritems_locs = true && ftritems == true) {
-            //devtracnodes.syncActionitems(ftritems);
+            devtracnodes.syncActionitems(ftritems);
           }
         });
 
       }else{
         ftritems = true;
         if(ftritems_locs = true && ftritems == true){
-          //devtracnodes.syncActionitems(ftritems);
+          devtracnodes.syncActionitems(ftritems);
 
         }
 
@@ -818,14 +824,16 @@ var devtracnodes = {
     },
 
 
-    syncActionitems: function(ftritems){
+    syncActionitems: function(ftritems, sitevisits){
       var actionitems = false;
 
       if(parseInt($("#actionitem_count").html()) > 0) {
         //upload action items and comments
         devtracnodes.checkActionitems().then(function(actionitems, db) {
-          devtracnodes.uploadActionItems(actionitems).then(function(){
+          devtracnodes.uploadActionItems(actionitems, sitevisits).then(function(){
             actionitems = true;
+            
+            controller.loadingMsg("Finished Syncing Action Items ...", 0);
             if(ftritems == true && actionitems == true){
               devtracnodes.syncFieldtrips(actionitems);
 
@@ -860,6 +868,7 @@ var devtracnodes = {
         //upload fieldtrips
         devtracnodes.uploadFieldtrips().then(function() {
           fieldtrips = true;
+          controller.loadingMsg("Finished Syncing Fieldtrips ...", 0);
           if(fieldtrips == true && actionitems == true){
             $.unblockUI();
           }
@@ -1269,7 +1278,7 @@ var devtracnodes = {
     },
 
     //return action item string
-    getActionItemString: function(aObj) {
+    getActionItemString: function(aObj, ftritems) {
       var d = $.Deferred();
 
       var nodestring = '';

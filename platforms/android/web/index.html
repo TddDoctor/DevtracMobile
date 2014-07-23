@@ -60,7 +60,7 @@ body {
 <ul data-role="listview" >
   <li><img src="../assets/www/img/person.png" /><span><strong
       class="username"></strong><br> <small class="user_title"></small></span></li>
-  <li><a href="#home_page" class="settings_panel_home"><i
+  <li><a href="#" class="settings_panel_home"><i
       class="fa fa-home fa-fw"></i>&nbsp Home</a></li>
   <li><a class="" href="#syncall_page"><i class="fa fa-upload fa-fw"></i>&nbsp
       Upload</a></li>
@@ -81,7 +81,7 @@ body {
   <h1>{{ title }}</h1>
   {{{extra_buttons}}}
 </script>
-  <!--
+  <!--loadfieldtriplist:
       end of templates 
 -->
 
@@ -262,17 +262,17 @@ body {
 
         <ul data-role="listview" id="uploads_listview">
           <li data-role="list-divider">Upload Status</li>
-          <li><a data-role="button" data-mini="true" data-icon=""
+          <li data-icon="false"><a data-role="button" data-mini="true" data-icon=""
             onclick="">Site Visits</a>
             <div id="sitevisit_count" class="ui-li-count"></div></li>
-          <li><a data-role="button" data-mini="true" data-icon=""
+          <li data-icon="false"><a data-role="button" data-mini="true" data-icon=""
             onclick="">Locations</a>
             <div id="location_count" class="ui-li-count"></div></li>
           <!-- <li><a data-role="button" data-mini="true" data-icon="arrow-u" onclick="devtracnodes.postComments();">Comments</a><div id="comment_count" class="ui-li-count"></div></li> -->
-          <li><a data-role="button" data-mini="true" data-icon=""
+          <li data-icon="false"><a data-role="button" data-mini="true" data-icon=""
             onclick="">Action Items</a>
             <div id="actionitem_count" class="ui-li-count"></div></li>
-          <li><a data-role="button" data-mini="true" data-icon=""
+          <li data-icon="false"><a data-role="button" data-mini="true" data-icon=""
             onclick="">Fieldtrip</a>
             <div id="fieldtrip_count" class="ui-li-count"></div></li>
 

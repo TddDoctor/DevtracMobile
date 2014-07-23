@@ -46,8 +46,8 @@ var controller = {
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
-      localStorage.appurl = "http://192.168.38.114/dt11";
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://192.168.38.114/dt11";
+      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
 
       //}
@@ -218,6 +218,8 @@ var controller = {
 
         devtracnodes.checkActionitems().then(function(actionitems, items) {
           $("#actionitem_count").html(items);
+        }).fail(function(acount){
+          $("#actionitem_count").html(acount);
         });
 
 
@@ -818,6 +820,9 @@ var controller = {
           fieldtripList.empty();
 
           if (data.length > 1) {
+            //set home screen to be the list of fieldtrips
+            $(".settings_panel_home").attr("href","#home_page");
+            
             var sdate;
             var count = 0;
             $('.panel_home').show();
@@ -862,6 +867,9 @@ var controller = {
             $.mobile.changePage("#home_page", "slide", true, false);
             $.unblockUI();
           } else if (data.length == 1) {
+          //set home screen to be fieldtrip details
+            $(".settings_panel_home").attr("href","#page_fieldtrip_details");
+            
             $('.panel_home').hide();
             var count = 0;
             var fObject = data[0];
@@ -1552,19 +1560,32 @@ var controller = {
 
     onFieldtripsave: function() {
       var updates = {};
+
       updates['title'] = $('#fieldtrip_title_edit').val();
-      updates['editflag'] = 1;
-
       devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.editFieldtrip(db, localStorage.fnid, updates).then(function() {
-          var count_container = $("#fieldtrip_count").html().split(" ");
-          var updated_count = parseInt(count_container[0]) + 1;
+        devtrac.indexedDB.getFieldtrip(db, localStorage.fnid, function(trip) {
+          if(trip['title'] == updates['title']){
 
-          $("#fieldtrip_count").html(updated_count);
-          $('#fieldtrip_details_title').html(updates['title']);
+            controller.loadingMsg("Nothing new was added !", 3000);
+          }else {
+            
+            updates['editflag'] = 1;
+
+
+            devtrac.indexedDB.editFieldtrip(db, localStorage.fnid, updates).then(function() {
+              var count_container = $("#fieldtrip_count").html().split(" ");
+              var updated_count = parseInt(count_container[0]) + 1;
+
+              $("#fieldtrip_count").html(updated_count);
+              $('#fieldtrip_details_title').html(updates['title']);
+
+              controller.loadingMsg("Saved your Edits", 3000);
+            });      
+
+
+          }
           $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
-
-        });      
+        });
       });
 
     },
@@ -2125,7 +2146,7 @@ var controller = {
           if (optionsarray[x]['children'] != undefined) {
             optgroup =  optgroup + controller.addSelectOptions(optionsarray[x]['children'], '', '') + "</optgroup>";
           }
-          
+
         }
 
         select = select + optgroup + "</select></div>";
@@ -2142,7 +2163,7 @@ var controller = {
       for(var y in optionchildren) {
         if(optionchildren[y]["children"] != undefined) {
           options = '<option disabled="" value=' + optionchildren[y]['tid'] + ">" +delimeter + " " + optionchildren[y]['cname'] + "</option>" + controller.addSelectOptions(optionchildren[y]["children"], options, delimeter);
-          
+
         }
         else {
           options = "<option value=" + optionchildren[y]['tid'] + ">" +delimeter+ optionchildren[y]['cname'] + "</option>" + options;
@@ -2151,7 +2172,7 @@ var controller = {
       }
       return options;
     },
-    
+
     createOptgroupElement: function(select, vocabularyname){
 
       var selectGroup = $(select);
@@ -2192,7 +2213,7 @@ var controller = {
 
                   markers[taxonomies[c]['htid']] = taxonomies[c]['htid'];
 
-/*                  for(var d in taxonomies[a]['children'][b]['children']) {
+                  /*                  for(var d in taxonomies[a]['children'][b]['children']) {
                     for(var e in taxonomies) {
                       if(taxonomies[a]['children'][b]['children'][d]['tid'] == taxonomies[e]['htid']  && (a != e)) {
                         taxonomies[a]['children'][b]['children'][d]['children'] = taxonomies[e]['children'];
@@ -2217,7 +2238,7 @@ var controller = {
                 //markers.splice(k, 1);
               }  
             }
-            
+
           }
 
           vocabularies = taxonomies;

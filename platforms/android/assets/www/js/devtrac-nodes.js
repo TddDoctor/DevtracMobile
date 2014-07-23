@@ -917,7 +917,7 @@ var devtracnodes = {
                 devtrac.indexedDB.open(function (dbs) {
                   devtracnodes.uploadFtritemswithLocations(newnames, newids, oldids, dbs).then(function(names, newnids, oldnids, sitevisits) {
 
-                    devtracnodes.postSitevisitHelper(sitevisits, names, newnids, function(ftritemnames, ftritemnids){
+                    devtracnodes.postSitevisitHelper(sitevisits, names, newnids, [], function(ftritemnames, ftritemnids){
                       controller.loadingMsg("Finished Syncing Sitevisits with Locations ...", 0);
                       ftritems_locs = true;
 
@@ -954,7 +954,7 @@ var devtracnodes = {
       }
     },
 
-    postSitevisitHelper: function(sitevisits, names, newnids, callback) {
+    postSitevisitHelper: function(sitevisits, names, newnids, ftritemdetails, callback) {
       if(sitevisits.length > 0){
         devtracnodes.getSitevisitString(sitevisits[0], names[0], newnids[0]).then(function(jsonstring, p, q, r, mark) {
 
@@ -973,10 +973,9 @@ var devtracnodes = {
                 }
 
                 sitevisits.splice(0, 1);
-                names.splice(0, 1);
-                newnids.splice(0, 1);
-
-                devtracnodes.postSitevisitHelper(sitevisits, names, newnids, callback);
+                ftritemdetails[updates['nid']] =  sitevisits['title'];
+                
+                devtracnodes.postSitevisitHelper(sitevisits, names, newnids, ftritemdetails, callback);
               });  
 
             });
@@ -996,7 +995,7 @@ var devtracnodes = {
         });
 
       }else{
-        callback(names, newnids);
+        callback(ftritemdetails);
       }
 
     },

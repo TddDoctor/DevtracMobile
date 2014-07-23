@@ -2093,12 +2093,11 @@ var controller = {
       var options = options;
       for(var y in optionchildren) {
         if(optionchildren[y]["children"] != undefined) {
-          options = '<option disabled="" value=' + optionchildren[y]['tid'] + ">" +delimeter + " " + optionchildren[y]['cname'] + "</option>" + options;
+          options = '<option disabled="" value=' + optionchildren[y]['tid'] + ">" +delimeter + " " + optionchildren[y]['cname'] + "</option>" + controller.addSelectOptions(optionchildren[y]["children"], options, delimeter);
           
-          options = options + controller.addSelectOptions(optionchildren[y]["children"], options, delimeter);
         }
         else {
-          options = options + "<option value=" + optionchildren[y]['tid'] + ">" +delimeter+ optionchildren[y]['cname'] + "</option>";
+          options = "<option value=" + optionchildren[y]['tid'] + ">" +delimeter+ optionchildren[y]['cname'] + "</option>" + options;
 
         }
       }
@@ -2140,27 +2139,38 @@ var controller = {
             for(var b in taxonomies[a]['children']){//loop thru children
 
               for(var c in taxonomies) {//loop thru parents and check if equal to children
-                if(taxonomies[a]['children'][b]['tid'] == taxonomies[c]['htid']) {
+                if(taxonomies[a]['children'][b]['tid'] == taxonomies[c]['htid'] && (a != c)) {
                   taxonomies[a]['children'][b]['children'] = taxonomies[c]['children'];
 
-                  if(a != c) {
-                    markers.push(c);  
-                  }
-                  
+                  markers[taxonomies[c]['htid']] = taxonomies[c]['htid'];
+
+/*                  for(var d in taxonomies[a]['children'][b]['children']) {
+                    for(var e in taxonomies) {
+                      if(taxonomies[a]['children'][b]['children'][d]['tid'] == taxonomies[e]['htid']  && (a != e)) {
+                        taxonomies[a]['children'][b]['children'][d]['children'] = taxonomies[e]['children'];
+                        console.log("3rd level added at "+a);
+
+                        markers.push(e);
+                        break;
+                      }
+                    }
+                  }*/
                 }  
               }
 
             }
 
-            for(var f in markers) {
-              taxonomies.splice(markers[f], 1);
-              markers.splice(f, 1);
-            }
           }
 
-          /*for(var f in markers) {
-            taxonomies.splice(markers[f], 1);
-          }*/
+          for(var f in taxonomies) {
+            for(var k in markers) {
+              if(taxonomies[f]['htid'] == markers[k]) {
+                taxonomies.splice(f, 1);    
+                //markers.splice(k, 1);
+              }  
+            }
+            
+          }
 
           vocabularies = taxonomies;
 

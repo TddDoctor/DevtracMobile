@@ -148,6 +148,8 @@ var controller = {
     bindEvents: function () {
       $("#seturlselect").chosen({width: "100%"}); 
 
+      $(".menulistview").listview().listview('refresh');
+      
       document.addEventListener("deviceready", controller.onDeviceReady, false);
 
       document.addEventListener("offline", controller.onOffline, false);
@@ -218,7 +220,7 @@ var controller = {
           $("#sitevisit_count").html(scount);
         });
 
-        devtracnodes.countLocations.then(function(items) {
+        devtracnodes.countLocations().then(function(items) {
           $("#location_count").html(items);
         }).fail(function(lcount){
           $("#location_count").html(lcount);

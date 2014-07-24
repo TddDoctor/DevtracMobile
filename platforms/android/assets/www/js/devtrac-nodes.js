@@ -123,10 +123,7 @@ var devtracnodes = {
                 url: localStorage.appurl+"/api/comment",
                 type: 'post',
                 data: info,
-                //data: "node[status]=1&node[type]=comment_node_actionitem&node[subject]=<p>comment</p>&node[uid]=561&node[taxonomy_vocabulary_8][und][tid]=328&node[comment_body][und][0][value]=<p>comment</p>&node[nid]="+commentId+"&node[format]=1",
                 headers: {'X-CSRF-Token': localStorage.usertoken},
-                //dataType: 'json',
-                //contentType: 'application/json',
                 error: function(XMLHttpRequest, textStatus, errorThrown) {
                   console.log('error '+errorThrown);
                   d.reject();
@@ -172,11 +169,11 @@ var devtracnodes = {
               });
 
               devtracnodes.postComments(updates).then(function() {
-                $.unblockUI();
+                //$.unblockUI();
                 d.resolve();
 
               }).fail(function(){
-                $.unblockUI();
+//                $.unblockUI();
                 d.resolve();
 
               });
@@ -973,7 +970,7 @@ var devtracnodes = {
                 }
 
                 sitevisits.splice(0, 1);
-                ftritemdetails[updates['nid']] =  sitevisits['title'];
+                ftritemdetails[updates['nid']] =  sitevisits[0]['title'];
                 
                 devtracnodes.postSitevisitHelper(sitevisits, names, newnids, ftritemdetails, callback);
               });  

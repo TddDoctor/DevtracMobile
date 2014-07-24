@@ -296,7 +296,6 @@ var controller = {
                     $(this).deleteBubble($('#refreshme').getNotifications()[notify]);
                   }
 
-                  //todo: check for internet connection before request
                   controller.fetchAllData().then(function(){
                     controller.loadFieldTripList();          
                   });
@@ -566,38 +565,45 @@ var controller = {
       $('#page_login_submit').bind("click", function (event, ui) {
         if ($("#page_login_name").valid() && $("#page_login_pass").valid()) {
 
-          //todo: check for internet connection before request
-          auth.login($('#page_login_name').val(), $('#page_login_pass').val()).then(function () {
-            $.mobile.changePage("#home_page", "slide", true, false);
+          if(controller.connectionStatus){
+            auth.login($('#page_login_name').val(), $('#page_login_pass').val()).then(function () {
+              $.mobile.changePage("#home_page", "slide", true, false);
 
-            if($("#checkbox-mini-0").is(":checked")){
-              window.localStorage.setItem("usernam", $("#page_login_name").val());
-              window.localStorage.setItem("passw", $("#page_login_pass").val());
+              if($("#checkbox-mini-0").is(":checked")){
+                window.localStorage.setItem("usernam", $("#page_login_name").val());
+                window.localStorage.setItem("passw", $("#page_login_pass").val());
 
-            }else{
-              window.localStorage.removeItem("usernam");
-              window.localStorage.removeItem("passw");
-            }
+              }else{
+                window.localStorage.removeItem("usernam");
+                window.localStorage.removeItem("passw");
+              }
 
-            controller.fetchAllData().then(function(){
-              controller.loadFieldTripList();          
+              controller.fetchAllData().then(function(){
+                controller.loadFieldTripList();          
+              });
+
+            }).fail(function (errorThrown) {
+              $.unblockUI();
+
             });
-
-          }).fail(function (errorThrown) {
-            $.unblockUI();
-
-          });
+          }else{
+            controller.loadingMsg("Please Connect to Internet ...", 1000);
+          }
+          
         }
       });
 
       //handle logout click event from dialog
       $('#page_logout_submit').bind("click", function (event, ui) {
-        //todo: check for internet connection before request
 
-        auth.logout().then(function(){
-
-        });
-
+        if(controller.connectionStatus){
+          auth.logout().then(function(){
+          });
+  
+        }else{
+          controller.loadingMsg("Please Connect to Internet ...", 1000);
+        }
+        
       });
 
       //handle logout click from panel menu
@@ -718,17 +724,14 @@ var controller = {
     },
 
     onOffline: function() {
-      //controller.loadingMsg("Please Connect to the Internet to Upload and Download Data", 3000);
       controller.connectionStatus = false;
       console.log("u r offline");
-      // alert("Offline");
     },
 
     online: function() {
       console.log("u r online");
-      //controller.loadingMsg("Online", 2000);
       controller.connectionStatus = true;
-      //alert("Online");
+      
     },
 
     //handle save for user answers from questionnaire

@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="css/normalize.css" />
 <link media="screen" href="css/index.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="css/chosen.css">
 
 <!-- Important Owl stylesheet -->
 <link rel="stylesheet" href="libs/owl-carousel/owl.carousel.css">
@@ -24,12 +25,10 @@
 <!-- Default Theme -->
 <link rel="stylesheet" href="libs/owl-carousel/owl.theme.css">
 
-<link rel="stylesheet"
-  href="css/jquery.mobile.simpledialog.min.css">
+<link rel="stylesheet" href="css/jquery.mobile.simpledialog.min.css">
 <link rel="stylesheet" href="css/leaflet.css" />
 
-<link rel="stylesheet"
-  href="libs/FontAwesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="libs/FontAwesome/css/font-awesome.min.css">
 
 <style type="text/css">
 /* Attempt to fix the flicker of page transitions */
@@ -48,7 +47,7 @@ body {
 
 </head>
 <body>
-    <!-- 
+  <!-- 
      Here we have some handle bars templates like the menu and the top bar
 -->
   <script id="leftmenu-tpl" type="text/template">
@@ -70,9 +69,9 @@ body {
 </script>
 
 
-<script id="header-tpl" type="text/template">
+  <script id="header-tpl" type="text/template">
   <a class="ui-btn-left" href="#navpanel_{{id}}" data-role="button"
-  data-iconpos="notext"><i class="fa fa-bars fa-lg"></i></a> 
+  data-iconpos="notext" id="barsbutton_{{id}}"><i class="fa fa-bars fa-lg"></i></a> 
   <h1>{{ title }}</h1>
   
 </script>
@@ -83,12 +82,10 @@ body {
 
   <!-- Page Login  -->
   <div data-role="page" id="page_login">
-  <div data-role="panel" id="navpanel_login" data-theme="b"
+    <div data-role="panel" id="navpanel_login" data-theme="b"
       data-position="left" class="leftmenu"></div>
-  
-    <div data-role="header" id="header_login">
 
-    </div>
+    <div data-role="header" id="header_login"></div>
     <!-- /header -->
 
     <div data-role="content" class='content'>
@@ -123,6 +120,26 @@ body {
             id="checkbox-mini-0" data-mini="true"> <label
             for="checkbox-mini-0">Remember Me</label>
         </p>
+
+        <label for="myurl style='font-size: small'">Either Type in a url
+          or Select one from the list below: </label> <input type="url"
+          placeholder="Start with http:// and remove trailing slash"
+          name="myurl" id="myurl" value=""> <br> 
+          <select
+          data-placeholder="Choose Url ..." id="seturlselect" data-role="none">
+          <option value="">Choose Url ...</option>
+          <option value="DevtracManual">DevtracManual</option>
+          <option value="DevtracUg" disabled="disabled">DevtracUganda</option>
+          <option value="demo">Demo</option>
+          <option value="113">Localhost</option>
+          <option value="113">IP113</option>
+
+        </select>
+
+        <div id='urldiv'>
+          <a href="#" data-role="button" data-inline="true" data-theme="b"
+            data-mini="true" id='save_url'>Save Url</a>
+        </div>
 
       </form>
     </div>
@@ -198,8 +215,8 @@ body {
   <!-- Application Home page  -->
   <div data-role="page" id="home_page">
 
-    <div data-role="panel" id="navpanel_home" data-theme="b" data-position="left"
-      class="leftmenu"></div>
+    <div data-role="panel" id="navpanel_home" data-theme="b"
+      data-position="left" class="leftmenu"></div>
 
     <div data-role="header" id="header_home">
       <!-- <a class="bars-button" class="ui-btn-left" style="margin-top: 2.5px;"
@@ -223,12 +240,10 @@ body {
 
   <!-- Syncall page  -->
   <div data-role="page" id="syncall_page">
-    <div data-role="panel" id="navpanel_sync" data-theme="b" data-position="left"
-      class="leftmenu"></div>
+    <div data-role="panel" id="navpanel_sync" data-theme="b"
+      data-position="left" class="leftmenu"></div>
 
-    <div data-role="header" id="header_sync">
-
-    </div>
+    <div data-role="header" id="header_sync"></div>
     <!-- /header -->
 
     <div data-role="content" class='content'>
@@ -266,12 +281,12 @@ body {
   <!-- Site visits details -->
   <div data-role="page" id="page_sitevisits_details">
 
-  <div data-role="panel" id="navpanel_sitereport" data-theme="b"
+    <div data-role="panel" id="navpanel_sitereport" data-theme="b"
       data-position="left" class="leftmenu"></div>
-  
+
     <div data-role="header" id="header_sitereports">
 
-<!--       <a id="" class="ui-btn-left" href="#page_fieldtrip_details"
+      <!--       <a id="" class="ui-btn-left" href="#page_fieldtrip_details"
         data-role="button" data-iconpos="notext"><i
         class="fa fa-chevron-circle-left fa-lg"></i></a>
 
@@ -357,11 +372,9 @@ body {
   <!-- List locations -->
   <div data-role="page" id="page_location_list">
 
-  <div data-role="panel" id="navpanel_location" data-theme="b"
+    <div data-role="panel" id="navpanel_location" data-theme="b"
       data-position="left" class="leftmenu"></div>
-    <div data-role="header" id="header_location">
-
-    </div>
+    <div data-role="header" id="header_location"></div>
     <!-- /header -->
 
     <div data-role="content" class='content'>
@@ -460,10 +473,10 @@ body {
 
   <!-- Add site visit details -->
   <div data-role="page" id="page_sitevisit_add">
-  <div data-role="panel" id="navpanel_add_sitereport" data-theme="b"
+    <div data-role="panel" id="navpanel_add_sitereport" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header" id="header_addsitereport">
-<!-- 
+      <!-- 
       <a id="" href="#page_site_report_type" data-rel="dialog"
         data-role="button" data-iconpos="notext"><i
         class="fa fa-chevron-circle-left fa-lg"></i></a>
@@ -479,10 +492,12 @@ body {
         <label for="sitevisit_add_title">Title</label> <input type='text'
           value='' id='sitevisit_add_title' name='sitevisit_add_title' required />
 
-        <label for='sitevisit_add_oecds'>Oecds Codes</label><div id="select_oecds"></div> <label for="sitevisit_add_date">Date</label>
-        <input type='text' id='sitevisit_add_date' name='sitevisit_add_date'
-          data-role="date" required /> <label
-          for="sitevisit_add_public_summary">Public Summary</label>
+        <label for='sitevisit_add_oecds'>Oecds Codes</label>
+        <div id="select_oecds"></div>
+        <label for="sitevisit_add_date">Date</label> <input type='text'
+          id='sitevisit_add_date' name='sitevisit_add_date' data-role="date"
+          required /> <label for="sitevisit_add_public_summary">Public
+          Summary</label>
         <textarea rows="8" type='text' value=''
           id='sitevisit_add_public_summary' name='sitevisit_add_public_summary'
           required></textarea>
@@ -514,7 +529,7 @@ body {
 
   <!-- Add action items -->
   <div data-role="page" id="page_add_actionitems">
-  <div data-role="panel" id="navpanel_addactionitems" data-theme="b"
+    <div data-role="panel" id="navpanel_addactionitems" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header" id="header_addactionitems">
       <!-- <h3 title="Add Action Items">Add Action Items</h3> -->
@@ -574,7 +589,7 @@ body {
   <!-- Action items details -->
 
   <div data-role="page" id="page_actionitemdetails">
-  <div data-role="panel" id="navpanel_actionitemdetails" data-theme="b"
+    <div data-role="panel" id="navpanel_actionitemdetails" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header" id="header_actionitemdetails">
       <!-- <a id="" data-rel="back" data-role="button" data-iconpos="notext"><i
@@ -666,7 +681,7 @@ body {
 
   <!-- Edit Location Page -->
   <div data-role="page" id="page_location_edits">
-  <div data-role="panel" id="navpanel_location_edits" data-theme="b"
+    <div data-role="panel" id="navpanel_location_edits" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header">
       <!-- <h3 title="FieldTrip">Edit Locations</h3> -->
@@ -695,11 +710,11 @@ body {
 
   <!-- page -->
   <div data-role="page" id="page_add_location">
-<div data-role="panel" id="navpanel_addlocation" data-theme="b"
+    <div data-role="panel" id="navpanel_addlocation" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header" id="header_addlocation">
 
-<!--       <a id="" href="#page_site_report_type" data-role="button"
+      <!--       <a id="" href="#page_site_report_type" data-role="button"
         data-iconpos="notext" data-rel="dialog"><i
         class="fa fa-chevron-circle-left fa-lg"></i></a>
 
@@ -716,9 +731,11 @@ body {
           for="location_placetypes">Location Types</label>
         <div id='location_placetypes'></div>
 
-<label for="latlon">GPS</label> <input type='text' value=''
-          id='latlon' name='latlon' required />
-<p class="error"><small id="gpserror"></small></p>
+        <label for="latlon">GPS</label> <input type='text' value='' id='latlon'
+          name='latlon' required />
+        <p class="error">
+          <small id="gpserror"></small>
+        </p>
 
         <div data-role="collapsible" data-theme="a">
           <h4>Contact</h4>
@@ -749,17 +766,14 @@ body {
 
       <a id="addlocation_back" data-icon="" data-rel="dialog"
         class="ui-btn-left" href="#page_site_report_type" data-iconpos="notext"><i
-        class="fa fa-chevron-circle-left fa-lg"></i></a>
-
-      <a id="viewlocation_back" data-rel="dialog" class="ui-btn-left"
-        href="#page_sitevisits_details" data-iconpos="notext"><i
-        class="fa fa-chevron-circle-left fa-lg"></i></a>
+        class="fa fa-chevron-circle-left fa-lg"></i></a> <a id="viewlocation_back"
+        data-rel="dialog" class="ui-btn-left" href="#page_sitevisits_details"
+        data-iconpos="notext"><i class="fa fa-chevron-circle-left fa-lg"></i></a>
 
       <h3 id="mapheader"></h3>
       <a id="viewlocation_back" data-icon="" data-rel="dialog"
         class="ui-btn-left" href="#page_sitevisits_details"
-        data-iconpos="notext"><i
-        class="fa fa-chevron-circle-left fa-lg"></i></a>
+        data-iconpos="notext"><i class="fa fa-chevron-circle-left fa-lg"></i></a>
     </div>
     <!-- /header -->
 
@@ -775,7 +789,7 @@ body {
   <!-- Add questionnaire page -->
   <div data-role="page" id="page_add_questionnaire">
 
-<div data-role="panel" id="navpanel_qtnr" data-theme="b"
+    <div data-role="panel" id="navpanel_qtnr" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header" id='header_qtnr'>
       <!-- <a id="" href="#page_sitevisits_details" data-iconpos="notext"
@@ -798,7 +812,7 @@ body {
   <div data-role="page" id="page_add_settings">
     <div data-role="panel" id="navpanel_settings" data-theme="b"
       data-position="left" class="leftmenu"></div>
-      
+
     <div data-role="header" id='header_settings'>
       <!-- <a class="ui-btn-left" href="#navpanel4" data-role="button"
         data-iconpos="notext"><i class="fa fa-bars fa-lg"></i></a>
@@ -853,8 +867,9 @@ body {
   <script src="libs/jquery-ui-1.10.4.custom.js"></script>
   <script type="text/javascript" src="cordova.js"></script>
 
-  <script type="text/javascript" src="libs/IndexedDBShim-master/dist/IndexedDBShim.js"></script>
-  
+  <script type="text/javascript"
+    src="libs/IndexedDBShim-master/dist/IndexedDBShim.js"></script>
+
   <!-- Include js plugin -->
   <script src="libs/owl-carousel/owl.carousel.js"></script>
   <script src="libs/jquery.mobile-1.4.0.min.js"></script>
@@ -867,8 +882,9 @@ body {
   <script src="libs/additional-methods.min.js"></script>
   <script src="libs/leaflet.js"></script>
   <script src="libs/jquery.blockUI.js"></script>
-   <script src="libs/handlebars-v1.3.0.js"></script>
+  <script src="libs/handlebars-v1.3.0.js"></script>
   <script src="libs/jquery.mobile.simpledialog2.min.js"></script>
+  <script src="libs/chosen.jquery.js"></script>
 
   <script type="text/javascript" src="js/model/indexdb-store.js"></script>
   <script src="libs/movies-app.js"></script>

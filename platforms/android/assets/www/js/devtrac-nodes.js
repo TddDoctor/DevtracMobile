@@ -160,14 +160,15 @@ var devtracnodes = {
 
             devtracnodes.postNode(jsonstring, x, actionitems.length, anid).then(function(updates, status, anid) {
               devtrac.indexedDB.open(function (db) {
-                /*todo*/   devtrac.indexedDB.editActionitem(db, parseInt(anid), updates).then(function() {
+                /*todo*/   
+                devtrac.indexedDB.editActionitem(db, parseInt(anid), updates).then(function() {
                   var count_container = $("#actionitem_count").html().split(" ");
                   var updated_count = parseInt(count_container[0]) - 1;
                   $("#actionitem_count").html(updated_count);
 
                 });            
               });
-
+              
               devtracnodes.postComments(updates).then(function() {
                 //$.unblockUI();
                 d.resolve();
@@ -436,6 +437,7 @@ var devtracnodes = {
 
 
           devtrac.indexedDB.open(function (db) {
+            /*todo*/
             devtrac.indexedDB.editPlace(db, oldpnids[0], updates).then(function(pid) {
               var count_container = $("#location_count").html();
               var updated_count = parseInt(count_container) - 1;
@@ -443,10 +445,9 @@ var devtracnodes = {
 
               oldpnids.splice(0, 1);
               devtracnodes.postLocationHelper(newlocationids, newlocationnames, oldids, postStrings, titlearray, oldpnids, callback);
-              //devtrac.indexedDB.deletePlace(db, parseInt(pid));
+              devtrac.indexedDB.deletePlace(db, parseInt(pid));
 
             });
-
 
           });
 
@@ -600,7 +601,7 @@ var devtracnodes = {
 
                           devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, callback);
                         });
-
+                        
                       }else if(updates.indexOf('Unauthorized') != -1){
                         auth.getToken().then(function(token) {
                           localStorage.usertoken = token;
@@ -643,7 +644,8 @@ var devtracnodes = {
 
                 newsitevisits[ftritemid] = sitevisits[0]['title'];
                 updates['editflag'] = 0;
-                /*todo: */  devtrac.indexedDB.editSitevisit(db, sid, updates).then(function() {
+                /*todo: */  
+                devtrac.indexedDB.editSitevisit(db, sid, updates).then(function() {
                   var count_container = $("#sitevisit_count").html().split(" ");
                   if(typeof parseInt(count_container[0]) == "number") {
                     var updated_count = parseInt(count_container[0]) - 1;
@@ -659,6 +661,8 @@ var devtracnodes = {
 
                   devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, callback);
                 });
+                
+                
 
               }).fail(function(e){
                 if(e == "Unauthorized: CSRF validation failed" || e == "Unauthorized") {
@@ -745,7 +749,8 @@ var devtracnodes = {
 
                   d.resolve();
 
-                  /*todo*/  devtrac.indexedDB.editFieldtrip(db, localStorage.currentfnid, updates).then(function() {
+                  /*todo*/  
+                  devtrac.indexedDB.editFieldtrip(db, localStorage.currentfnid, updates).then(function() {
                     var count_container = $("#fieldtrip_count").html().split(" ");
                     var updated_count = parseInt(count_container[0]) - 1;
                     $("#fieldtrip_count").html(updated_count);
@@ -777,7 +782,7 @@ var devtracnodes = {
       return d;
     },
 
-    syncSitevisits: function(names, ids, ftritems_locs) {
+    syncSitevisits: function(ftritemdetails, ftritems_locs) {
       var ftritems = false;
 
       if(parseInt($("#sitevisit_count").html()) > 0) {
@@ -788,8 +793,8 @@ var devtracnodes = {
             devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, function(uploadedftritems) {
               ftritems = true;
               controller.loadingMsg("Finished Syncing Roadside Sitevisits ...", 0);
-              for(var k = 0; k < names.length; k++) {
-                uploadedftritems[ids[k]] = names[k];
+              for(var k in ftritemdetails) {
+                uploadedftritems[k] = ftritemdetails[k];
               }
               
               if(ftritems_locs = true && ftritems == true) {
@@ -914,11 +919,11 @@ var devtracnodes = {
                 devtrac.indexedDB.open(function (dbs) {
                   devtracnodes.uploadFtritemswithLocations(newnames, newids, oldids, dbs).then(function(names, newnids, oldnids, sitevisits) {
 
-                    devtracnodes.postSitevisitHelper(sitevisits, names, newnids, [], function(ftritemnames, ftritemnids){
+                    devtracnodes.postSitevisitHelper(sitevisits, names, newnids, [], function(ftritemdetails, ftritemnids){
                       controller.loadingMsg("Finished Syncing Sitevisits with Locations ...", 0);
                       ftritems_locs = true;
 
-                      devtracnodes.syncSitevisits(ftritemnames, ftritemnids, ftritems_locs);
+                      devtracnodes.syncSitevisits(ftritemdetails, ftritems_locs);
 
                     });
 
@@ -931,10 +936,9 @@ var devtracnodes = {
 
           }else {
             ftritems_locs = true;
-            var ftritemnames = [];
-            var ftritemnids = [];
+            var ftritemdetails = [];
             
-            devtracnodes.syncSitevisits(ftritemnames, ftritemnids, ftritems_locs);
+            devtracnodes.syncSitevisits(ftritemdetails, ftritems_locs);
           }
 
 
@@ -958,7 +962,8 @@ var devtracnodes = {
           devtracnodes.postNode(jsonstring, mark, sitevisits.length, r).then(function(updates, stat, snid) {
 
             devtrac.indexedDB.open(function (db) {
-              /*todo*/ devtrac.indexedDB.editSitevisit(db, parseInt(snid), updates).then(function() {
+              /*todo*/ 
+              devtrac.indexedDB.editSitevisit(db, parseInt(snid), updates).then(function() {
                 var count_container = $("#sitevisit_count").html().split(" ");
                 if(typeof parseInt(count_container[0]) == "number") {
                   var updated_count = parseInt(count_container[0]) - 1;
@@ -969,12 +974,13 @@ var devtracnodes = {
                   $("#sitevisit_count").html(0);
                 }
 
-                sitevisits.splice(0, 1);
                 ftritemdetails[updates['nid']] =  sitevisits[0]['title'];
+                sitevisits.splice(0, 1);
                 
                 devtracnodes.postSitevisitHelper(sitevisits, names, newnids, ftritemdetails, callback);
-              });  
-
+              });
+              
+              
             });
 
           }).fail(function(e){

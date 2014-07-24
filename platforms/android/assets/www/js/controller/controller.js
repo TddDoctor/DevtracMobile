@@ -46,8 +46,8 @@ var controller = {
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
-      //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://192.168.38.114/dt11";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
 
       //}
@@ -152,6 +152,8 @@ var controller = {
 
       document.addEventListener("offline", controller.onOffline, false);
       document.addEventListener("online", controller.online, false);
+
+      document.addEventListener("menubutton", controller.doMenu, false);
 
       //start gps
       $( "#page_add_location" ).bind("pagebeforeshow", function( event ) {
@@ -507,7 +509,7 @@ var controller = {
             controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
             break;
           case "Choose Url ...":
-            
+
             controller.loadingMsg("Please select one url", 2000);
             break;
           case "Localhost":
@@ -526,7 +528,7 @@ var controller = {
       $('.seturlselect').bind("click", function (event, ui) {
         $("#myurl").val("");
       });
-      
+
       $('#myurl').bind("click", function (event, ui) {
         $("a.chosen-single span").html("Choose Url ...");
       });
@@ -638,6 +640,12 @@ var controller = {
       }else{
         console.log("No watch to clear");
       }
+    },
+    
+    doMenu: function(){
+      //open panel on the current page
+      $.mobile.activePage.next().panel( "open" );
+      
     },
 
     editlocations: function(anchor){
@@ -822,7 +830,7 @@ var controller = {
           if (data.length > 1) {
             //set home screen to be the list of fieldtrips
             $(".settings_panel_home").attr("href","#home_page");
-            
+
             var sdate;
             var count = 0;
             $('.panel_home').show();
@@ -867,9 +875,9 @@ var controller = {
             $.mobile.changePage("#home_page", "slide", true, false);
             $.unblockUI();
           } else if (data.length == 1) {
-          //set home screen to be fieldtrip details
+            //set home screen to be fieldtrip details
             $(".settings_panel_home").attr("href","#page_fieldtrip_details");
-            
+
             $('.panel_home').hide();
             var count = 0;
             var fObject = data[0];
@@ -1170,7 +1178,7 @@ var controller = {
             minDate: new Date(startyear, startmonth, startday), 
             maxDate: new Date(endyear, endmonth, endday) 
           });
-          
+
           controller.buildSelect("oecdobj", []);
 
         }
@@ -1568,15 +1576,13 @@ var controller = {
 
             controller.loadingMsg("Nothing new was added !", 3000);
           }else {
-            
+
             updates['editflag'] = 1;
 
 
             devtrac.indexedDB.editFieldtrip(db, localStorage.fnid, updates).then(function() {
-              var count_container = $("#fieldtrip_count").html().split(" ");
-              var updated_count = parseInt(count_container[0]) + 1;
 
-              $("#fieldtrip_count").html(updated_count);
+              $("#fieldtrip_count").html("1");
               $('#fieldtrip_details_title').html(updates['title']);
 
               controller.loadingMsg("Saved your Edits", 3000);

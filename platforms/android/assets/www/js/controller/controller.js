@@ -44,10 +44,10 @@ var controller = {
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
       //if (!localStorage.appurl) {
-      //localStorage.appurl = "http://localhost/dt11";
+      localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
       //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
 
       //}
@@ -60,9 +60,6 @@ var controller = {
         });
 
         auth.loginStatus().then(function () {
-          $("#panel1").listview().listview("refresh");
-          $("#panel2").listview().listview("refresh");
-
           devtracnodes.countFieldtrips().then(function(){
             //load field trip details from the database if its one and the list if there's more.
             controller.loadFieldTripList();
@@ -79,8 +76,6 @@ var controller = {
 
 
         }).fail(function () {
-          $("#panel1").listview().listview("refresh");
-          $("#panel2").listview().listview("refresh");
 
           if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){
             $("#page_login_name").val(window.localStorage.getItem("usernam"));
@@ -496,15 +491,16 @@ var controller = {
         {
           url = $('a.chosen-single span').html();
 
+          if(url == null){
+            url = $('#seturlselect').val();
+          }
+          console.log("url is "+url);
           //      validate url textfield
           //      if(form.valid()) {
           switch (url) {
-          case "IP113":
-            localStorage.appurl = "http://192.168.38.113/dt11";
-            controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-            break;
-          case "Demo":
-            localStorage.appurl = "http://demo.devtrac.ug";
+          
+          case "demo":
+            localStorage.appurl = "http://demo.devtrac.org";
             controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
             break;
           case "DevtracManual":
@@ -519,10 +515,7 @@ var controller = {
 
             controller.loadingMsg("Please select one url", 2000);
             break;
-          case "Localhost":
-            localStorage.appurl = "http://localhost/dt11";
-            controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-            break;
+          
           default:
             break;
           }
@@ -566,8 +559,8 @@ var controller = {
         if ($("#page_login_name").valid() && $("#page_login_pass").valid()) {
 
           if(controller.connectionStatus){
+            
             auth.login($('#page_login_name').val(), $('#page_login_pass').val()).then(function () {
-              $.mobile.changePage("#home_page", "slide", true, false);
 
               if($("#checkbox-mini-0").is(":checked")){
                 window.localStorage.setItem("usernam", $("#page_login_name").val());
@@ -725,12 +718,12 @@ var controller = {
 
     onOffline: function() {
       controller.connectionStatus = false;
-      console.log("u r offline");
+      controller.loadingMsg("You are offline. Connect to Upload and Download your Data", 2000);
     },
 
     online: function() {
-      console.log("u r online");
       controller.connectionStatus = true;
+      //controller.loadingMsg("Already Saved", 2000);
       
     },
 
@@ -2118,6 +2111,12 @@ var controller = {
       function onError(error) {
         alert('code: ' + error.code + '\n' + 'message: ' + error.message + '\n');
       }*/
+      controller.checkOnline().then(function(ll){
+        console.log("Holla online "+ll);
+        
+      }).fail(function(){
+        console.log("Holla offline "+ll);
+      });
 
     },
 
@@ -2138,9 +2137,9 @@ var controller = {
       states[Connection.NONE] = 'No network connection';
 
       if ((states[networkState] == 'No network connection') || (states[networkState] == 'Unknown connection')) {
-        d.reject();
+        d.reject(states[networkState]);
       } else {
-        d.resolve();
+        d.resolve(states[networkState]);
       }
       return d;
     },

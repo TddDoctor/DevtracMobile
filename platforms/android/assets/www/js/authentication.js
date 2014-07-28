@@ -31,6 +31,7 @@ var auth = {
             controller.loadingMsg("Error: "+errorThrown+" Try another url.", 5000)
           }
 
+          $.mobile.changePage("#page_login", "slide", true, false);
           d.reject();
         },
         success: function (token) {

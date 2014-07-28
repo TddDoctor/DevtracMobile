@@ -134,7 +134,7 @@ body {
         <input type="url" placeholder="Start with http:// and remove trailing slash" name="myurl" id="myurl" value="">
         <br>
         
-        <select data-placeholder="Choose Url ..." id="seturlselect" data-role="none">
+        <select data-placeholder="Choose Url ..." class="seturlselect">
         <option value="">Choose Url ...</option>
         <option value="DevtracManual">DevtracManual</option>
         <option value="DevtracUg" disabled="disabled">DevtracUganda</option>
@@ -193,7 +193,7 @@ body {
           <div class="ui-block-b">
             <a class="" data-role="button" id="edit_fieldtrip"
               href="#page_fieldtrip_edit" data-rel="dialog" data-iconpos=""><i
-              class="fa fa-edit fa-lg"></i>&nbsp&nbsp Edit Fieldtrip</a>
+              class="fa fa-edit fa-lg"></i>&nbsp&nbsp Edit</a>
 
           </div>
         </fieldset>
@@ -803,14 +803,29 @@ body {
       data-position="left" class="leftmenu"></div>
       
     <div data-role="header" id='header_settings'>
-      <!-- <a class="ui-btn-left" href="#navpanel4" data-role="button"
-        data-iconpos="notext"><i class="fa fa-bars fa-lg"></i></a>
-      <h3 id="qtn_title" title="Settings">Settings</h3> -->
     </div>
     <!-- /header -->
 
     <div data-role="content" class='content' id='Settingscontent'>
-      <p>Settings go here</p>
+      <form action="">
+      <label for="myurl style='font-size: small'">Either Type in a url or Select one from the list below: </label>
+        <input type="url" placeholder="Start with http:// and remove trailing slash" name="myurl" id="myurl" value="">
+        <br>
+        
+        <select data-placeholder="Choose Url ..." class="seturlselect">
+        <option value="">Choose Url ...</option>
+        <option value="DevtracManual">DevtracManual</option>
+        <option value="DevtracUg" disabled="disabled">DevtracUganda</option>
+        <option value="demo">Demo</option>
+  
+        </select>
+        
+        <div id='urldiv'>
+          <a href="#" data-role="button" data-inline="true" data-theme="b" data-mini="true"
+            id='save_url'>Save Url</a>
+        </div>
+      
+      </form>
     </div>
     <!-- /content -->
 

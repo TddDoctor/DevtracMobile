@@ -37,10 +37,10 @@ var controller = {
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
       //if (!localStorage.appurl) {
-      //localStorage.appurl = "http://localhost/dt11";
+      localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
       //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
 
       //}
@@ -134,10 +134,10 @@ var controller = {
 
     //Bind any events that are required on startup
     bindEvents: function () {
-      $("#seturlselect").chosen({width: "100%"}); 
+      $(".seturlselect").chosen({width: "100%"}); 
 
       $(".menulistview").listview().listview('refresh');
-      
+
       document.addEventListener("deviceready", controller.onDeviceReady, false);
 
       //start gps
@@ -210,7 +210,7 @@ var controller = {
         }).fail(function(lcount){
           $("#location_count").html(lcount);
         });
-        
+
         devtracnodes.checkActionitems().then(function(actionitems, items) {
           $("#actionitem_count").html(items);
         }).fail(function(acount){
@@ -461,19 +461,19 @@ var controller = {
       //save url dialog
       $('#save_url').bind("click", function (event, ui) {
         var url = null;
-        if($("#myurl").val().length > 0) {
-          localStorage.appurl = $("#myurl").val();
+        if($(".myurl").val().length > 0) {
+          localStorage.appurl = $(".myurl").val();
           controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
         }else
         {
           url = $('a.chosen-single span').html();
 
           if(url == null){
-            url = $('#seturlselect').val();
+            url = $('.seturlselect').val();
           }
-          
+
           switch (url) {
-          
+
           case "demo":
             localStorage.appurl = "http://demo.devtrac.org";
             controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
@@ -490,7 +490,7 @@ var controller = {
 
             controller.loadingMsg("Please select one url", 2000);
             break;
-          
+
           default:
             break;
           }
@@ -499,13 +499,18 @@ var controller = {
 
       });
 
-      //on select url checkbox setting, clear textfield
+      //on click url select setting, clear textfield
       $('.seturlselect').bind("click", function (event, ui) {
-        $("#myurl").val("");
+        $(".myurl").val("");
+      });
+      
+      //on click url select setting, clear textfield
+      $("a.chosen-single span").bind("click", function (event, ui) {
+        $(".myurl").val("");
       });
 
       //on click url textfield set chosen dropdown to default
-      $('#myurl').bind("click", function (event, ui) {
+      $('.myurl').bind("click", function (event, ui) {
         $("a.chosen-single span").html("Choose Url ...");
       });
 
@@ -526,7 +531,7 @@ var controller = {
         if ($("#page_login_name").valid() && $("#page_login_pass").valid()) {
 
           if(controller.connectionStatus){
-            
+
             auth.login($('#page_login_name').val(), $('#page_login_pass').val()).then(function () {
 
               if($("#checkbox-mini-0").is(":checked")){
@@ -538,8 +543,19 @@ var controller = {
                 window.localStorage.removeItem("passw");
               }
 
-              controller.fetchAllData().then(function(){
-                controller.loadFieldTripList();          
+
+              devtracnodes.countFieldtrips().then(function(){
+                //load field trip details from the database if its one and the list if there's more.
+                controller.loadFieldTripList();
+
+              }).fail(function(){
+                //download all devtrac data for user.
+                controller.fetchAllData().then(function(){
+
+                  //load field trip details from the database if its one and the list if there's more.
+                  controller.loadFieldTripList();
+                });
+
               });
 
             }).fail(function (errorThrown) {
@@ -549,7 +565,7 @@ var controller = {
           }else{
             controller.loadingMsg("Please Connect to Internet ...", 1000);
           }
-          
+
         }
       });
 
@@ -559,11 +575,11 @@ var controller = {
         if(controller.connectionStatus){
           auth.logout().then(function(){
           });
-  
+
         }else{
           controller.loadingMsg("Please Connect to Internet ...", 1000);
         }
-        
+
       });
 
       //handle logout click from panel menu
@@ -611,11 +627,11 @@ var controller = {
         console.log("No watch to clear");
       }
     },
-    
+
     doMenu: function(){
       //open panel on the current page
       $.mobile.activePage.next().panel( "open" );
-      
+
     },
 
     //edit location
@@ -690,7 +706,7 @@ var controller = {
     //cordova online event
     online: function() {
       controller.connectionStatus = true;
-      
+
     },
 
     //handle save for user answers from questionnaire
@@ -762,7 +778,7 @@ var controller = {
 
         });  
       });
-      
+
       if(controller.sizeme(questionnaire.answers) > 0) {
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.addSavedQuestions(db, questionnaire).then(function() {

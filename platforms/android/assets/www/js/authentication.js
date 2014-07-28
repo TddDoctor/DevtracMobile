@@ -43,6 +43,7 @@ var auth = {
       return d;
     },
 
+    //check if we have a token
     checkToken: function() {
       var d = $.Deferred();
 
@@ -90,9 +91,7 @@ var auth = {
             {
               //user is not logged in
               $.unblockUI();
-              //hide panel options
-              $('.panel_oecd').hide();
-              $('.panel_placetype').hide();
+              
 
               //hide and show dialog buttons
               $('#logoutdiv').hide();
@@ -101,14 +100,6 @@ var auth = {
               //hide and show panel auth buttons
               $('.panel_logout').hide();
               $('.panel_login').show();
-
-              //show panel set up urls button
-              $('#setup_urls').show();
-              
-              //hide user details
-              $('.user_details').hide();
-
-              $('.refresh-button').hide();
 
               d.reject();
             } else
@@ -120,10 +111,6 @@ var auth = {
               
               //set user title in menu
               $(".user_title").html(localStorage.usertitle);
-              
-              //show panel options
-              $('.panel_oecd').show();
-              $('.panel_placetype').show();
 
               //hide and show dialog auth buttons
               $('#logindiv').hide();
@@ -132,12 +119,6 @@ var auth = {
               //hide and show panel auth buttons
               $('.panel_login').hide();
               $('.panel_logout').show();
-              
-
-              //show panel urls button
-              $('.setup_urls').show();
-
-              $('.refresh-button').show();
 
               d.resolve();
 
@@ -221,11 +202,6 @@ var auth = {
               //set user title in menu
               $(".user_title").html(localStorage.usertitle);
 
-              //show panel options
-              $('.panel_oecd').show();
-              $('.panel_placetype').show();
-              $('.panel_fieldtrips').show();
-
               //hide and show dialog auth buttons
               $('#logindiv').hide();
               $('#logoutdiv').show();
@@ -233,11 +209,6 @@ var auth = {
               //hide and show panel auth buttons
               $('.panel_login').hide();
               $('.panel_logout').show();
-
-              //show refresh button
-              $('.refresh-button').show();
-
-              $('.setup_urls').hide();
 
               d.resolve();
             });
@@ -297,9 +268,6 @@ var auth = {
               $("#page_login_pass").val('');  
             }
 
-            //hide refresh button
-            $('.refresh-button').hide();
-            
             $.mobile.changePage("#page_login", "slide", true, false);
 
             d.resolve();

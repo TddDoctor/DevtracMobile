@@ -13,7 +13,6 @@ var devtracnodes = {
           'X-CSRF-Token': localStorage.usertoken
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
-          //alert('page_node_update_submit - failed to update node');
           console.log(JSON.stringify(XMLHttpRequest));
           console.log(JSON.stringify(textStatus));
           console.log(JSON.stringify(errorThrown));

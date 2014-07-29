@@ -50,42 +50,49 @@ body {
   <!-- 
      Here we have some handle bars templates like the menu and the top bar
 -->
+  <!-- 
+     Here we have some handle bars templates like the menu and the top bar
+-->
   <script id="leftmenu-tpl" type="text/template">
 <ul data-role="listview" class="menulistview">
-  <li data-icon="false"><img src="img/person.png" /><span><strong
+  <li><img src="www/img/person.png" /><span><strong
       class="username"></strong><br> <small class="user_title"></small></span></li>
-  <li data-icon="false"><a href="#home_page" class="settings_panel_home"><i
+  <li><a href="#" class="settings_panel_home"><i
       class="fa fa-home fa-fw"></i>&nbsp Home</a></li>
-  <li data-icon="false"><a class="" href="#syncall_page"><i class="fa fa-upload fa-fw"></i>&nbsp
+  <li><a class="" href="#syncall_page"><i class="fa fa-upload fa-fw"></i>&nbsp
       Upload</a></li>
-  <li data-icon="false"><a href="#page_download" class=""><i class="fa fa-download fa-fw"></i>&nbsp
+  <li><a href="#page_download" class=""><i class="fa fa-download fa-fw"></i>&nbsp
       Download</a></li>
 
-  <li data-icon="false"><a id="set" href="#page_add_settings" class="panel_add_dwon"><i
+  <li><a id="set" href="#page_add_settings" class="panel_add_dwon"><i
       class="fa fa-gear fa-fw"></i>&nbsp Settings</a></li>
-  <li data-icon="false"><a id="" class="panel_logout"><i class="fa fa-sign-out fa-fw"></i>&nbsp
+  <li><a id="" class="panel_logout"><i class="fa fa-sign-out fa-fw"></i>&nbsp
       Logout</a></li>
+<li><a id="" href="#page_about"><i class="fa fa-info fa-fw"></i>&nbsp
+      About</a></li>
 </ul>
 </script>
 
 
-  <script id="header-tpl" type="text/template">
+<script id="header-tpl" type="text/template">
   <a class="ui-btn-left" href="#navpanel_{{id}}" data-role="button"
   data-iconpos="notext" id="barsbutton_{{id}}"><i class="fa fa-bars fa-lg"></i></a> 
   <h1>{{ title }}</h1>
-    {{{extra_buttons}}}
+  {{{extra_buttons}}}
 </script>
-  <!--
+  <!--loadfieldtriplist:
       end of templates 
 -->
 
 
   <!-- Page Login  -->
   <div data-role="page" id="page_login">
-    <div data-role="panel" id="navpanel_login" data-theme="b"
-      data-position="left" class="leftmenu"></div>
 
-    <div data-role="header" id="header_login"></div>
+  <div data-role="panel" id="navpanel_login" data-theme="b"
+      data-position="left" class="leftmenu"></div>
+  
+    <div data-role="header" id="header_login">
+    </div>
     <!-- /header -->
 
     <div data-role="content" class='content'>
@@ -120,25 +127,25 @@ body {
             id="checkbox-mini-0" data-mini="true"> <label
             for="checkbox-mini-0">Remember Me</label>
         </p>
-
-        <label for="myurl style='font-size: small'">Either Type in a url
-          or Select one from the list below: </label> <input type="url"
-          placeholder="Start with http:// and remove trailing slash"
-          name="myurl" id="myurl" value=""> <br> 
-          <select
-          data-placeholder="Choose Url ..." id="seturlselect">
-          <option value="">Choose Url ...</option>
-          <option value="DevtracManual">DevtracManual</option>
-          <option value="DevtracUg" disabled="disabled">DevtracUganda</option>
-          <option value="demo">Demo</option>
-
+  
+  
+        <label for="myurl style='font-size: small'">Either Type in a url or Select one from the list below: </label>
+        <input type="url" placeholder="Start with http:// and remove trailing slash" name="myurl" class="myurl" value="">
+        <br>
+        
+        <select data-placeholder="Choose Url ..." class="seturlselect" data-role="none">
+        <option value="">Choose Url ...</option>
+        <option value="DevtracManual">DevtracManual</option>
+        <option value="DevtracUg" disabled="disabled">DevtracUganda</option>
+        <option value="demo">Demo</option>
+  
         </select>
-
+        
         <div id='urldiv'>
-          <a href="#" data-role="button" data-inline="true" data-theme="b"
-            data-mini="true" id='save_url'>Save Url</a>
+          <a href="#" data-role="button" data-inline="true" data-theme="b" data-mini="true"
+            id='save_url'>Save Url</a>
         </div>
-
+    
       </form>
     </div>
     <!-- /content -->
@@ -149,7 +156,6 @@ body {
 
   <!-- Fieldtrips details -->
   <div data-role="page" id="page_fieldtrip_details">
-
     <div data-role="panel" id="navpanel_fieldtrip" data-theme="b"
       data-position="left" class="leftmenu"></div>
 
@@ -186,7 +192,7 @@ body {
           <div class="ui-block-b">
             <a class="" data-role="button" id="edit_fieldtrip"
               href="#page_fieldtrip_edit" data-rel="dialog" data-iconpos=""><i
-              class="fa fa-edit fa-lg"></i>&nbsp&nbsp Edit Fieldtrip</a>
+              class="fa fa-edit fa-lg"></i>&nbsp&nbsp Edit</a>
 
           </div>
         </fieldset>
@@ -213,14 +219,15 @@ body {
   <!-- Application Home page  -->
   <div data-role="page" id="home_page">
 
-    <div data-role="panel" id="navpanel_home" data-theme="b"
-      data-position="left" class="leftmenu"></div>
+    <div data-role="panel" id="navpanel_home" data-theme="b" data-position="left"
+      class="leftmenu"></div>
 
     <div data-role="header" id="header_home">
       <!-- <a class="bars-button" class="ui-btn-left" style="margin-top: 2.5px;"
         href="#navpanel" data-iconpos="notext" id="panelIt"><i
         class="fa fa-bars fa-lg"></i></a> -->
 
+      
     </div>
     <!-- /header -->
 
@@ -238,10 +245,12 @@ body {
 
   <!-- Syncall page  -->
   <div data-role="page" id="syncall_page">
-    <div data-role="panel" id="navpanel_sync" data-theme="b"
-      data-position="left" class="leftmenu"></div>
+    <div data-role="panel" id="navpanel_sync" data-theme="b" data-position="left"
+      class="leftmenu"></div>
 
-    <div data-role="header" id="header_sync"></div>
+    <div data-role="header" id="header_sync">
+      
+    </div>
     <!-- /header -->
 
     <div data-role="content" class='content'>
@@ -278,20 +287,18 @@ body {
 
   <!-- Site visits details -->
   <div data-role="page" id="page_sitevisits_details">
-
-    <div data-role="panel" id="navpanel_sitereport" data-theme="b"
+  <div data-role="panel" id="navpanel_sitereport" data-theme="b"
       data-position="left" class="leftmenu"></div>
-
+  
     <div data-role="header" id="header_sitereports">
 
-      <!--       <a id="" class="ui-btn-left" href="#page_fieldtrip_details"
+<!--       <a id="" class="ui-btn-left" href="#page_fieldtrip_details"
         data-role="button" data-iconpos="notext"><i
         class="fa fa-chevron-circle-left fa-lg"></i></a>
 
 
       <h3>Site Report</h3>
 -->
-
     </div>
     <!-- /header -->
 
@@ -314,7 +321,6 @@ body {
 
               <!-- </div> -->
 
-              <!-- </div> -->
 
               <!-- <div class="ui-field-contain"> -->
               <label for="sitevisists_details_type"><b>Type: </b></label>
@@ -369,10 +375,11 @@ body {
 
   <!-- List locations -->
   <div data-role="page" id="page_location_list">
-
-    <div data-role="panel" id="navpanel_location" data-theme="b"
+  <div data-role="panel" id="navpanel_location" data-theme="b"
       data-position="left" class="leftmenu"></div>
-    <div data-role="header" id="header_location"></div>
+    <div data-role="header" id="header_location">
+      
+    </div>
     <!-- /header -->
 
     <div data-role="content" class='content'>
@@ -444,8 +451,8 @@ body {
       </form>
       <input type="button" data-inline="true" data-theme="b"
         id="save_site_visit_edits" onclick="controller.onSitevisitedit();"
-        value="Save" /> <a href="#" data-role="button" data-inline="true"
-        data-rel="back" data-theme="a" id="cancel_site_visit_edits">Cancel</a>
+        value="Save" /> <a href="#page_sitevisits_details" data-role="button" data-inline="true"
+        data-theme="a" id="cancel_site_visit_edits">Cancel</a>
 
     </div>
     <!-- /content -->
@@ -471,14 +478,13 @@ body {
 
   <!-- Add site visit details -->
   <div data-role="page" id="page_sitevisit_add">
-    <div data-role="panel" id="navpanel_add_sitereport" data-theme="b"
+  <div data-role="panel" id="navpanel_addsitereport" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header" id="header_addsitereport">
-      <!-- 
+<!-- 
       <a id="" href="#page_site_report_type" data-rel="dialog"
         data-role="button" data-iconpos="notext"><i
         class="fa fa-chevron-circle-left fa-lg"></i></a>
-
       <h3>Add Site Visit</h3> -->
 
     </div>
@@ -490,12 +496,10 @@ body {
         <label for="sitevisit_add_title">Title</label> <input type='text'
           value='' id='sitevisit_add_title' name='sitevisit_add_title' required />
 
-        <label for='sitevisit_add_oecds'>Oecds Codes</label>
-        <div id="select_oecds"></div>
-        <label for="sitevisit_add_date">Date</label> <input type='text'
-          id='sitevisit_add_date' name='sitevisit_add_date' data-role="date"
-          required /> <label for="sitevisit_add_public_summary">Public
-          Summary</label>
+        <label for='sitevisit_add_oecds'>Oecds</label><div id="select_oecds"></div> <label for="sitevisit_add_date">Date</label>
+        <input type='text' id='sitevisit_add_date' name='sitevisit_add_date'
+          data-role="date" required /> <label
+          for="sitevisit_add_public_summary">Public Summary</label>
         <textarea rows="8" type='text' value=''
           id='sitevisit_add_public_summary' name='sitevisit_add_public_summary'
           required></textarea>
@@ -506,7 +510,7 @@ body {
 
         <div
           class="ui-btn ui-icon-plus ui-btn-icon-left ui-corner-all fileinput-button">
-          <span>Image: </span> <input type="file" name="file" id="file"
+          <span>Image: </span> <input type="file" name="file" id="roadsidefile"
             multiple="multiple">
         </div>
         <br>
@@ -527,10 +531,10 @@ body {
 
   <!-- Add action items -->
   <div data-role="page" id="page_add_actionitems">
-    <div data-role="panel" id="navpanel_addactionitems" data-theme="b"
+  <div data-role="panel" id="navpanel_addactionitems" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header" id="header_addactionitems">
-      <!-- <h3 title="Add Action Items">Add Action Items</h3> -->
+      <h3 title="Add Action Items">Add Action Items</h3>
     </div>
     <!-- /header -->
 
@@ -585,9 +589,8 @@ body {
   <!-- /page -->
 
   <!-- Action items details -->
-
   <div data-role="page" id="page_actionitemdetails">
-    <div data-role="panel" id="navpanel_actionitemdetails" data-theme="b"
+  <div data-role="panel" id="navpanel_actionitemdetails" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header" id="header_actionitemdetails">
       <!-- <a id="" data-rel="back" data-role="button" data-iconpos="notext"><i
@@ -679,7 +682,7 @@ body {
 
   <!-- Edit Location Page -->
   <div data-role="page" id="page_location_edits">
-    <div data-role="panel" id="navpanel_location_edits" data-theme="b"
+  <div data-role="panel" id="navpanel_location_edits" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header">
       <!-- <h3 title="FieldTrip">Edit Locations</h3> -->
@@ -706,18 +709,11 @@ body {
   </div>
   <!-- /page -->
 
-  <!-- page -->
+  <!-- page add location-->
   <div data-role="page" id="page_add_location">
-    <div data-role="panel" id="navpanel_addlocation" data-theme="b"
+<div data-role="panel" id="navpanel_addlocation" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header" id="header_addlocation">
-
-      <!--       <a id="" href="#page_site_report_type" data-role="button"
-        data-iconpos="notext" data-rel="dialog"><i
-        class="fa fa-chevron-circle-left fa-lg"></i></a>
-
-      <h3>Create Location</h3> -->
-
 
     </div>
     <!-- /header -->
@@ -729,11 +725,11 @@ body {
           for="location_placetypes">Location Types</label>
         <div id='location_placetypes'></div>
 
-        <label for="latlon">GPS</label> <input type='text' value='' id='latlon'
-          name='latlon' required />
-        <p class="error">
-          <small id="gpserror"></small>
-        </p>
+<label for="latlon">GPS</label> <input type='text' value=''
+          id='latlon' name='latlon' />
+          
+          <label for="gpserror">GPS Errors</label> <input type='text' value=''
+          id='gpserror' class="error" name='latlon' />
 
         <div data-role="collapsible" data-theme="a">
           <h4>Contact</h4>
@@ -744,9 +740,18 @@ body {
             id='location_email' /> <label for="location_website">Website</label>
           <input type='text' value='' id='location_website' />
         </div>
+        
+        <div
+          class="ui-btn ui-icon-plus ui-btn-icon-left ui-corner-all fileinput-button">
+          <span>Image: </span> <input type="file" name="sitevisitfile" id="sitevisitfile"
+            multiple="multiple">
+        </div>
 
+        <br>
+        <div id="imagePreview"></div>
+        <div id="uploaderror" style="color: red"></div>
         <input type='button' onclick="controller.onSavelocation();" value='Save'
-          id='location_item_save' data-inline="true" data-theme='b' /> <a id=""
+          id='location_item_save' data-inline="true" data-theme='b' /> <a id="cancel_addlocation"
           href="#page_site_report_type" data-role="button" data-theme='b'
           data-inline="true" data-rel="dialog">Cancel</a>
 
@@ -762,16 +767,11 @@ body {
   <div data-role="page" id="mappage">
     <div data-role="header">
 
-      <a id="addlocation_back" data-icon="" data-rel="dialog"
-        class="ui-btn-left" href="#page_site_report_type" data-iconpos="notext"><i
-        class="fa fa-chevron-circle-left fa-lg"></i></a> <a id="viewlocation_back"
-        data-rel="dialog" class="ui-btn-left" href="#page_sitevisits_details"
-        data-iconpos="notext"><i class="fa fa-chevron-circle-left fa-lg"></i></a>
+      <a id="viewlocation_back" data-rel="dialog" class="ui-btn-left"
+        href="#page_sitevisits_details" data-iconpos="notext"><i
+        class="fa fa-chevron-circle-left fa-lg"></i></a>
 
       <h3 id="mapheader"></h3>
-      <a id="viewlocation_back" data-icon="" data-rel="dialog"
-        class="ui-btn-left" href="#page_sitevisits_details"
-        data-iconpos="notext"><i class="fa fa-chevron-circle-left fa-lg"></i></a>
     </div>
     <!-- /header -->
 
@@ -786,15 +786,13 @@ body {
 
   <!-- Add questionnaire page -->
   <div data-role="page" id="page_add_questionnaire">
-
-    <div data-role="panel" id="navpanel_qtnr" data-theme="b"
+<div data-role="panel" id="navpanel_qtnr" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header" id='header_qtnr'>
       <!-- <a id="" href="#page_sitevisits_details" data-iconpos="notext"
         data-role="button" style="margin-top: 2.5px;"><i
         class="fa fa-chevron-circle-left fa-lg"></i></a> 
       <h3 id="qtn_title" title="Questionnaire">Questionnaire</h3>-->
-
     </div>
     <!-- /header -->
 
@@ -810,16 +808,31 @@ body {
   <div data-role="page" id="page_add_settings">
     <div data-role="panel" id="navpanel_settings" data-theme="b"
       data-position="left" class="leftmenu"></div>
-
+      
     <div data-role="header" id='header_settings'>
-      <!-- <a class="ui-btn-left" href="#navpanel4" data-role="button"
-        data-iconpos="notext"><i class="fa fa-bars fa-lg"></i></a>
-      <h3 id="qtn_title" title="Settings">Settings</h3> -->
     </div>
     <!-- /header -->
 
     <div data-role="content" class='content' id='Settingscontent'>
-      <p>Settings go here</p>
+      <form action="">
+      <label for="myurl style='font-size: small'">Either Type in a url or Select one from the list below: </label>
+        <input type="url" placeholder="Start with http:// and remove trailing slash" name="myurl" class="myurl" value="">
+        <br>
+        
+        <select data-placeholder="Choose Url ..." class="seturlselect" data-role="none">
+        <option value="">Choose Url ...</option>
+        <option value="DevtracManual">DevtracManual</option>
+        <option value="DevtracUg" disabled="disabled">DevtracUganda</option>
+        <option value="demo">Demo</option>
+  
+        </select>
+        
+        <div id='urldiv'>
+          <a href="#" data-role="button" data-inline="true" data-theme="b" data-mini="true"
+            id='save_url'>Save Url</a>
+        </div>
+      
+      </form>
     </div>
     <!-- /content -->
 
@@ -838,7 +851,6 @@ body {
     <!-- /header -->
 
     <div data-role="content" class='content' id='downloadcontent'>
-      <p>Downloads go here</p>
       <a class="refresh-button" data-role="button" data-iconpos="notext"><i
         class="fa fa-refresh fa-lg"></i></a>
 
@@ -847,7 +859,26 @@ body {
 
   </div>
   <!-- /page -->
+  
+  <!-- About page -->
+  <div data-role="page" id="page_about">
+    <div data-role="panel" id="navpanel_about" data-theme="b"
+      data-position="left" class="leftmenu"></div>
+      
+    <div data-role="header" id='header_about'>
+    </div>
+    <!-- /header -->
 
+    <div data-role="content" class='content' id='aboutcontent'>
+
+    <p>DevtracMobile</p>
+    <strong>Version:</strong><p>0.0.1</p>
+
+    </div>
+    <!-- /content -->
+
+  </div>
+  <!-- /page -->
 
   <script src="libs/jquery-1.7.2.min.js"></script>
   <script type="text/javascript">

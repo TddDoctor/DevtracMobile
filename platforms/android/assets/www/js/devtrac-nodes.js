@@ -961,25 +961,54 @@ var devtracnodes = {
           devtracnodes.postNode(jsonstring, mark, sitevisits.length, r).then(function(updates, stat, snid) {
 
             devtrac.indexedDB.open(function (db) {
-              /*todo*/ 
-              devtrac.indexedDB.editSitevisit(db, parseInt(snid), updates).then(function() {
-                var count_container = $("#sitevisit_count").html().split(" ");
-                if(typeof parseInt(count_container[0]) == "number") {
-                  var updated_count = parseInt(count_container[0]) - 1;
-                  $("#sitevisit_count").html(updated_count);
-                }
-                else
-                {
-                  $("#sitevisit_count").html(0);
-                }
+              devtrac.indexedDB.getImage(db, sitevisits[0]['nid'], updates['nid']).then(function(image, ftritemid) {
+                var indx = 0;
+                var imageid = [];
+                var imagename = [];
+                var emptystring = "";
 
-                ftritemdetails[updates['nid']] =  sitevisits[0]['title'];
-                sitevisits.splice(0, 1);
-                
-                devtracnodes.postSitevisitHelper(sitevisits, names, newnids, ftritemdetails, callback);
+                devtracnodes.imagehelper(ftritemid, indx, imageid, imagename, image, emptystring, emptystring, function(fds, fdn, ftrid) {
+                  
+                  
+                  if(fdn == undefined) {
+                    d.reject(fds);
+                  }else{
+
+                    var y = 0;
+                    devtracnodes.updateNodeHelper(ftrid, y, fds, fdn, localStorage.visiteddate, "dummy", function(updates, ftritemid) {
+                     
+                      if(ftritemid != undefined) {
+                        /*todo*/ 
+                        devtrac.indexedDB.editSitevisit(db, parseInt(snid), updates).then(function() {
+                          var count_container = $("#sitevisit_count").html().split(" ");
+                          if(typeof parseInt(count_container[0]) == "number") {
+                            var updated_count = parseInt(count_container[0]) - 1;
+                            $("#sitevisit_count").html(updated_count);
+                          }
+                          else
+                          {
+                            $("#sitevisit_count").html(0);
+                          }
+
+                          ftritemdetails[updates['nid']] =  sitevisits[0]['title'];
+                          sitevisits.splice(0, 1);
+                          
+                          devtracnodes.postSitevisitHelper(sitevisits, names, newnids, ftritemdetails, callback);
+                        });
+                        
+                      }else if(updates.indexOf('Unauthorized') != -1) {
+                        auth.getToken().then(function(token) {
+                          localStorage.usertoken = token;
+                          devtracnodes.postSitevisitHelper(sitevisits, names, newnids, ftritemdetails, callback);
+                        });
+                      }
+
+                    });                   
+                  }
+
               });
-              
-              
+            });
+
             });
 
           }).fail(function(e){
@@ -1097,6 +1126,7 @@ var devtracnodes = {
             }
 
             visited_date = duedate;
+            localStorage.visiteddate = visited_date; 
 
             nodestring = nodestring +a+'[und][0][value][date]='+duedate+'&';
 

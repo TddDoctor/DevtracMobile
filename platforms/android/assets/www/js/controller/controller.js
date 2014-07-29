@@ -4,6 +4,12 @@ var controller = {
     filenames : [],
     filedimensions: [],
     filesizes : [],
+    
+    b64Images : [],
+    fnames : [],
+    fdimensions: [],
+    fsizes : [],
+    
     watchID : null,
     objectstores: ["oecdobj", "placetype", "fieldtripobj", "sitevisit", "actionitemsobj", "placesitemsobj", "qtnsitemsobj", "qtionairesitemsobj", "commentsitemsobj","images"],
 
@@ -37,10 +43,10 @@ var controller = {
       controller.loadingMsg("Please Wait..", 0);
       //set application url if its not set
       //if (!localStorage.appurl) {
-      localStorage.appurl = "http://localhost/dt11";
+      //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
       //localStorage.appurl = "http://192.168.38.114/dt11";
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
 
       //}
@@ -398,10 +404,18 @@ var controller = {
       });
 
       //read image from roadside visit
-      $('input[type=file]').on('change', function(event, ui) {
+      $('#roadsidefile').on('change', function(event, ui) {
         if(this.disabled) return alert('File upload not supported!');
         var F = this.files;
-        if(F && F[0]) for(var i=0; i<F.length; i++) controller.readImage( F[i] );  
+        if(F && F[0]) for(var i=0; i<F.length; i++) controller.readImage( F[i], "roadside" );  
+
+      });
+      
+    //read image from roadside visit
+      $('#sitevisitfile').on('change', function(event, ui) {
+        if(this.disabled) return alert('File upload not supported!');
+        var F = this.files;
+        if(F && F[0]) for(var i=0; i<F.length; i++) controller.readImage( F[i], "other" );  
 
       });
 
@@ -675,7 +689,7 @@ var controller = {
     },
 
     //read from files
-    readImage: function(file) {
+    readImage: function(file, ftritemtype) {
       var di = {};
       var reader = new FileReader();
       var image  = new Image();
@@ -687,12 +701,23 @@ var controller = {
 
         var n = file.name,
         s = ~~(file.size/1024) +'KB';
+        
+        if(ftritemtype == "roadside")
+        {
+          controller.filenames.push(n);
+          controller.base64Images.push(image.src);
+          controller.filesizes.push(~~(file.size/1024));
+          $("#uploadPreview").append('<div>'+n+" "+~~(file.size/1024)+'kb</div>');
+          
+        }else
+        {
+          controller.fnames.push(n);
+          controller.b64Images.push(image.src);
+          controller.fsizes.push(~~(file.size/1024));
+          
+          $("#imagePreview").append('<div>'+n+" "+~~(file.size/1024)+'kb</div>');
+        }
 
-        controller.filenames.push(n);
-        controller.base64Images.push(image.src);
-        controller.filesizes.push(~~(file.size/1024));
-
-        $("#uploadPreview").append('<div>'+n+" "+~~(file.size/1024)+'kb</div>');
       };
 
     },
@@ -1721,6 +1746,7 @@ var controller = {
               $("#location_count").html(count);
             })
 
+            $("#imagePreview").html("");
             $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
           });
 
@@ -1750,6 +1776,10 @@ var controller = {
 
       var updates = {};
       var images = {};
+      
+      images['base64s'] = controller.b64Images;
+      images['names'] = controller.fnames;
+      images['sizes'] = controller.fsizes;
 
       updates['user-added'] = true;
       updates['nid'] = 1;
@@ -1810,6 +1840,13 @@ var controller = {
 
           devtrac.indexedDB.addSiteVisitsData(db, updates).then(function() {
             controller.refreshSitevisits();
+            
+            devtrac.indexedDB.addImages(db, images).then(function() {
+              controller.b64Images = [];
+              controller.fnames = [];
+              controller.fsizes = [];
+              
+            });
 
           });
 

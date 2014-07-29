@@ -511,7 +511,7 @@ body {
 
         <div
           class="ui-btn ui-icon-plus ui-btn-icon-left ui-corner-all fileinput-button">
-          <span>Image: </span> <input type="file" name="file" id="file"
+          <span>Image: </span> <input type="file" name="file" id="roadsidefile"
             multiple="multiple">
         </div>
         <br>
@@ -731,7 +731,6 @@ body {
           
           <label for="gpserror">GPS Errors</label> <input type='text' value=''
           id='gpserror' class="error" name='latlon' />
-          
 
         <div data-role="collapsible" data-theme="a">
           <h4>Contact</h4>
@@ -742,7 +741,16 @@ body {
             id='location_email' /> <label for="location_website">Website</label>
           <input type='text' value='' id='location_website' />
         </div>
+        
+        <div
+          class="ui-btn ui-icon-plus ui-btn-icon-left ui-corner-all fileinput-button">
+          <span>Image: </span> <input type="file" name="sitevisitfile" id="sitevisitfile"
+            multiple="multiple">
+        </div>
 
+        <br>
+        <div id="imagePreview"></div>
+        <div id="uploaderror" style="color: red"></div>
         <input type='button' onclick="controller.onSavelocation();" value='Save'
           id='location_item_save' data-inline="true" data-theme='b' /> <a id="cancel_addlocation"
           href="#page_site_report_type" data-role="button" data-theme='b'

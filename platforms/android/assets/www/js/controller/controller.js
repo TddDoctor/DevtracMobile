@@ -31,6 +31,7 @@ var controller = {
         '</ul>'+
         '</div>', id: "sitereport", title: "Site Report"}));
       $("#header_location").html(header({id: "location", title: "Locations"}));
+      $("#header_about").html(header({id: "about", title: "About"}));
       $("#header_addlocation").html(header({id: "addlocation", title: "Locations"})); 
       $("#header_addsitereport").html(header({id: "addsitereport", title: "Add Site Visit"}));
       $("#header_actionitemdetails").html(header({id: "actionitemdetails", title: "Action Item"}));

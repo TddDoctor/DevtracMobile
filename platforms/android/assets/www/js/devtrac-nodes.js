@@ -167,13 +167,13 @@ var devtracnodes = {
 
                 });            
               });
-              
+
               devtracnodes.postComments(updates).then(function() {
                 //$.unblockUI();
                 d.resolve();
 
               }).fail(function(){
-//                $.unblockUI();
+//              $.unblockUI();
                 d.resolve();
 
               });
@@ -259,59 +259,54 @@ var devtracnodes = {
       return d;
     },
 
-    countLocations: function() {
+    countLocations: function(db) {
       var d = $.Deferred();
       var locations = [];
 
       var count = 0;
-      devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getAllplaces(db, function(locs) {
-          for(var loc in locs) {
 
-            if(locs[loc]['submit'] == 0 && locs[loc]['user-added'] == true) {              
-              count = count + 1;
-            }
+      devtrac.indexedDB.getAllplaces(db, function(locs) {
+        for(var loc in locs) {
 
-          }        
-          if(count > 0) {
-            d.resolve(count);  
-          }else
-          {
-            d.reject(count);
+          if(locs[loc]['submit'] == 0 && locs[loc]['user-added'] == true) {              
+            count = count + 1;
           }
-        });  
-      });
+
+        }        
+        if(count > 0) {
+          d.resolve(count);  
+        }else
+        {
+          d.reject(count);
+        }
+      });  
+
 
       return d;
     },
 
-    countSitevisits: function() {
+    countSitevisits: function(db) {
       var d = $.Deferred();
       var sitevisits = [];
 
       var count = 0;
-      devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getAllSitevisits(db, function(ftritems) {
+      devtrac.indexedDB.getAllSitevisits(db, function(ftritems) {
 
-          for(var ftritem in ftritems) {
+        for(var ftritem in ftritems) {
 
-            if((ftritems[ftritem]['submit'] == 0 && ftritems[ftritem]['user-added'] == true ) || ftritems[ftritem]['editflag'] == 1) {              
-              count = count + 1
-            }
-
-          }        
-          if(count > 0) {
-            d.resolve(count);  
-          }else
-          {
-            d.reject();
+          if((ftritems[ftritem]['submit'] == 0 && ftritems[ftritem]['user-added'] == true ) || ftritems[ftritem]['editflag'] == 1) {              
+            count = count + 1
           }
 
-        });  
+        }        
+        if(count > 0) {
+          d.resolve(count);  
+        }else
+        {
+          d.reject();
+        }
 
-
-
-      });
+      });  
 
       return d;
     },
@@ -339,34 +334,30 @@ var devtracnodes = {
       return d;
     },
 
-    checkActionitems: function() {
+    checkActionitems: function(db) {
       var d = $.Deferred();
       var actionitems = [];
       var items = 0;
 
-      devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getAllActionitems(db, function(actionitems) {
+      devtrac.indexedDB.getAllActionitems(db, function(actionitems) {
 
-          for(var actionitem in actionitems) {
+        for(var actionitem in actionitems) {
 
-            if(actionitems[actionitem]['submit'] == 0 && actionitems[actionitem]['user-added'] == true) {              
-              actionitems.push(actionitems[actionitem]);
-              items = items + 1;
-            }
-
+          if(actionitems[actionitem]['submit'] == 0 && actionitems[actionitem]['user-added'] == true) {              
+            actionitems.push(actionitems[actionitem]);
+            items = items + 1;
           }
 
-          if(actionitems.length > 0) {
-            d.resolve(actionitems, items);  
-          }else{
-            d.reject(items);
-          }
+        }
+
+        if(actionitems.length > 0) {
+          d.resolve(actionitems, items);  
+        }else{
+          d.reject(items);
+        }
 
 
-        });  
-
-      });
-
+      });  
       return d;
     },
 
@@ -579,7 +570,7 @@ var devtracnodes = {
                     devtracnodes.updateNodeHelper(ftrid, y, fds, fdn, ftrdate, updateId, function(updates, ftritemid, activeid) {
 
                       newsitevisits[ftritemid] = sitevisits[0]['title'];
-                      
+
                       if(ftritemid != undefined) {
                         /*todo: */  
                         devtrac.indexedDB.editSitevisit(db, activeid, updates).then(function() {
@@ -592,7 +583,7 @@ var devtracnodes = {
                           {                      
                             $("#sitevisit_count").html(0);
                           }
-                          
+
                           devtrac.indexedDB.deleteSitevisit(db, activeid);
 
                           controller.refreshSitevisits();
@@ -600,7 +591,7 @@ var devtracnodes = {
 
                           devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, callback);
                         });
-                        
+
                       }else if(updates.indexOf('Unauthorized') != -1){
                         auth.getToken().then(function(token) {
                           localStorage.usertoken = token;
@@ -660,8 +651,8 @@ var devtracnodes = {
 
                   devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, callback);
                 });
-                
-                
+
+
 
               }).fail(function(e){
                 if(e == "Unauthorized: CSRF validation failed" || e == "Unauthorized") {
@@ -795,9 +786,9 @@ var devtracnodes = {
               for(var k in ftritemdetails) {
                 uploadedftritems[k] = ftritemdetails[k];
               }
-              
+
               if(ftritems_locs = true && ftritems == true) {
-                
+
                 devtracnodes.syncActionitems(ftritems, uploadedftritems);
 
               }
@@ -833,7 +824,7 @@ var devtracnodes = {
         devtracnodes.checkActionitems().then(function(actionitems, db) {
           devtracnodes.uploadActionItems(actionitems, sitevisits).then(function(){
             actionitems = true;
-            
+
             controller.loadingMsg("Finished Syncing Action Items ...", 0);
             if(ftritems == true && actionitems == true){
               devtracnodes.syncFieldtrips(actionitems);
@@ -936,7 +927,7 @@ var devtracnodes = {
           }else {
             ftritems_locs = true;
             var ftritemdetails = [];
-            
+
             devtracnodes.syncSitevisits(ftritemdetails, ftritems_locs);
           }
 
@@ -968,15 +959,15 @@ var devtracnodes = {
                 var emptystring = "";
 
                 devtracnodes.imagehelper(ftritemid, indx, imageid, imagename, image, emptystring, emptystring, function(fds, fdn, ftrid) {
-                  
-                  
+
+
                   if(fdn == undefined) {
                     d.reject(fds);
                   }else{
 
                     var y = 0;
                     devtracnodes.updateNodeHelper(ftrid, y, fds, fdn, localStorage.visiteddate, "dummy", function(updates, ftritemid) {
-                     
+
                       if(ftritemid != undefined) {
                         /*todo*/ 
                         devtrac.indexedDB.editSitevisit(db, parseInt(snid), updates).then(function() {
@@ -992,10 +983,10 @@ var devtracnodes = {
 
                           ftritemdetails[updates['nid']] =  sitevisits[0]['title'];
                           sitevisits.splice(0, 1);
-                          
+
                           devtracnodes.postSitevisitHelper(sitevisits, names, newnids, ftritemdetails, callback);
                         });
-                        
+
                       }else if(updates.indexOf('Unauthorized') != -1) {
                         auth.getToken().then(function(token) {
                           localStorage.usertoken = token;
@@ -1006,8 +997,8 @@ var devtracnodes = {
                     });                   
                   }
 
+                });
               });
-            });
 
             });
 

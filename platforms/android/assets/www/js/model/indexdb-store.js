@@ -8,7 +8,7 @@ devtrac.indexedDBopen = function(callback) {
 
   var version = 1;
 
-  var request = indexedDB.open("g1", version);
+  var request = indexedDB.open("g2", version);
 
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -23,7 +23,7 @@ devtrac.indexedDB.open = function(callback) {
 
   var version = 1;
 
-  var request = indexedDB.open("g1", version);
+  var request = indexedDB.open("g2", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -373,10 +373,12 @@ devtrac.indexedDB.addPlacesData = function(db, placeObj) {
     }
 
     request.onsuccess = function(e) {
+      console.log("placces saved");
       d.resolve();
     };
 
     request.onerror = function(e) {
+      console.log("Not saved "+e.target.error.name);
       d.reject(e);
     };
   }else {

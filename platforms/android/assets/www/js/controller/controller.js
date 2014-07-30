@@ -41,19 +41,20 @@ var controller = {
 
       $(window).bind('orientationchange pageshow pagechange resize', mapctlr.resizeMapIfVisible);
 
-      controller.loadingMsg("Please Wait..", 0);
+      
       //set application url if its not set
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
-      localStorage.appurl = "http://192.168.38.114/dt11";
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://192.168.38.114/dt11";
+      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
 
       //}
 
       if(controller.connectionStatus) {
 
+        controller.loadingMsg("Please Wait..", 0);
         auth.loginStatus().then(function () {
           devtracnodes.countFieldtrips().then(function(){
             //load field trip details from the database if its one and the list if there's more.
@@ -202,22 +203,25 @@ var controller = {
 
       //count nodes for upload before uploads page is shown
       $("#syncall_page").bind('pagebeforeshow', function(){
+        devtrac.indexedDB.open(function (db) {
 
-        devtracnodes.countSitevisits().then(function(scount){
-          $("#sitevisit_count").html(scount);
-          
-          devtracnodes.countLocations().then(function(items) {
-            $("#location_count").html(items);
-          }).fail(function(lcount){
-            $("#location_count").html(lcount);
-          });
-          
-          devtracnodes.checkActionitems().then(function(actionitems, items) {
-            $("#actionitem_count").html(items);
-          }).fail(function(acount){
-            $("#actionitem_count").html(acount);
+          devtracnodes.countSitevisits(db).then(function(scount){
+            $("#sitevisit_count").html(scount);
+            
+            devtracnodes.countLocations(db).then(function(items) {
+              $("#location_count").html(items);
+            }).fail(function(lcount){
+              $("#location_count").html(lcount);
+            });
+            
+            devtracnodes.checkActionitems(db).then(function(actionitems, items) {
+              $("#actionitem_count").html(items);
+            }).fail(function(acount){
+              $("#actionitem_count").html(acount);
+            });
           });
         });
+
       });
 
       // on cancel action item click
@@ -1118,7 +1122,7 @@ var controller = {
         localStorage.ftritemtype = $("#sitevisit_add_type").val();
 
         localStorage.ftritemdistrict = $("#location_district").val();
-        localStorage.ftritemlatlon = localStorage.latlon;
+        
         if(localStorage.ftritemtype == "210") {
 
           $( "#sitevisit_add_date" ).datepicker( "destroy" );
@@ -1369,11 +1373,6 @@ var controller = {
 
           $("#sitevisists_details_date").html($("#sitevisit_date").val());
           $("#sitevisists_details_summary").html($("#sitevisit_summary").val());
-
-          devtracnodes.countSitevisits().then(function(scount) {
-            $("#sitevisit_count").html(scount);
-
-          });
 
           $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
         });
@@ -1661,10 +1660,8 @@ var controller = {
 
     //save location
     onSavelocation: function () {
-      console.log("inside save");
       var locationcount = 0;
       if ($("#form_add_location").valid()) {
-        console.log("location form is valid");
         
         //save added location items
         var updates = {};
@@ -1733,14 +1730,15 @@ var controller = {
               }
             }
 
-            console.log("adding location data");
-            devtrac.indexedDB.addPlacesData(db, updates);
+            devtrac.indexedDB.addPlacesData(db, updates).then(function(){
+              controller.createSitevisitfromlocation(updates[0]['nid'], $('#location_name').val());
 
-            controller.createSitevisitfromlocation(updates[0]['nid'], $('#location_name').val());
+              controller.clearWatch();
+              $("#imagePreview").html("");
+              $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
+              
+            });
 
-            controller.clearWatch();
-            $("#imagePreview").html("");
-            $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
           });
 
         });  
@@ -1845,10 +1843,6 @@ var controller = {
 
           });
 
-          devtracnodes.countSitevisits().then(function(count){
-            $("#sitevisit_count").html(count);
-          });
-
           controller.resetForm($("#form_add_location"));
         });
 
@@ -1934,11 +1928,6 @@ var controller = {
               controller.resetForm($('#form_sitevisit_add'));
               $("#uploadPreview").html("");
               $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);  
-            });
-
-
-            devtracnodes.countSitevisits().then(function(scount){
-              $("#sitevisit_count").html(scount);
             });
 
           });

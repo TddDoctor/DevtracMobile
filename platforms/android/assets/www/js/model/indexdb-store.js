@@ -6,9 +6,9 @@ devtrac.indexedDB.db = null;
 
 devtrac.indexedDBopen = function(callback) {
 
-  var version = 12;
+  var version = 1;
 
-  var request = indexedDB.open("f1", version);
+  var request = indexedDB.open("g1", version);
 
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -21,9 +21,9 @@ devtrac.indexedDBopen = function(callback) {
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
 
-  var version = 12;
+  var version = 1;
 
-  var request = indexedDB.open("f1", version);
+  var request = indexedDB.open("g1", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {

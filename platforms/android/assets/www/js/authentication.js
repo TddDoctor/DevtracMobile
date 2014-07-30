@@ -151,7 +151,7 @@ var auth = {
           },
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
-            alert("Sorry, unrecognized username or password");	     
+            alert("Sorry "+errorThrown);	     
             //hide and show dialog auth buttons
             $('#logoutdiv').hide();
             $('#logindiv').show();

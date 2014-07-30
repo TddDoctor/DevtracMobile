@@ -445,7 +445,7 @@ var devtracnodes = {
             });  
           }else
           {
-            console.log("error posting location node "+e);
+            callback(e, "", "");
           }
 
         });
@@ -469,7 +469,7 @@ var devtracnodes = {
           devtracnodes.updateNodeHelper(ftrid, y, fd, names, sdate, upId, callback);
         }
       }).fail(function(e) {
-        callback();
+        callback(e, "error");
       });
     },
 
@@ -497,8 +497,8 @@ var devtracnodes = {
           });
 
         }else{
-          console.log("rejected post image file error "+e);
-          callback(e);
+          
+          callback(e, "error");
 
         }
       });
@@ -558,8 +558,8 @@ var devtracnodes = {
 
                 devtracnodes.imagehelper(nid, indx, imageid, imagename, image, vdate, sid, function(fds, fdn, ftrid, ftrdate, updateId) {
 
-                  if(fdn == undefined) {
-                    d.reject(fds);
+                  if(fdn == "error") {
+                    callback(fds, "error")
                   }else{
 
                     var y = 0;
@@ -567,7 +567,7 @@ var devtracnodes = {
 
                       newsitevisits[ftritemid] = sitevisits[0]['title'];
 
-                      if(ftritemid != undefined) {
+                      if(ftritemid != "error") {
                         /*todo: */  
                         devtrac.indexedDB.editSitevisit(db, activeid, updates).then(function() {
                           var count_container = $("#sitevisit_count").html().split(" ");
@@ -596,7 +596,7 @@ var devtracnodes = {
                       }
                       else{
 
-                        callback(updates, newsitevisits);
+                        callback(updates, "error");
                       }
 
                     });                   
@@ -636,7 +636,7 @@ var devtracnodes = {
                 });  
               }else
               {
-                callback(e);
+                callback(e, "error");
               }
             });
 
@@ -679,7 +679,7 @@ var devtracnodes = {
                   });  
                 }else
                 {
-                  callback(e);
+                  callback(e, "error");
                 }
               });
             });
@@ -797,19 +797,22 @@ var devtracnodes = {
         devtracnodes.checkSitevisits().then(function(sitevisits) {     
           devtrac.indexedDB.open(function (db) {
             var newsitevisits = [];
-            devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, function(uploadedftritems) {
-              ftritems = true;
-              controller.loadingMsg("Finished Syncing Roadside Sitevisits ...", 0);
-              for(var k in ftritemdetails) {
-                uploadedftritems[k] = ftritemdetails[k];
+            devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, function(uploadedftritems, state) {
+              if(state == "error"){
+                controller.loadingMsg(uploadedftritems, 3000);
+              }else{
+                ftritems = true;
+                controller.loadingMsg("Finished Syncing Roadside Sitevisits ...", 0);
+                for(var k in ftritemdetails) {
+                  uploadedftritems[k] = ftritemdetails[k];
+                }
+
+                if(ftritems_locs = true && ftritems == true) {
+
+                  devtracnodes.syncActionitems(ftritems, uploadedftritems);
+
+                }
               }
-
-              if(ftritems_locs = true && ftritems == true) {
-
-                devtracnodes.syncActionitems(ftritems, uploadedftritems);
-
-              }
-
             });
           });
 
@@ -848,7 +851,8 @@ var devtracnodes = {
 
             }
 
-          }).fail(function(){
+          }).fail(function(e){
+            controller.loadingMsg("Action Items "+e, 0);
             actionitems = true;
             if(ftritems == true && actionitems == true){
               devtracnodes.syncFieldtrips(actionitems);
@@ -882,7 +886,8 @@ var devtracnodes = {
             $.unblockUI();
           }
 
-        }).fail(function(){
+        }).fail(function(e){
+          controller.loadingMsg("Fieldtrips "+e, 0);
           fieldtrips = true;
           if(fieldtrips == true && actionitems == true){
             $.unblockUI();
@@ -921,21 +926,28 @@ var devtracnodes = {
 
               devtracnodes.postLocationHelper(newlocation_nids, newlocationnames, oldlocation_nids, postarray, titlearray, pnid, function(newnames, newids, oldids){
 
-                controller.loadingMsg("Finished Syncing Locations ...", 0);
+                if(newids == "" && oldids == "") {
+                  controller.loadingMsg(newnames, 3000);
+                }else {
+                  controller.loadingMsg("Finished Syncing Locations ...", 0);
+                  devtrac.indexedDB.open(function (dbs) {
+                    devtracnodes.uploadFtritemswithLocations(newnames, newids, oldids, dbs).then(function(names, newnids, oldnids, sitevisits) {
 
-                devtrac.indexedDB.open(function (dbs) {
-                  devtracnodes.uploadFtritemswithLocations(newnames, newids, oldids, dbs).then(function(names, newnids, oldnids, sitevisits) {
+                      devtracnodes.postSitevisitHelper(sitevisits, names, newnids, [], function(ftritemdetails, state){
+                        if(state == "result"){
+                          controller.loadingMsg("Finished Syncing Sitevisits with Locations ...", 0);
+                          ftritems_locs = true;
 
-                    devtracnodes.postSitevisitHelper(sitevisits, names, newnids, [], function(ftritemdetails, ftritemnids){
-                      controller.loadingMsg("Finished Syncing Sitevisits with Locations ...", 0);
-                      ftritems_locs = true;
+                          devtracnodes.syncSitevisits(ftritemdetails, ftritems_locs);
+                        }else{
+                          controller.loadingMsg(ftritemdetails, 3000);
+                        }
 
-                      devtracnodes.syncSitevisits(ftritemdetails, ftritems_locs);
+                      });
 
                     });
-
                   });
-                });
+                }
 
               });
 
@@ -1045,14 +1057,14 @@ var devtracnodes = {
               });  
             }else
             {
-              callback(e);
+              callback(e, "error");
             }
           });
 
         });
 
       }else{
-        callback(ftritemdetails);
+        callback(ftritemdetails, "result");
       }
 
     },
@@ -1572,15 +1584,18 @@ var devtracnodes = {
             devtracnodes.notify("Places Data Unavailable");
           }else {
 
-            devtrac.indexedDB.addPlacesData(db, data).then(function(){
-              devtracnodes.notify("Places Saved");
+            for(var item in data){
+              devtrac.indexedDB.addPlacesData(db, data[item]).then(function(){
+                devtracnodes.notify("Places Saved");
 
-            }).fail(function(e) {
-              if(e.target.error.message != "Key already exists in the object store." && e.target.error.message != undefined) {
-                devtracnodes.notify("Places Error: "+e.target.error.message);
-              }
+              }).fail(function(e) {
+                if(e.target.error.message != "Key already exists in the object store." && e.target.error.message != undefined) {
+                  devtracnodes.notify("Places Error: "+e.target.error.message);
+                }
 
-            });
+              });
+            }
+
           }
 
         }

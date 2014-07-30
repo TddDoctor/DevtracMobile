@@ -506,6 +506,11 @@ var controller = {
             controller.loadingMsg("Please select one url", 2000);
             break;
 
+          case "Demo":
+            localStorage.appurl = "http://demo.devtrac.org";
+            controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+            break;
+            
           default:
             break;
           }

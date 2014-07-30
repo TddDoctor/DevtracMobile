@@ -299,12 +299,8 @@ var devtracnodes = {
           }
 
         }        
-        if(count > 0) {
-          d.resolve(count);  
-        }else
-        {
-          d.reject();
-        }
+
+        d.resolve(count);  
 
       });  
 

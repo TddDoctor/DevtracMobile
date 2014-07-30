@@ -47,7 +47,8 @@ var controller = {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
       //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://demo.devtrac.org";
       //localStorage.appurl = "http://10.0.2.2/dt11";
 
       //}
@@ -56,11 +57,13 @@ var controller = {
 
         controller.loadingMsg("Please Wait..", 0);
         auth.loginStatus().then(function () {
+          console.log("logged in");
           devtracnodes.countFieldtrips().then(function(){
             //load field trip details from the database if its one and the list if there's more.
             controller.loadFieldTripList();
 
           }).fail(function(){
+            console.log("logged out");
             //download all devtrac data for user.
             controller.fetchAllData().then(function(){
 
@@ -1665,73 +1668,73 @@ var controller = {
         
         //save added location items
         var updates = {};
-        updates[0] = [];
-        updates[0]['user-added'] = true;
-        updates[0]['nid'] = 1;
 
-        updates[0]['title'] = $('#location_name').val();
-        updates[0]['status'] = 1;
-        updates[0]['type'] = 'place';
-        updates[0]['submit'] = 0;
-        updates[0]['uid'] = localStorage.uid;
+        updates['user-added'] = true;
+        updates['nid'] = 1;
 
-        updates[0]['field_actionitem_ftreportitem'] = {};
-        updates[0]['field_actionitem_ftreportitem']['und'] = [];
-        updates[0]['field_actionitem_ftreportitem']['und'][0] = {};
-        updates[0]['field_actionitem_ftreportitem']['und'][0]['target_id'] = localStorage.snid;
+        updates['title'] = $('#location_name').val();
+        updates['status'] = 1;
+        updates['type'] = 'place';
+        updates['submit'] = 0;
+        updates['uid'] = localStorage.uid;
 
-        updates[0]['field_place_lat_long'] = {};
-        updates[0]['field_place_lat_long']['und'] = [];
-        updates[0]['field_place_lat_long']['und'][0] = {};
-        updates[0]['field_place_lat_long']['und'][0]['geom'] = "POINT ("+localStorage.latlon+")";
+        updates['field_actionitem_ftreportitem'] = {};
+        updates['field_actionitem_ftreportitem']['und'] = [];
+        updates['field_actionitem_ftreportitem']['und'][0] = {};
+        updates['field_actionitem_ftreportitem']['und'][0]['target_id'] = localStorage.snid;
 
-        updates[0]['field_place_responsible_person'] = {};
-        updates[0]['field_place_responsible_person']['und'] = [];
-        updates[0]['field_place_responsible_person']['und'][0] = {};
-        updates[0]['field_place_responsible_person']['und'][0]['value'] = $('#location_contact').val();
+        updates['field_place_lat_long'] = {};
+        updates['field_place_lat_long']['und'] = [];
+        updates['field_place_lat_long']['und'][0] = {};
+        updates['field_place_lat_long']['und'][0]['geom'] = "POINT ("+localStorage.latlon+")";
 
-        updates[0]['field_place_responsible_phone'] = {};
-        updates[0]['field_place_responsible_phone']['und'] = [];
-        updates[0]['field_place_responsible_phone']['und'][0] = {};
-        updates[0]['field_place_responsible_phone']['und'][0]['value'] = $('#location_phone').val();
+        updates['field_place_responsible_person'] = {};
+        updates['field_place_responsible_person']['und'] = [];
+        updates['field_place_responsible_person']['und'][0] = {};
+        updates['field_place_responsible_person']['und'][0]['value'] = $('#location_contact').val();
 
-        updates[0]['field_place_responsible_email'] = {};
-        updates[0]['field_place_responsible_email']['und'] = [];
-        updates[0]['field_place_responsible_email']['und'][0] = {};
-        updates[0]['field_place_responsible_email']['und'][0]['email'] = $('#location_email').val();
+        updates['field_place_responsible_phone'] = {};
+        updates['field_place_responsible_phone']['und'] = [];
+        updates['field_place_responsible_phone']['und'][0] = {};
+        updates['field_place_responsible_phone']['und'][0]['value'] = $('#location_phone').val();
 
-        updates[0]['field_place_responsible_website'] = {};
-        updates[0]['field_place_responsible_website']['und'] = [];
-        updates[0]['field_place_responsible_website']['und'][0] = {};
-        updates[0]['field_place_responsible_website']['und'][0]['url'] = $('#location_website').val();
+        updates['field_place_responsible_email'] = {};
+        updates['field_place_responsible_email']['und'] = [];
+        updates['field_place_responsible_email']['und'][0] = {};
+        updates['field_place_responsible_email']['und'][0]['email'] = $('#location_email').val();
 
-        updates[0]['field_actionitem_status'] = {};
-        updates[0]['field_actionitem_status']['und'] = [];
-        updates[0]['field_actionitem_status']['und'][0] = {};
+        updates['field_place_responsible_website'] = {};
+        updates['field_place_responsible_website']['und'] = [];
+        updates['field_place_responsible_website']['und'][0] = {};
+        updates['field_place_responsible_website']['und'][0]['url'] = $('#location_website').val();
+
+        updates['field_actionitem_status'] = {};
+        updates['field_actionitem_status']['und'] = [];
+        updates['field_actionitem_status']['und'][0] = {};
 
         //get placetypes information
-        updates[0]['taxonomy_vocabulary_1'] = {};
-        updates[0]['taxonomy_vocabulary_1']['und'] = [];
-        updates[0]['taxonomy_vocabulary_1']['und'][0] = {};
-        updates[0]['taxonomy_vocabulary_1']['und'][0]['tid'] = $('#select_placetype').val();
+        updates['taxonomy_vocabulary_1'] = {};
+        updates['taxonomy_vocabulary_1']['und'] = [];
+        updates['taxonomy_vocabulary_1']['und'][0] = {};
+        updates['taxonomy_vocabulary_1']['und'][0]['tid'] = $('#select_placetype').val();
 
         //get district information
-        updates[0]['taxonomy_vocabulary_6'] = {};
-        updates[0]['taxonomy_vocabulary_6']['und'] = [];
-        updates[0]['taxonomy_vocabulary_6']['und'][0] = {};
-        updates[0]['taxonomy_vocabulary_6']['und'][0]['tid'] = "93";
+        updates['taxonomy_vocabulary_6'] = {};
+        updates['taxonomy_vocabulary_6']['und'] = [];
+        updates['taxonomy_vocabulary_6']['und'][0] = {};
+        updates['taxonomy_vocabulary_6']['und'][0]['tid'] = "93";
 
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getAllplaces(db, function (locations) {
             for (var k in locations) {
-              if (locations[k]['user-added'] && locations[k]['nid'] == updates[0]['nid']) {
-                updates[0]['nid'] = locations[k]['nid'] + 1;
+              if (locations[k]['user-added'] && locations[k]['nid'] == updates['nid']) {
+                updates['nid'] = locations[k]['nid'] + 1;
 
               }
             }
 
             devtrac.indexedDB.addPlacesData(db, updates).then(function(){
-              controller.createSitevisitfromlocation(updates[0]['nid'], $('#location_name').val());
+              controller.createSitevisitfromlocation(updates['nid'], $('#location_name').val());
 
               controller.clearWatch();
               $("#imagePreview").html("");

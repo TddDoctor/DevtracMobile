@@ -8,7 +8,7 @@ devtrac.indexedDBopen = function(callback) {
 
   var version = 1;
 
-  var request = indexedDB.open("g3", version);
+  var request = indexedDB.open("g4", version);
 
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -23,7 +23,7 @@ devtrac.indexedDB.open = function(callback) {
 
   var version = 1;
 
-  var request = indexedDB.open("g3", version);
+  var request = indexedDB.open("g4", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -368,12 +368,10 @@ devtrac.indexedDB.addPlacesData = function(db, placeObj) {
   var request;
 
   if(placeObj != undefined) {
-    for (var i in placeObj) {
-      request = store.add(placeObj[i]);
-    }
+    request = store.add(placeObj);
 
     request.onsuccess = function(e) {
-      console.log("placces saved");
+      console.log("places saved");
       d.resolve();
     };
 
@@ -422,7 +420,7 @@ devtrac.indexedDB.getAllTaxonomyItems = function(db, storename, callback) {
 
       childarray = [];
       childarray.push(childobject);
-      
+
       var taxonomyobject = {"hname": category_name, "htid": htid, "children": childarray};
       taxonomies.push(taxonomyobject);
 
@@ -432,7 +430,7 @@ devtrac.indexedDB.getAllTaxonomyItems = function(db, storename, callback) {
       var childname = result.value["dname"];
       var childId = result.value["tid"];
       var childobject = {"cname": childname, "tid": childId};
-      
+
       taxonomies[taxonomies.length - 1]['children'].push(childobject);
     }
 
@@ -569,7 +567,7 @@ devtrac.indexedDB.getImage = function(db, inid, newnid, vd, siteid) {
     }else{
       d.reject();      
     }
-    
+
   };
 
   return d;

@@ -46,8 +46,8 @@ var controller = {
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
-      localStorage.appurl = "http://192.168.38.114/dt11";
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://192.168.38.114/dt11";
+      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://10.0.2.2/dt11";
 
       //}
@@ -1834,12 +1834,15 @@ var controller = {
           devtrac.indexedDB.addSiteVisitsData(db, updates).then(function() {
             controller.refreshSitevisits();
             
-            devtrac.indexedDB.addImages(db, images).then(function() {
-              controller.b64Images = [];
-              controller.fnames = [];
-              controller.fsizes = [];
-              
-            });
+            if(images['sizes'].length > 0) {
+
+              devtrac.indexedDB.addImages(db, images).then(function() {
+                controller.b64Images = [];
+                controller.fnames = [];
+                controller.fsizes = [];
+                
+              });
+            }
 
           });
 
@@ -1919,12 +1922,17 @@ var controller = {
 
             devtrac.indexedDB.addSiteVisitsData(db, updates).then(function() {
               controller.refreshSitevisits();
-              devtrac.indexedDB.addImages(db, images).then(function() {
-                controller.base64Images = [];
-                controller.filenames = [];
-                controller.filesizes = [];
-                controller.filedimensions = [];
-              });
+              
+              if(images['sizes'].length > 0) {
+                devtrac.indexedDB.addImages(db, images).then(function() {
+                  controller.base64Images = [];
+                  controller.filenames = [];
+                  controller.filesizes = [];
+                  controller.filedimensions = [];
+                });  
+                
+              }
+              
               controller.resetForm($('#form_sitevisit_add'));
               $("#uploadPreview").html("");
               $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);  

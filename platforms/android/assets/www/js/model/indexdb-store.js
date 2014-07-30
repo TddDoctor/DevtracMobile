@@ -6,9 +6,9 @@ devtrac.indexedDB.db = null;
 
 devtrac.indexedDBopen = function(callback) {
 
-  var version = 2;
+  var version = 1;
 
-  var request = indexedDB.open("g2", version);
+  var request = indexedDB.open("g3", version);
 
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -21,9 +21,9 @@ devtrac.indexedDBopen = function(callback) {
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
 
-  var version = 2;
+  var version = 1;
 
-  var request = indexedDB.open("g2", version);
+  var request = indexedDB.open("g3", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -559,11 +559,19 @@ devtrac.indexedDB.getImage = function(db, inid, newnid, vd, siteid) {
   var d = $.Deferred();
   var trans = db.transaction(["images"], "readonly");
   var store = trans.objectStore("images");
+  var image = null;
 
   var index = store.index("nid");
   index.get(inid).onsuccess = function(event) {
-    d.resolve(event.target.result, newnid, vd, siteid);
+    image = event.target.result;
+    if(image != undefined){
+      d.resolve(image, newnid, vd, siteid);  
+    }else{
+      d.reject();      
+    }
+    
   };
+
   return d;
 };
 

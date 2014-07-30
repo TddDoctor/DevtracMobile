@@ -604,6 +604,27 @@ var devtracnodes = {
 
                 });
 
+              }).fail(function(){
+                newsitevisits[updates['nid']] = sitevisits[0]['title'];
+                /*todo: */  
+                devtrac.indexedDB.editSitevisit(db, sitevisits[0]['nid'], updates).then(function() {
+                  var count_container = $("#sitevisit_count").html().split(" ");
+                  if(typeof parseInt(count_container[0]) == "number") {
+                    var updated_count = parseInt(count_container[0]) - 1;
+                    $("#sitevisit_count").html(updated_count);
+                  }
+                  else
+                  {                      
+                    $("#sitevisit_count").html(0);
+                  }
+
+                  devtrac.indexedDB.deleteSitevisit(db, sitevisits[0]['nid']);
+
+                  controller.refreshSitevisits();
+                  sitevisits.splice(0, 1);
+
+                  devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, callback);
+                });
               });
 
               //if post node fails because of expired token, restart
@@ -993,6 +1014,24 @@ var devtracnodes = {
                     });                   
                   }
 
+                });
+              }).fail(function(){
+                /*todo*/ 
+                devtrac.indexedDB.editSitevisit(db, sitevisits[0]['nid'], updates).then(function() {
+                  var count_container = $("#sitevisit_count").html().split(" ");
+                  if(typeof parseInt(count_container[0]) == "number") {
+                    var updated_count = parseInt(count_container[0]) - 1;
+                    $("#sitevisit_count").html(updated_count);
+                  }
+                  else
+                  {
+                    $("#sitevisit_count").html(0);
+                  }
+
+                  ftritemdetails[updates['nid']] =  sitevisits[0]['title'];
+                  sitevisits.splice(0, 1);
+
+                  devtracnodes.postSitevisitHelper(sitevisits, names, newnids, ftritemdetails, callback);
                 });
               });
 

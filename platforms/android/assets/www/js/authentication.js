@@ -276,5 +276,6 @@ var auth = {
         });
 
       });
+      return d;
     }
 } 

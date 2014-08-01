@@ -47,9 +47,10 @@ var controller = {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
       //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-      //localStorage.appurl = "http://demo.devtrac.org";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://demo.devtrac.org";
       //localStorage.appurl = "http://10.0.2.2/dt11";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
 
       //}
 
@@ -69,6 +70,9 @@ var controller = {
 
               //load field trip details from the database if its one and the list if there's more.
               controller.loadFieldTripList();
+            }).fail(function(error){
+              $.mobile.changePage("#home_page", "slide", true, false);
+              controller.loadingMsg("Fieldtrips Error: "+error,5000);
             });
 
           });
@@ -109,29 +113,30 @@ var controller = {
       $('#refreshme').initBubble();
       devtrac.indexedDB.open(function (db) {
         devtracnodes.getFieldtrips(db).then(function () {
-          vocabularies.getPlacetypeVocabularies(db).then(function(){
-            devtracnodes.getSiteVisits(db).then(function(){
-              devtracnodes.getQuestions(db).then(function() {
-
-                devtracnodes.getActionItems(db);
-                devtracnodes.getPlaces(db);
-                d.resolve();
-              }).fail(function(e) {
-                $.unblockUI();
-
-              });
-
-            }).fail(function(error){
-              $.unblockUI();
-              alert(error+". Try Later");
+          
+          devtracnodes.getSiteVisits(db).then(function(){
+            devtracnodes.getActionItems(db);
+            devtracnodes.getPlaces(db);
+            
+            devtracnodes.getQuestions(db).then(function() {
+              
+            }).fail(function(e) {
             });
+            
             vocabularies.getOecdVocabularies(db).then(function(){
             });
+            
+            vocabularies.getPlacetypeVocabularies(db).then(function(){
+            });
+            
+            d.resolve();
+
+          }).fail(function(error){
+            d.reject(error);
           });
 
         }).fail(function(error){
-          $.unblockUI();
-          alert(error+". Try Later");
+          d.reject(error);
         });
       });
 
@@ -282,6 +287,9 @@ var controller = {
 
                   controller.fetchAllData().then(function(){
                     controller.loadFieldTripList();          
+                  }).fail(function(error){
+                    $.mobile.changePage("#home_page", "slide", true, false);
+                    controller.loadingMsg("Fieldtrips Error: "+error,5000);
                   });
 
 
@@ -574,6 +582,9 @@ var controller = {
 
                   //load field trip details from the database if its one and the list if there's more.
                   controller.loadFieldTripList();
+                }).fail(function(error) {
+                  $.mobile.changePage("#home_page", "slide", true, false);
+                  controller.loadingMsg("Fieldtrips Error: "+error,5000);
                 });
 
               });
@@ -1669,7 +1680,7 @@ var controller = {
     //save location
     onSavelocation: function () {
       var locationcount = 0;
-      if ($("#form_add_location").valid()) {
+      //if ($("#form_add_location").valid()) {
         
         //save added location items
         var updates = {};
@@ -1721,7 +1732,7 @@ var controller = {
         updates['taxonomy_vocabulary_1'] = {};
         updates['taxonomy_vocabulary_1']['und'] = [];
         updates['taxonomy_vocabulary_1']['und'][0] = {};
-        updates['taxonomy_vocabulary_1']['und'][0]['tid'] = $('#select_placetype').val();
+        updates['taxonomy_vocabulary_1']['und'][0]['tid'] = "58";//$('#select_placetype').val();
 
         //get district information
         updates['taxonomy_vocabulary_6'] = {};
@@ -1738,7 +1749,7 @@ var controller = {
               }
             }
 
-            devtrac.indexedDB.addPlacesData(db, updates).then(function(){
+            devtrac.indexedDB.addPlacesData(db, updates).then(function() {
               controller.createSitevisitfromlocation(updates['nid'], $('#location_name').val());
 
               controller.clearWatch();
@@ -1750,9 +1761,9 @@ var controller = {
           });
 
         });  
-      }else{
+/*      }else{
         console.log("location form is invalid");
-      }
+      }*/
 
       controller.resetForm($('#form_sitereporttype'));
     },

@@ -57,6 +57,7 @@ var vocabularies = {
         //create bubble notification
           if(data.length <= 0) {
             devtracnodes.notify("Placetypes Data Unavailable.");
+            d.reject("No Placetypes Found");
           }else{
             
             devtrac.indexedDB.open(function (dbs) {

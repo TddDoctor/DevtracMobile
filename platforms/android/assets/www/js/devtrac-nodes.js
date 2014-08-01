@@ -1436,11 +1436,13 @@ var devtracnodes = {
             devtracnodes.notify("Fieldtrips Data Unavailable");
             $.unblockUI();
 
-            controller.loadingMsg("Please Create Fieldtrips in Devtrac",2000);
+            d.reject("No Fieldtrips Found");
+
           }
           else {
             devtrac.indexedDB.addFieldtripsData(db, data).then(function() {
-              devtracnodes.notify("Fieldtrips Saved");
+              //devtracnodes.notify("Fieldtrips Saved");
+              controller.loadingMsg("Fieldtrips Saved",5000);
               d.resolve();
             }).fail(function() {
               console.log("Error saving fieldtrips");
@@ -1479,8 +1481,8 @@ var devtracnodes = {
                 }else{
 
                   devtracnodes.saveSiteVisit(db, data, 0).then(function(){
-                    devtracnodes.notify("Sitevisits Saved");
-
+                    //devtracnodes.notify("Sitevisits Saved");
+                    controller.loadingMsg("Sitevisits Saved",5000);
                   }).fail(function(e){
                     devtracnodes.notify("Sitevisits Not Saved, Reload Data");
                   });

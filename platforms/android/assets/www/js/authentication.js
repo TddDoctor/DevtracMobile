@@ -133,7 +133,7 @@ var auth = {
     },
 
     //login to devtrac
-    login: function(name, pass) {
+    login: function(name, pass, db) {
       var d = $.Deferred();
       // Obtain session token.
       auth.getToken().then(function (token) {
@@ -160,24 +160,6 @@ var auth = {
           },
           success : function(data) {
             
-            if(window.localStorage.getItem("dataflag") != data.user.uid){
-              window.localStorage.removeItem("dataflag");
-              window.localStorage.setItem("dataflag", data.user.uid)
-              devtrac.indexedDB.open(function (db) {
-                for(var x in controller.objectstores) {
-                  devtrac.indexedDB.deleteAllTables(db, controller.objectstores[x]).then(function(){
-
-                  }).fail(function(){
-
-                  });
-                }
-
-
-
-              });
-            }
-
-            
             localStorage.username = name;
             localStorage.pass = pass;
             localStorage.uid = data.user.uid;
@@ -191,7 +173,23 @@ var auth = {
             }else{
               localStorage.usertitle = "Unavailable";
             }
+            
+            if(window.localStorage.getItem("dataflag") != data.user.uid) {
+              window.localStorage.removeItem("dataflag");
+              window.localStorage.setItem("dataflag", data.user.uid);
+              
+              for(var store in controller.objectstores){
 
+                devtrac.indexedDB.getAllItems(db, controller.objectstores[store], function(records) {
+                  
+                  console.log("deleted all stores");
+
+              });
+
+              }                 
+              
+            }
+            
             // Obtain session token.
             auth.getToken().then(function (token) {
               localStorage.usertoken = token;

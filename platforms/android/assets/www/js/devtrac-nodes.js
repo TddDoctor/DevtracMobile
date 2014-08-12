@@ -1442,7 +1442,7 @@ var devtracnodes = {
           else {
             devtrac.indexedDB.addFieldtripsData(db, data).then(function() {
               //devtracnodes.notify("Fieldtrips Saved");
-              controller.loadingMsg("Fieldtrips Saved",5000);
+              
               d.resolve();
             }).fail(function() {
               console.log("Error saving fieldtrips");
@@ -1458,11 +1458,10 @@ var devtracnodes = {
     },
 
     //Returns devtrac site visit json list 
-    getSiteVisits: function(db) {
-      var d = $.Deferred();
+    getSiteVisits: function(db, callback) {
 
-      devtrac.indexedDB.getAllFieldtripItems(db, function(fnid){
-        if(controller.sizeme(fnid) > 0){
+      devtrac.indexedDB.getAllFieldtripItems(db, function(fnid) {
+        if(controller.sizeme(fnid) > 0) {
           for(var key in fnid) {
             $.ajax({
               url : localStorage.appurl+"/api/views/api_fieldtrips.json?display_id=sitevisits&filters[field_ftritem_field_trip_target_id]="+fnid[key]['nid'],
@@ -1471,23 +1470,19 @@ var devtracnodes = {
               error : function(XMLHttpRequest, textStatus, errorThrown) { 
                 //create bubble notification
                 devtracnodes.notify("Sitevisits. "+errorThrown);
-                d.reject(errorThrown);
+                callback("Error "+errorThrown);
               },
               success : function(data) {
                 //create bubble notification
                 if(data.length <= 0) {
                   devtracnodes.notify("Sitevisits Data Unavailable");
-                  d.resolve();
+                  callback();
                 }else{
 
-                  devtracnodes.saveSiteVisit(db, data, 0).then(function(){
-                    //devtracnodes.notify("Sitevisits Saved");
-                    controller.loadingMsg("Sitevisits Saved",5000);
-                  }).fail(function(e){
-                    devtracnodes.notify("Sitevisits Not Saved, Reload Data");
+                  devtracnodes.saveSiteVisit(db, data, function() {
+                    callback();
                   });
 
-                  d.resolve();
                 }
 
               }
@@ -1495,11 +1490,14 @@ var devtracnodes = {
 
           }
         }else {
-          devtracnodes.getSiteVisits(db);
+          devtracnodes.getSiteVisits(db, callback);
         }
 
       });
-      return d;
+    },
+    
+    pullSitevisits: function(){
+      
     },
 
     //Returns devtrac action items json list 
@@ -1524,7 +1522,7 @@ var devtracnodes = {
               }else{
                 data[0]['submit'] = 0;
                 devtracnodes.saveActionItems(db, data, 0).then(function(){
-                  d.resolve();
+                  d.resolve("Action Items Saved");
                 });
               }
             }
@@ -1551,20 +1549,21 @@ var devtracnodes = {
       return d;
     },
 
-    saveSiteVisit: function(db, data, count) {
-      var d = $.Deferred();
+    saveSiteVisit: function(db, data, callback) {
       var arrlength = data.length;
-      var counter = count;
 
-      if(counter != arrlength) {
-        devtrac.indexedDB.addSiteVisitsData(db, data[counter]);
-        counter = counter + 1;
-        devtracnodes.saveSiteVisit(db, data, counter); 
+      if(arrlength > 0 && data[0] != undefined && data[0] != null) {
+        
+        devtrac.indexedDB.addSiteVisitsData(db, data[0]).then(function(){
+          data.shift();
+          devtracnodes.saveSiteVisit(db, data, callback);  
+        });
+         
       }
       else {
-        d.resolve();
+        callback();
       }
-      return d;
+
     },
 
     //Returns devtrac places json list 
@@ -1589,6 +1588,7 @@ var devtracnodes = {
             for(var item in data){
               devtrac.indexedDB.addPlacesData(db, data[item]).then(function(){
                 devtracnodes.notify("Places Saved");
+                controller.loadingMsg("Places Saved",1000);
 
               }).fail(function(e) {
                 if(e.target.error.message != "Key already exists in the object store." && e.target.error.message != undefined) {
@@ -1616,9 +1616,7 @@ var devtracnodes = {
               devtracnodes.downloadPlaces(db, snid[k]['nid']);
             }
           }
-        }/*else {
-          devtracnodes.getPlaces(db);
-        }*/
+        }
       });
     },
 
@@ -1643,8 +1641,8 @@ var devtracnodes = {
           }else {
 
             devtrac.indexedDB.addQuestionsData(db, data).then(function(){
-              devtracnodes.notify("Questions Saved");
-              d.resolve();
+              //devtracnodes.notify("Questions Saved");
+              d.resolve("Questions Saved");
             }).fail(function(e) {
 
               d.resolve();

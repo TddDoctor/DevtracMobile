@@ -4,13 +4,15 @@ var controller = {
     filenames : [],
     filedimensions: [],
     filesizes : [],
-    
+
     b64Images : [],
     fnames : [],
     fdimensions: [],
     fsizes : [],
-    
+
     watchID : null,
+    nodes : [devtracnodes.getActionItems, devtracnodes.getQuestions, vocabularies.getOecdVocabularies, vocabularies.getPlacetypeVocabularies],
+             
     objectstores: ["oecdobj", "placetype", "fieldtripobj", "sitevisit", "actionitemsobj", "placesitemsobj", "qtnsitemsobj", "qtionairesitemsobj", "commentsitemsobj","images"],
 
     // Application Constructor
@@ -41,13 +43,13 @@ var controller = {
 
       $(window).bind('orientationchange pageshow pagechange resize', mapctlr.resizeMapIfVisible);
 
-      
+
       //set application url if its not set
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
-      //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://192.168.38.114/dt11";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://demo.devtrac.org";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
@@ -72,7 +74,7 @@ var controller = {
               controller.loadFieldTripList();
             }).fail(function(error){
               $.mobile.changePage("#home_page", "slide", true, false);
-              controller.loadingMsg("Fieldtrips Error: "+error,5000);
+              controller.loadingMsg(error,5000);
             });
 
           });
@@ -113,26 +115,27 @@ var controller = {
       $('#refreshme').initBubble();
       devtrac.indexedDB.open(function (db) {
         devtracnodes.getFieldtrips(db).then(function () {
-          
-          devtracnodes.getSiteVisits(db).then(function(){
-            devtracnodes.getActionItems(db);
+
+          controller.loadingMsg("Fieldtrips Saved",1000);
+          devtracnodes.getSiteVisits(db, function(response) {
+            
+            controller.loadingMsg("Sitevisits Saved", 1000);
+            
             devtracnodes.getPlaces(db);
             
-            devtracnodes.getQuestions(db).then(function() {
+            for(var x = 0; x < controller.nodes.length; x++) {
+                controller.nodes[x](db).then(function(response) {
+                  controller.loadingMsg(response, 800);
+                }).fail(function(e) {
+                  controller.loadingMsg(e, 800);
+                });  
               
-            }).fail(function(e) {
-            });
-            
-            vocabularies.getOecdVocabularies(db).then(function(){
-            });
-            
-            vocabularies.getPlacetypeVocabularies(db).then(function(){
-            });
-            
-            d.resolve();
+              if(x == controller.nodes.length - 1){
+                d.resolve();
+              }
+              
+            }
 
-          }).fail(function(error){
-            d.reject(error);
           });
 
         }).fail(function(error){
@@ -215,13 +218,13 @@ var controller = {
 
           devtracnodes.countSitevisits(db).then(function(scount){
             $("#sitevisit_count").html(scount);
-            
+
             devtracnodes.countLocations(db).then(function(items) {
               $("#location_count").html(items);
             }).fail(function(lcount){
               $("#location_count").html(lcount);
             });
-            
+
             devtracnodes.checkActionitems(db).then(function(actionitems, items) {
               $("#actionitem_count").html(items);
             }).fail(function(acount){
@@ -289,7 +292,10 @@ var controller = {
                     controller.loadFieldTripList();          
                   }).fail(function(error){
                     $.mobile.changePage("#home_page", "slide", true, false);
-                    controller.loadingMsg("Fieldtrips Error: "+error,5000);
+                    if(error.indexOf("field") != -1){
+                      controller.loadingMsg(error,5000);  
+                    }
+                    
                   });
 
 
@@ -419,8 +425,8 @@ var controller = {
         if(F && F[0]) for(var i=0; i<F.length; i++) controller.readImage( F[i], "roadside" );  
 
       });
-      
-    //read image from roadside visit
+
+      //read image from roadside visit
       $('#sitevisitfile').on('change', function(event, ui) {
         if(this.disabled) return alert('File upload not supported!');
         var F = this.files;
@@ -500,13 +506,13 @@ var controller = {
             localStorage.appurl = "http://192.168.38.114/dt11";
             controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
             break;
-            
-            
+
+
           case "Cloud":
             localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
             controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
             break;
-            
+
           case "DevtracManual":
             localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
             controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
@@ -524,7 +530,7 @@ var controller = {
             localStorage.appurl = "http://demo.devtrac.org";
             controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
             break;
-            
+
           default:
             break;
           }
@@ -537,7 +543,7 @@ var controller = {
       $('.seturlselect').bind("click", function (event, ui) {
         $(".myurl").val("");
       });
-      
+
       //on click url select setting, clear textfield
       $("a.chosen-single span").bind("click", function (event, ui) {
         $(".myurl").val("");
@@ -564,41 +570,45 @@ var controller = {
       $('#page_login_submit').bind("click", function (event, ui) {
         if ($("#page_login_name").valid() && $("#page_login_pass").valid()) {
 
-          if(controller.connectionStatus){
+          if(controller.connectionStatus) {
 
-            auth.login($('#page_login_name').val(), $('#page_login_pass').val()).then(function () {
+            devtrac.indexedDB.open(function (db) {
+              auth.login($('#page_login_name').val(), $('#page_login_pass').val(), db).then(function () {
 
-              if($("#checkbox-mini-0").is(":checked")){
-                window.localStorage.setItem("usernam", $("#page_login_name").val());
-                window.localStorage.setItem("passw", $("#page_login_pass").val());
+                if($("#checkbox-mini-0").is(":checked")){
+                  window.localStorage.setItem("usernam", $("#page_login_name").val());
+                  window.localStorage.setItem("passw", $("#page_login_pass").val());
 
-              }else{
-                window.localStorage.removeItem("usernam");
-                window.localStorage.removeItem("passw");
-              }
+                }else{
+                  window.localStorage.removeItem("usernam");
+                  window.localStorage.removeItem("passw");
+                }
 
 
-              devtracnodes.countFieldtrips().then(function(){
-                //load field trip details from the database if its one and the list if there's more.
-                controller.loadFieldTripList();
-
-              }).fail(function(){
-                //download all devtrac data for user.
-                controller.fetchAllData().then(function(){
-
+                devtracnodes.countFieldtrips().then(function(){
                   //load field trip details from the database if its one and the list if there's more.
                   controller.loadFieldTripList();
-                }).fail(function(error) {
-                  $.mobile.changePage("#home_page", "slide", true, false);
-                  controller.loadingMsg("Fieldtrips Error: "+error,5000);
+
+                }).fail(function() {
+                  //download all devtrac data for user.
+                  controller.fetchAllData().then(function(){
+
+                    //load field trip details from the database if its one and the list if there's more.
+                    controller.loadFieldTripList();
+                  }).fail(function(error) {
+                    $.mobile.changePage("#home_page", "slide", true, false);
+                    controller.loadingMsg(error,5000);
+                  });
+
                 });
 
+              }).fail(function (errorThrown) {
+                $.unblockUI();
+
               });
-
-            }).fail(function (errorThrown) {
-              $.unblockUI();
-
+              
             });
+            
           }else{
             controller.loadingMsg("Please Connect to Internet ...", 1000);
           }
@@ -724,20 +734,20 @@ var controller = {
 
         var n = file.name,
         s = ~~(file.size/1024) +'KB';
-        
+
         if(ftritemtype == "roadside")
         {
           controller.filenames.push(n);
           controller.base64Images.push(image.src);
           controller.filesizes.push(~~(file.size/1024));
           $("#uploadPreview").append('<div>'+n+" "+~~(file.size/1024)+'kb</div>');
-          
+
         }else
         {
           controller.fnames.push(n);
           controller.b64Images.push(image.src);
           controller.fsizes.push(~~(file.size/1024));
-          
+
           $("#imagePreview").append('<div>'+n+" "+~~(file.size/1024)+'kb</div>');
         }
 
@@ -893,20 +903,6 @@ var controller = {
             fieldtripList.listview().listview('refresh');
             $("#fieldtrip_count").html(count);
 
-            var sitevisitcount = 0;
-            devtrac.indexedDB.open(function (db) {
-              devtrac.indexedDB.getAllSitevisits(db, function (sitevisit) {
-                for (var i in sitevisit) {
-                  if((sitevisit[i]['user-added'] == true && sitevisit[i]['submit'] == 0) || sitevisit[i]['editflag'] == 1) {
-                    sitevisitcount = sitevisitcount + 1;
-                  } 
-                }
-                $("#sitevisit_count").html(sitevisitcount);
-              });
-
-            });
-
-
             $.mobile.changePage("#home_page", "slide", true, false);
             $.unblockUI();
           } else if (data.length == 1) {
@@ -995,7 +991,6 @@ var controller = {
 
             fieldtripList.listview().listview('refresh');
 
-
             var sitevisitcount = 0;
             devtrac.indexedDB.open(function (db) {
               devtrac.indexedDB.getAllSitevisits(db, function (sitevisit) {
@@ -1032,11 +1027,11 @@ var controller = {
                 $("#sitevisit_count").html(sitevisitcount);
                 sitevisitList.listview().listview('refresh');
 
-                $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
-                $.unblockUI();
+                
               });
 
             });
+            $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
             $.unblockUI();
           } else {
             //load field trip details from the database if its one and the list if there's more.
@@ -1147,7 +1142,7 @@ var controller = {
         localStorage.ftritemtype = $("#sitevisit_add_type").val();
 
         localStorage.ftritemdistrict = $("#location_district").val();
-        
+
         if(localStorage.ftritemtype == "210") {
 
           $( "#sitevisit_add_date" ).datepicker( "destroy" );
@@ -1687,87 +1682,87 @@ var controller = {
     onSavelocation: function () {
       var locationcount = 0;
       //if ($("#form_add_location").valid()) {
-        
-        //save added location items
-        var updates = {};
 
-        updates['user-added'] = true;
-        updates['nid'] = 1;
+      //save added location items
+      var updates = {};
 
-        updates['title'] = $('#location_name').val();
-        updates['status'] = 1;
-        updates['type'] = 'place';
-        updates['submit'] = 0;
-        updates['uid'] = localStorage.uid;
+      updates['user-added'] = true;
+      updates['nid'] = 1;
 
-        updates['field_actionitem_ftreportitem'] = {};
-        updates['field_actionitem_ftreportitem']['und'] = [];
-        updates['field_actionitem_ftreportitem']['und'][0] = {};
-        updates['field_actionitem_ftreportitem']['und'][0]['target_id'] = localStorage.snid;
+      updates['title'] = $('#location_name').val();
+      updates['status'] = 1;
+      updates['type'] = 'place';
+      updates['submit'] = 0;
+      updates['uid'] = localStorage.uid;
 
-        updates['field_place_lat_long'] = {};
-        updates['field_place_lat_long']['und'] = [];
-        updates['field_place_lat_long']['und'][0] = {};
-        updates['field_place_lat_long']['und'][0]['geom'] = "POINT ("+localStorage.latlon+")";
+      updates['field_actionitem_ftreportitem'] = {};
+      updates['field_actionitem_ftreportitem']['und'] = [];
+      updates['field_actionitem_ftreportitem']['und'][0] = {};
+      updates['field_actionitem_ftreportitem']['und'][0]['target_id'] = localStorage.snid;
 
-        updates['field_place_responsible_person'] = {};
-        updates['field_place_responsible_person']['und'] = [];
-        updates['field_place_responsible_person']['und'][0] = {};
-        updates['field_place_responsible_person']['und'][0]['value'] = $('#location_contact').val();
+      updates['field_place_lat_long'] = {};
+      updates['field_place_lat_long']['und'] = [];
+      updates['field_place_lat_long']['und'][0] = {};
+      updates['field_place_lat_long']['und'][0]['geom'] = "POINT ("+localStorage.latlon+")";
 
-        updates['field_place_responsible_phone'] = {};
-        updates['field_place_responsible_phone']['und'] = [];
-        updates['field_place_responsible_phone']['und'][0] = {};
-        updates['field_place_responsible_phone']['und'][0]['value'] = $('#location_phone').val();
+      updates['field_place_responsible_person'] = {};
+      updates['field_place_responsible_person']['und'] = [];
+      updates['field_place_responsible_person']['und'][0] = {};
+      updates['field_place_responsible_person']['und'][0]['value'] = $('#location_contact').val();
 
-        updates['field_place_responsible_email'] = {};
-        updates['field_place_responsible_email']['und'] = [];
-        updates['field_place_responsible_email']['und'][0] = {};
-        updates['field_place_responsible_email']['und'][0]['email'] = $('#location_email').val();
+      updates['field_place_responsible_phone'] = {};
+      updates['field_place_responsible_phone']['und'] = [];
+      updates['field_place_responsible_phone']['und'][0] = {};
+      updates['field_place_responsible_phone']['und'][0]['value'] = $('#location_phone').val();
 
-        updates['field_place_responsible_website'] = {};
-        updates['field_place_responsible_website']['und'] = [];
-        updates['field_place_responsible_website']['und'][0] = {};
-        updates['field_place_responsible_website']['und'][0]['url'] = $('#location_website').val();
+      updates['field_place_responsible_email'] = {};
+      updates['field_place_responsible_email']['und'] = [];
+      updates['field_place_responsible_email']['und'][0] = {};
+      updates['field_place_responsible_email']['und'][0]['email'] = $('#location_email').val();
 
-        updates['field_actionitem_status'] = {};
-        updates['field_actionitem_status']['und'] = [];
-        updates['field_actionitem_status']['und'][0] = {};
+      updates['field_place_responsible_website'] = {};
+      updates['field_place_responsible_website']['und'] = [];
+      updates['field_place_responsible_website']['und'][0] = {};
+      updates['field_place_responsible_website']['und'][0]['url'] = $('#location_website').val();
 
-        //get placetypes information
-        updates['taxonomy_vocabulary_1'] = {};
-        updates['taxonomy_vocabulary_1']['und'] = [];
-        updates['taxonomy_vocabulary_1']['und'][0] = {};
-        updates['taxonomy_vocabulary_1']['und'][0]['tid'] = "58";//$('#select_placetype').val();
+      updates['field_actionitem_status'] = {};
+      updates['field_actionitem_status']['und'] = [];
+      updates['field_actionitem_status']['und'][0] = {};
 
-        //get district information
-        updates['taxonomy_vocabulary_6'] = {};
-        updates['taxonomy_vocabulary_6']['und'] = [];
-        updates['taxonomy_vocabulary_6']['und'][0] = {};
-        updates['taxonomy_vocabulary_6']['und'][0]['tid'] = "93";
+      //get placetypes information
+      updates['taxonomy_vocabulary_1'] = {};
+      updates['taxonomy_vocabulary_1']['und'] = [];
+      updates['taxonomy_vocabulary_1']['und'][0] = {};
+      updates['taxonomy_vocabulary_1']['und'][0]['tid'] = "58";//$('#select_placetype').val();
 
-        devtrac.indexedDB.open(function (db) {
-          devtrac.indexedDB.getAllplaces(db, function (locations) {
-            for (var k in locations) {
-              if (locations[k]['user-added'] && locations[k]['nid'] == updates['nid']) {
-                updates['nid'] = locations[k]['nid'] + 1;
+      //get district information
+      updates['taxonomy_vocabulary_6'] = {};
+      updates['taxonomy_vocabulary_6']['und'] = [];
+      updates['taxonomy_vocabulary_6']['und'][0] = {};
+      updates['taxonomy_vocabulary_6']['und'][0]['tid'] = "93";
 
-              }
+      devtrac.indexedDB.open(function (db) {
+        devtrac.indexedDB.getAllplaces(db, function (locations) {
+          for (var k in locations) {
+            if (locations[k]['user-added'] && locations[k]['nid'] == updates['nid']) {
+              updates['nid'] = locations[k]['nid'] + 1;
+
             }
+          }
 
-            devtrac.indexedDB.addPlacesData(db, updates).then(function() {
-              controller.createSitevisitfromlocation(updates['nid'], $('#location_name').val());
+          devtrac.indexedDB.addPlacesData(db, updates).then(function() {
+            controller.createSitevisitfromlocation(updates['nid'], $('#location_name').val());
 
-              controller.clearWatch();
-              $("#imagePreview").html("");
-              $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
-              
-            });
+            controller.clearWatch();
+            $("#imagePreview").html("");
+            $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
 
           });
 
-        });  
-/*      }else{
+        });
+
+      });  
+      /*      }else{
         console.log("location form is invalid");
       }*/
 
@@ -1794,7 +1789,7 @@ var controller = {
 
       var updates = {};
       var images = {};
-      
+
       images['base64s'] = controller.b64Images;
       images['names'] = controller.fnames;
       images['sizes'] = controller.fsizes;
@@ -1858,14 +1853,14 @@ var controller = {
 
           devtrac.indexedDB.addSiteVisitsData(db, updates).then(function() {
             controller.refreshSitevisits();
-            
+
             if(images['sizes'].length > 0) {
 
               devtrac.indexedDB.addImages(db, images).then(function() {
                 controller.b64Images = [];
                 controller.fnames = [];
                 controller.fsizes = [];
-                
+
               });
             }
 
@@ -1947,7 +1942,7 @@ var controller = {
 
             devtrac.indexedDB.addSiteVisitsData(db, updates).then(function() {
               controller.refreshSitevisits();
-              
+
               if(images['sizes'].length > 0) {
                 devtrac.indexedDB.addImages(db, images).then(function() {
                   controller.base64Images = [];
@@ -1955,9 +1950,9 @@ var controller = {
                   controller.filesizes = [];
                   controller.filedimensions = [];
                 });  
-                
+
               }
-              
+
               controller.resetForm($('#form_sitevisit_add'));
               $("#uploadPreview").html("");
               $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);  
@@ -2222,6 +2217,23 @@ var controller = {
         } 
       }); 
 
+    },
+
+    deleteAllStores: function(stores, db, count, callback) {
+      
+      if(count <= 0){
+          devtrac.indexedDB.deleteAllTables(db, stores, function(response){
+            if(response != "Done"){
+              console.log("delete error "+response);
+            }else{
+              count = count + 1;
+              controller.deleteAllStores(stores, db, count,  callback);  
+            }
+            
+          });
+      }else{
+        callback();
+      }
     }
 
 };

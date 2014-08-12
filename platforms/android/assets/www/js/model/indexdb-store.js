@@ -64,6 +64,9 @@ devtrac.indexedDB.open = function(callback) {
     if(db.objectStoreNames.contains("sublocations")){
       db.deleteObjectStore("sublocations");
     }
+    if(db.objectStoreNames.contains("images")){
+      db.deleteObjectStore("images");
+    }
 
     var store = db.createObjectStore("oecdobj", {autoIncrement: true});
 
@@ -249,8 +252,6 @@ devtrac.indexedDB.addSiteVisitsData = function(db, sObj) {
       d.reject(e);
     };
   }else{
-    console.log("title is "+sObj['title']);
-    console.log("nid is "+sObj['nid']);
 
     if(!(sObj['dbsavetime'] && sObj['editflag'])){
       sObj['dbsavetime'] = timestamp;
@@ -992,30 +993,26 @@ devtrac.indexedDB.deleteActionitem = function(db, id) {
   };
 };
 
-//delete all tables in database
-devtrac.indexedDB.deleteAllTables = function(db, objectstore) {
-  var d = $.Deferred();
-  var trans = db.transaction([objectstore], "readwrite");
-  var store = trans.objectStore(objectstore);
+//get all nodes in database
+devtrac.indexedDB.getAllItems = function(db, storename, callback) {
+  var items = [];
+  var trans = db.transaction([storename], "readwrite");
+  var store = trans.objectStore(storename);
 
-  //Get everything in the store;
+  // Get everything in the store;
   var keyRange = IDBKeyRange.lowerBound(0);
   var cursorRequest = store.openCursor(keyRange);
 
   cursorRequest.onsuccess = function(e) {
     var result = e.target.result;
     if(!!result == false) {
-      d.resolve();
+      callback(items);
       return;
     }
-
+    
     store['delete'](result.key);
     result["continue"]();
   };
 
-  cursorRequest.onerror = function(e) {
-    d.reject(e);
-  }  
-
-  return d;
+  cursorRequest.onerror = devtrac.indexedDB.onerror;
 };

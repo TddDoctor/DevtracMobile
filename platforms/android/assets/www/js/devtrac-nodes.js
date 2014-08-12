@@ -165,15 +165,13 @@ var devtracnodes = {
                   var updated_count = parseInt(count_container[0]) - 1;
                   $("#actionitem_count").html(updated_count);
 
-                });            
+                });           
               });
 
               devtracnodes.postComments(updates).then(function() {
-                //$.unblockUI();
                 d.resolve();
 
               }).fail(function(){
-//              $.unblockUI();
                 d.resolve();
 
               });
@@ -239,7 +237,7 @@ var devtracnodes = {
 
           for(var ftritem in ftritems) {
 
-            if((ftritems[ftritem]['submit'] == 0 && ftritems[ftritem]['user-added'] == true)  || ftritems[ftritem]['editflag'] == 1) {              
+            if((ftritems[ftritem]['submit'] == 0 && ftritems[ftritem]['user-added'] == true && ftritems[ftritem]['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") || ftritems[ftritem]['editflag'] == 1) {              
               sitevisits.push(ftritems[ftritem]);
             }
 
@@ -330,30 +328,33 @@ var devtracnodes = {
       return d;
     },
 
-    checkActionitems: function(db) {
+    checkActionitems: function() {
       var d = $.Deferred();
       var actionitems = [];
       var items = 0;
 
-      devtrac.indexedDB.getAllActionitems(db, function(actionitems) {
+      devtrac.indexedDB.open(function (db) {
+        devtrac.indexedDB.getAllActionitems(db, function(actionitems) {
 
-        for(var actionitem in actionitems) {
+          for(var actionitem in actionitems) {
 
-          if(actionitems[actionitem]['submit'] == 0 && actionitems[actionitem]['user-added'] == true) {              
-            actionitems.push(actionitems[actionitem]);
-            items = items + 1;
+            if(actionitems[actionitem]['submit'] == 0 && actionitems[actionitem]['user-added'] == true) {              
+              actionitems.push(actionitems[actionitem]);
+              items = items + 1;
+            }
+
           }
 
-        }
-
-        if(actionitems.length > 0) {
-          d.resolve(actionitems, items);  
-        }else{
-          d.reject(items);
-        }
+          if(actionitems.length > 0) {
+            d.resolve(actionitems, items);  
+          }else{
+            d.reject(items);
+          }
 
 
-      });  
+        });
+      });
+
       return d;
     },
 
@@ -424,7 +425,7 @@ var devtracnodes = {
 
           devtrac.indexedDB.open(function (db) {
             /*todo*/
-            devtrac.indexedDB.editPlace(db, oldpnids[0], updates).then(function(pid) {
+           devtrac.indexedDB.editPlace(db, oldpnids[0], updates).then(function(pid) {
               var count_container = $("#location_count").html();
               var updated_count = parseInt(count_container) - 1;
               $("#location_count").html(updated_count);
@@ -435,6 +436,8 @@ var devtracnodes = {
 
             });
 
+            /*oldpnids.splice(0, 1);
+            devtracnodes.postLocationHelper(newlocationids, newlocationnames, oldids, postStrings, titlearray, oldpnids, callback);*/
           });
 
         }).fail(function(e) {
@@ -497,7 +500,7 @@ var devtracnodes = {
           });
 
         }else{
-          
+
           callback(e, "error");
 
         }
@@ -588,6 +591,11 @@ var devtracnodes = {
                           devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, callback);
                         });
 
+/*                        controller.refreshSitevisits();
+                        sitevisits.splice(0, 1);
+
+                        devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, callback);*/
+
                       }else if(updates.indexOf('Unauthorized') != -1){
                         auth.getToken().then(function(token) {
                           localStorage.usertoken = token;
@@ -625,6 +633,11 @@ var devtracnodes = {
 
                   devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, callback);
                 });
+
+/*                controller.refreshSitevisits();
+                sitevisits.splice(0, 1);
+
+                devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, callback);*/
               });
 
               //if post node fails because of expired token, restart
@@ -669,7 +682,11 @@ var devtracnodes = {
                   devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, callback);
                 });
 
+/*                controller.refreshSitevisits();
+                sitevisits.splice(0, 1);
 
+                devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, callback);
+*/
 
               }).fail(function(e){
                 if(e == "Unauthorized: CSRF validation failed" || e == "Unauthorized") {
@@ -1010,11 +1027,13 @@ var devtracnodes = {
                             $("#sitevisit_count").html(0);
                           }
 
-                          ftritemdetails[updates['nid']] =  sitevisits[0]['title'];
-                          sitevisits.splice(0, 1);
 
-                          devtracnodes.postSitevisitHelper(sitevisits, names, newnids, ftritemdetails, callback);
                         });
+
+/*                        ftritemdetails[updates['nid']] =  sitevisits[0]['title'];
+                        sitevisits.splice(0, 1);
+
+                        devtracnodes.postSitevisitHelper(sitevisits, names, newnids, ftritemdetails, callback);*/
 
                       }else if(updates.indexOf('Unauthorized') != -1) {
                         auth.getToken().then(function(token) {
@@ -1045,6 +1064,11 @@ var devtracnodes = {
 
                   devtracnodes.postSitevisitHelper(sitevisits, names, newnids, ftritemdetails, callback);
                 });
+
+/*                ftritemdetails[updates['nid']] =  sitevisits[0]['title'];
+                sitevisits.splice(0, 1);
+
+                devtracnodes.postSitevisitHelper(sitevisits, names, newnids, ftritemdetails, callback);*/
               });
 
             });
@@ -1070,7 +1094,7 @@ var devtracnodes = {
     },
 
     //check sitevisits to update
-    checkSitevisitforUpdate: function(){
+    checkSitevisitforUpdate: function() {
       var d = $.Deferred();
       var sitevisit = false;
 
@@ -1442,7 +1466,7 @@ var devtracnodes = {
           else {
             devtrac.indexedDB.addFieldtripsData(db, data).then(function() {
               //devtracnodes.notify("Fieldtrips Saved");
-              
+
               d.resolve();
             }).fail(function() {
               console.log("Error saving fieldtrips");
@@ -1495,9 +1519,9 @@ var devtracnodes = {
 
       });
     },
-    
+
     pullSitevisits: function(){
-      
+
     },
 
     //Returns devtrac action items json list 
@@ -1553,12 +1577,12 @@ var devtracnodes = {
       var arrlength = data.length;
 
       if(arrlength > 0 && data[0] != undefined && data[0] != null) {
-        
+
         devtrac.indexedDB.addSiteVisitsData(db, data[0]).then(function(){
           data.shift();
           devtracnodes.saveSiteVisit(db, data, callback);  
         });
-         
+
       }
       else {
         callback();

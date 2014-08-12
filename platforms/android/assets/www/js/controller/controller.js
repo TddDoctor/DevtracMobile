@@ -11,8 +11,9 @@ var controller = {
     fsizes : [],
 
     watchID : null,
+    watchid : null,
     nodes : [devtracnodes.getActionItems, devtracnodes.getQuestions, vocabularies.getOecdVocabularies, vocabularies.getPlacetypeVocabularies],
-             
+
     objectstores: ["oecdobj", "placetype", "fieldtripobj", "sitevisit", "actionitemsobj", "placesitemsobj", "qtnsitemsobj", "qtionairesitemsobj", "commentsitemsobj","images"],
 
     // Application Constructor
@@ -48,8 +49,8 @@ var controller = {
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
-      //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://192.168.38.114/dt11";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://demo.devtrac.org";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
@@ -116,24 +117,24 @@ var controller = {
       devtrac.indexedDB.open(function (db) {
         devtracnodes.getFieldtrips(db).then(function () {
 
-          controller.loadingMsg("Fieldtrips Saved",1000);
+          controller.loadingMsg("Fieldtrips Saved",1500);
           devtracnodes.getSiteVisits(db, function(response) {
-            
-            controller.loadingMsg("Sitevisits Saved", 1000);
-            
+
+            controller.loadingMsg("Sitevisits Saved", 1500);
+
             devtracnodes.getPlaces(db);
-            
+
             for(var x = 0; x < controller.nodes.length; x++) {
-                controller.nodes[x](db).then(function(response) {
-                  controller.loadingMsg(response, 800);
-                }).fail(function(e) {
-                  controller.loadingMsg(e, 800);
-                });  
-              
+              controller.nodes[x](db).then(function(response) {
+                controller.loadingMsg(response, 1500);
+              }).fail(function(e) {
+                controller.loadingMsg(e, 1500);
+              });  
+
               if(x == controller.nodes.length - 1){
                 d.resolve();
               }
-              
+
             }
 
           });
@@ -174,9 +175,13 @@ var controller = {
           }
 
         }else{
-          console.log("cannot use cordova here");
-          $("#location_item_save").button('enable');  
-          $("#location_item_save").button('refresh');  
+          if (navigator.geolocation) {
+            controller.watchid = navigator.geolocation.watchPosition(controller.showPosition, controller.errorhandler);
+            
+          } else {
+            controller.loadingMsg("Geolocation is not supported by this browser", 1000);
+          }
+  
         }
 
       });
@@ -295,7 +300,7 @@ var controller = {
                     if(error.indexOf("field") != -1){
                       controller.loadingMsg(error,5000);  
                     }
-                    
+
                   });
 
 
@@ -365,9 +370,6 @@ var controller = {
             required: true
           },
           select_placetypes:{
-            required: true
-          },
-          location_contact:{
             required: true
           }
         }
@@ -606,9 +608,9 @@ var controller = {
                 $.unblockUI();
 
               });
-              
+
             });
-            
+
           }else{
             controller.loadingMsg("Please Connect to Internet ...", 1000);
           }
@@ -638,9 +640,7 @@ var controller = {
     },
 
     onSuccess: function(position) {
-      var element_gps = $("#gpserror").html("");
 
-      var element = $("#latlon");
       var lat = position.coords.latitude;
       var lon = position.coords.longitude;
       var acc =  position.coords.accuracy; //smaller the value the more accurate
@@ -648,7 +648,8 @@ var controller = {
       localStorage.ftritemlatlon = lon +" "+lat;
       localStorage.latlon = lon +" "+lat;
 
-      element.val(lat +","+ lon+", and accuracy "+acc);
+      var element = $("#latlon");
+      element.val(lat +","+ lon);
 
       $("#location_item_save").button('enable');  
       $("#location_item_save").button('refresh');
@@ -656,6 +657,7 @@ var controller = {
 
     // onError Callback receives a PositionError object
     onError: function(error) {
+      var element_gps = $("#gpserror").html("");
       console.log("gps error "+error.message);
       var element_gps = $("#gpserror");
       element_gps.html('code: '    + error.code    + '\n' +
@@ -679,6 +681,40 @@ var controller = {
       //open panel on the current page
       $.mobile.activePage.next().panel( "open" );
 
+    },
+    
+    //web api geolocation get coordinates
+    showPosition: function(pos) {
+      localStorage.ftritemlatlon = pos.coords.longitude +" "+pos.coords.latitude;
+      localStorage.latlon = pos.coords.longitude +" "+pos.coords.latitude;
+      
+      var element = $("#latlon");
+      element.val("Lon Lat is "+localStorage.latlon);
+      
+      $("#location_item_save").button('enable');  
+      $("#location_item_save").button('refresh');
+    },
+    
+    //web api geolocation error
+    errorhandler: function(error) {
+      switch(error.code) {
+      case error.PERMISSION_DENIED:
+        controller.loadingMsg("User denied the request for Geolocation.", 1000);
+        $("#gpserror").html("User denied the request for Geolocation");
+        break;
+      case error.POSITION_UNAVAILABLE:
+        controller.loadingMsg("Location information is unavailable.", 1000);
+        $("#gpserror").html("Location information is unavailable");
+        break;
+      case error.TIMEOUT:
+        controller.loadingMsg("The request to get user location timed out.", 1000);
+        $("#gpserror").html("The request to get user location timed out");
+        break;
+      case error.UNKNOWN_ERROR:
+        controller.loadingMsg("An unknown error occurred.", 1000);
+        $("#gpserror").html("An unknown error occurred");
+        break;
+      }
     },
 
     //edit location
@@ -1027,7 +1063,7 @@ var controller = {
                 $("#sitevisit_count").html(sitevisitcount);
                 sitevisitList.listview().listview('refresh');
 
-                
+
               });
 
             });
@@ -1681,7 +1717,7 @@ var controller = {
     //save location
     onSavelocation: function () {
       var locationcount = 0;
-      //if ($("#form_add_location").valid()) {
+      if ($("#form_add_location").valid()) {
 
       //save added location items
       var updates = {};
@@ -1700,6 +1736,15 @@ var controller = {
       updates['field_actionitem_ftreportitem']['und'][0] = {};
       updates['field_actionitem_ftreportitem']['und'][0]['target_id'] = localStorage.snid;
 
+      if(localStorage.latlon == undefined || localStorage.latlon == null) {
+        var lat = $("#gpslat").val();
+        var lon = $("#gpslon").val();
+        if(lat.length > 0 && lon.length > 0) {
+          localStorage.latlon = lon +" "+lat;  
+          
+        }
+      }
+      
       updates['field_place_lat_long'] = {};
       updates['field_place_lat_long']['und'] = [];
       updates['field_place_lat_long']['und'][0] = {};
@@ -1741,6 +1786,9 @@ var controller = {
       updates['taxonomy_vocabulary_6']['und'][0] = {};
       updates['taxonomy_vocabulary_6']['und'][0]['tid'] = "93";
 
+      //stop browser geolocation
+      navigator.geolocation.clearWatch(controller.watchid);
+      
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.getAllplaces(db, function (locations) {
           for (var k in locations) {
@@ -1762,9 +1810,9 @@ var controller = {
         });
 
       });  
-      /*      }else{
+      }else{
         console.log("location form is invalid");
-      }*/
+      }
 
       controller.resetForm($('#form_sitereporttype'));
     },
@@ -2220,17 +2268,17 @@ var controller = {
     },
 
     deleteAllStores: function(stores, db, count, callback) {
-      
+
       if(count <= 0){
-          devtrac.indexedDB.deleteAllTables(db, stores, function(response){
-            if(response != "Done"){
-              console.log("delete error "+response);
-            }else{
-              count = count + 1;
-              controller.deleteAllStores(stores, db, count,  callback);  
-            }
-            
-          });
+        devtrac.indexedDB.deleteAllTables(db, stores, function(response){
+          if(response != "Done"){
+            console.log("delete error "+response);
+          }else{
+            count = count + 1;
+            controller.deleteAllStores(stores, db, count,  callback);  
+          }
+
+        });
       }else{
         callback();
       }

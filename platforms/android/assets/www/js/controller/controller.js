@@ -49,8 +49,8 @@ var controller = {
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
-      //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://192.168.38.114/dt11";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://demo.devtrac.org";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
@@ -285,17 +285,21 @@ var controller = {
                   for (var notify in $('#refreshme').getNotifications()) {
                     $(this).deleteBubble($('#refreshme').getNotifications()[notify]);
                   }
-                  
-                  controller.fetchAllData().then(function(){
-                    controller.loadFieldTripList();          
-                  }).fail(function(error){
-                    $.mobile.changePage("#home_page", "slide", true, false);
-                    if(error.indexOf("field") != -1){
-                      controller.loadingMsg(error,5000);  
-                    }
-                    
+                  devtrac.indexedDB.open(function (db) {
+                    devtrac.indexedDB.clearDatabase(db, 0, function() {
+                      
+                      controller.fetchAllData().then(function(){
+                        controller.loadFieldTripList();          
+                      }).fail(function(error){
+                        $.mobile.changePage("#home_page", "slide", true, false);
+                        if(error.indexOf("field") != -1){
+                          controller.loadingMsg(error,5000);  
+                        }
+                        
+                      });
+                      
+                    });
                   });
-                  
                   
                   $(".notification-bubble").html(0);          
                   
@@ -505,11 +509,18 @@ var controller = {
       });
       
       //save url dialog
-      $('#save_url').bind("click", function (event, ui) {
+      $('.save_url').bind("click", function (event, ui) {
+        
         var url = null;
         if($(".myurl").val().length > 0) {
-          localStorage.appurl = $(".myurl").val();
-          controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+
+          devtrac.indexedDB.open(function (db) {
+            devtrac.indexedDB.clearDatabase(db, 0, function() {
+              localStorage.appurl = $(".myurl").val();
+              controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+            });
+          });
+          
         }else
         {
           url = $('a.chosen-single span').html();
@@ -520,23 +531,45 @@ var controller = {
           
           switch (url) {
             case "local":
-              localStorage.appurl = "http://192.168.38.114/dt11";
-              controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+              devtrac.indexedDB.open(function (db) {
+                devtrac.indexedDB.clearDatabase(db, 0, function() {
+                  localStorage.appurl = "http://192.168.38.114/dt11";
+                  controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                });
+              });
+
               break;
               
               
             case "cloud":
-              localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
-              controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+              devtrac.indexedDB.open(function (db) {
+                devtrac.indexedDB.clearDatabase(db, 0, function() {
+                  localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
+                  controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                });
+              });
+              
               break;
               
             case "manual":
-              localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-              controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+
+              devtrac.indexedDB.open(function (db) {
+                devtrac.indexedDB.clearDatabase(db, 0, function() {
+                  localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+                  controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                });
+              });
+
               break;
             case "DevtracUganda":
-              localStorage.appurl = "http://devtrac.ug";
-              controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+              
+              devtrac.indexedDB.open(function (db) {
+                devtrac.indexedDB.clearDatabase(db, 0, function() {
+                  localStorage.appurl = "http://devtrac.ug";
+                  controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                });
+              });
+
               break;
             case "Choose Url ...":
               
@@ -544,14 +577,139 @@ var controller = {
               break;
               
             case "test":
-              localStorage.appurl = "http://test.devtrac.org";
-              controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+              
+              devtrac.indexedDB.open(function (db) {
+                devtrac.indexedDB.clearDatabase(db, 0, function() {
+                  localStorage.appurl = "http://test.devtrac.org";
+                  controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                });
+              });
+
               break;
               
             default:
               break;
           }
+        }
+        
+      });
+      
+      
+      //save url dialog
+      $('.save_url_settings').bind("click", function (event, ui) {
+        
+        var url = null;
+        if($(".settingsform .myurl").val().length > 0) {
           
+          controller.clearDBdialog().then(function(){
+            localStorage.appurl = $(".myurl").val();
+            controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+            
+            controller.updateDB().then(function(){
+              
+            }).fail(function(){
+              
+            });
+          }).fail(function(){
+            controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+          });
+          
+        }else
+        {
+          url = $('.settingsform a.chosen-single span').html();
+          
+          if(url == null){
+            url = $('.settingsform .seturlselect').val();
+          }
+          
+          switch (url) {
+            case "local":
+              
+              controller.clearDBdialog().then(function(){
+                localStorage.appurl = "http://192.168.38.114/dt11";
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                
+                controller.updateDB().then(function(){
+                  
+                }).fail(function(){
+                  
+                });
+              }).fail(function(){
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+              });
+              break;
+              
+              
+            case "cloud":
+              
+              controller.clearDBdialog().then(function(){
+                localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                
+                controller.updateDB().then(function(){
+                  
+                }).fail(function(){
+                  
+                });
+              }).fail(function(){
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+              });
+              break;
+              
+            case "manual":
+
+              controller.clearDBdialog().then(function(){
+                localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                
+                controller.updateDB().then(function(){
+                  
+                }).fail(function(){
+                  
+                });
+              }).fail(function(){
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+              });
+              break;
+            case "DevtracUganda":
+
+              controller.clearDBdialog().then(function(){
+                localStorage.appurl = "http://devtrac.ug";
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                
+                controller.updateDB().then(function(){
+                  
+                }).fail(function(){
+                  
+                });
+              }).fail(function(){
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+              });
+              break;
+            case "Choose Url ...":
+              
+              controller.loadingMsg("Please select one url", 2000);
+              break;
+              
+            case "test":
+
+              controller.clearDBdialog().then(function(){
+                localStorage.appurl = "http://test.devtrac.org";
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                
+                controller.updateDB().then(function(){
+                  
+                }).fail(function(){
+                  
+                });
+              }).fail(function(){
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+              });
+              break;
+              
+            default:
+              break;
+          }
         }
         
       });
@@ -698,6 +856,57 @@ var controller = {
       //open panel on the current page
       $.mobile.activePage.next().panel( "open" );
       
+    },
+    
+    //clear database and fetch new data
+    updateDB: function() {
+      var d = $.Deferred();
+      devtrac.indexedDB.open(function (db) {
+        devtrac.indexedDB.clearDatabase(db, 0, function() {
+          
+          controller.fetchAllData().then(function(){
+            controller.loadFieldTripList();
+            d.resolve();
+          }).fail(function(error) {
+            $.mobile.changePage("#page_login", "slide", true, false);
+            if(error.indexOf("field") != -1){
+              controller.loadingMsg(error,5000);  
+            }
+            d.reject();
+          });
+          
+        });
+      });
+      return d;
+    },
+    
+    //dialog to clear database
+    clearDBdialog: function(){
+      var d = $.Deferred();
+      //provide a dialog to ask the user if he wants to log in anonymously.
+      $('<div>').simpledialog2({
+        mode : 'button',
+        headerText : 'Info...',
+        headerClose : true,
+        buttonPrompt : "Devtrac data from "+localStorage.appurl+" will be deleted ?",
+        buttons : {
+          'OK' : {
+            theme : "a",
+            click : function() {
+              
+              d.resolve();
+            }
+          },
+          'Cancel' : {
+            click : function() {
+              d.reject();
+            },
+            icon : "delete",
+            theme : "a"
+          }
+        }
+      });
+      return d;
     },
     
     //web api geolocation get coordinates

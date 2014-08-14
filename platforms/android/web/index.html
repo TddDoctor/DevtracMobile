@@ -137,7 +137,6 @@ body {
         <br>
         
         <select data-placeholder="Choose Url ..." class="seturlselect" data-role="none">
-        <option value="">Choose Url ...</option>
         <option value="DevtracManual">manual</option>
         <option value="DevtracUg" disabled="disabled">DevtracUganda</option>
         <option value="test">test</option>
@@ -148,7 +147,7 @@ body {
         
         <div id='urldiv'>
           <a href="#" data-role="button" data-inline="true" data-theme="b" data-mini="true"
-            id='save_url'>Save Url</a>
+            class='save_url'>Save Url</a>
         </div>
     
       </form>
@@ -827,23 +826,23 @@ body {
     <!-- /header -->
 
     <div data-role="content" class='content' id='Settingscontent'>
-      <form action="">
+      <form action="" class="settingsform">
       <label for="myurl style='font-size: small'">Either Type in a url or Select one from the list below: </label>
         <input type="url" placeholder="Start with http:// and remove trailing slash" name="myurl" class="myurl" value="">
         <br>
         
         <select data-placeholder="Choose Url ..." class="seturlselect" data-role="none">
-        <option value="">Choose Url ...</option>
-        <option value="DevtracManual">DevtracManual</option>
+        <option value="DevtracManual">manual</option>
         <option value="DevtracUg" disabled="disabled">DevtracUganda</option>
-        <option value="demo">Demo</option>
-        <option value="cloud">Devtrac-Cloud</option>
+        <option value="test">test</option>
+        <option value="cloud">cloud</option>
+        <option value="local">local</option>
   
         </select>
         
         <div id='urldiv'>
           <a href="#" data-role="button" data-inline="true" data-theme="b" data-mini="true"
-            id='save_url'>Save Url</a>
+            class='save_url_settings'>Save Url</a>
         </div>
       
       </form>

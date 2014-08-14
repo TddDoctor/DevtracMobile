@@ -993,26 +993,35 @@ devtrac.indexedDB.deleteActionitem = function(db, id) {
   };
 };
 
-//get all nodes in database
-devtrac.indexedDB.getAllItems = function(db, storename, callback) {
-  var items = [];
-  var trans = db.transaction([storename], "readwrite");
-  var store = trans.objectStore(storename);
+//get and delete all nodes in database
+devtrac.indexedDB.clearDatabase = function(db, counter, callback) {
+  
+  if(counter > controller.objectstores.length - 1) {
+    callback();
+  }else {
+    var trans = db.transaction([controller.objectstores[counter]], "readwrite");
+    var store = trans.objectStore(controller.objectstores[counter]);
 
-  // Get everything in the store;
-  var keyRange = IDBKeyRange.lowerBound(0);
-  var cursorRequest = store.openCursor(keyRange);
+    // Get everything in the store;
+    var keyRange = IDBKeyRange.lowerBound(0);
+    var cursorRequest = store.openCursor(keyRange);
 
-  cursorRequest.onsuccess = function(e) {
-    var result = e.target.result;
-    if(!!result == false) {
-      callback(items);
-      return;
-    }
-    
-    store['delete'](result.key);
-    result["continue"]();
-  };
+    cursorRequest.onsuccess = function(e) {
+      var result = e.target.result;
+      if(!!result == false) {
+        counter = counter + 1;
+        devtrac.indexedDB.clearDatabase(db, counter, callback);
 
-  cursorRequest.onerror = devtrac.indexedDB.onerror;
+      }
+      
+      if(result != null) {
+        store['delete'](result.key);
+        result["continue"]();
+      }
+      
+    };
+
+    cursorRequest.onerror = devtrac.indexedDB.onerror;  
+  }
+  
 };

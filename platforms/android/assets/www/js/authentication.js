@@ -243,6 +243,8 @@ var auth = {
           success : function(data) {
             $.unblockUI();
             
+            $.mobile.changePage("#page_login", "slide", true, false);
+            
             localStorage.token = null;
             localStorage.pass = null;
             
@@ -263,9 +265,7 @@ var auth = {
               $("#page_login_name").val('');
               $("#page_login_pass").val('');  
             }
-            
-            $.mobile.changePage("#page_login", "slide", true, false);
-            
+ 
             d.resolve();
             
           }

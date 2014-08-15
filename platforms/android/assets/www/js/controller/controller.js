@@ -74,7 +74,7 @@ var controller = {
               //load field trip details from the database if its one and the list if there's more.
               controller.loadFieldTripList();
             }).fail(function(error){
-              $.mobile.changePage("#home_page", "slide", true, false);
+              auth.logout();
               controller.loadingMsg(error,5000);
             });
             
@@ -291,7 +291,7 @@ var controller = {
                       controller.fetchAllData().then(function(){
                         controller.loadFieldTripList();          
                       }).fail(function(error){
-                        $.mobile.changePage("#home_page", "slide", true, false);
+                        auth.logout();
                         if(error.indexOf("field") != -1){
                           controller.loadingMsg(error,5000);  
                         }
@@ -597,11 +597,11 @@ var controller = {
       
       //save url dialog
       $('.save_url_settings').bind("click", function (event, ui) {
-        
         var url = null;
         if($(".settingsform .myurl").val().length > 0) {
           
-          controller.clearDBdialog().then(function(){
+          controller.clearDBdialog().then(function() {
+            localStorage.appurl2 = localStorage.appurl;
             localStorage.appurl = $(".myurl").val();
             controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
             
@@ -625,7 +625,8 @@ var controller = {
           switch (url) {
             case "local":
               
-              controller.clearDBdialog().then(function(){
+              controller.clearDBdialog().then(function() {
+                localStorage.appurl2 = localStorage.appurl;
                 localStorage.appurl = "http://192.168.38.114/dt11";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 
@@ -642,12 +643,12 @@ var controller = {
               
             case "cloud":
               
-              controller.clearDBdialog().then(function(){
+              controller.clearDBdialog().then(function() {
+                localStorage.appurl2 = localStorage.appurl;
                 localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 
                 controller.updateDB().then(function(){
-                  
                 }).fail(function(){
                   
                 });
@@ -659,9 +660,10 @@ var controller = {
             case "manual":
 
               controller.clearDBdialog().then(function(){
+                localStorage.appurl2 = localStorage.appurl;
                 localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-                
+
                 controller.updateDB().then(function(){
                   
                 }).fail(function(){
@@ -674,9 +676,10 @@ var controller = {
             case "DevtracUganda":
 
               controller.clearDBdialog().then(function(){
+                localStorage.appurl2 = localStorage.appurl;
                 localStorage.appurl = "http://devtrac.ug";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-                
+
                 controller.updateDB().then(function(){
                   
                 }).fail(function(){
@@ -693,10 +696,11 @@ var controller = {
               
             case "test":
 
-              controller.clearDBdialog().then(function(){
+              controller.clearDBdialog().then(function() {
+                localStorage.appurl2 = localStorage.appurl;
                 localStorage.appurl = "http://test.devtrac.org";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-                
+
                 controller.updateDB().then(function(){
                   
                 }).fail(function(){
@@ -771,7 +775,7 @@ var controller = {
                     //load field trip details from the database if its one and the list if there's more.
                     controller.loadFieldTripList();
                   }).fail(function(error) {
-                    $.mobile.changePage("#home_page", "slide", true, false);
+                    auth.logout();
                     controller.loadingMsg(error,5000);
                   });
                   
@@ -854,8 +858,7 @@ var controller = {
     
     doMenu: function(){
       //open panel on the current page
-      $.mobile.activePage.next().panel( "open" );
-      
+      $.mobile.activePage.next().panel().panel( "open" );
     },
     
     //clear database and fetch new data
@@ -863,17 +866,8 @@ var controller = {
       var d = $.Deferred();
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.clearDatabase(db, 0, function() {
-          
-          controller.fetchAllData().then(function(){
-            controller.loadFieldTripList();
-            d.resolve();
-          }).fail(function(error) {
-            $.mobile.changePage("#page_login", "slide", true, false);
-            if(error.indexOf("field") != -1){
-              controller.loadingMsg(error,5000);  
-            }
-            d.reject();
-          });
+          localStorage.appurl = localStorage.appurl2;
+          auth.logout();
           
         });
       });

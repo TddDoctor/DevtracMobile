@@ -49,8 +49,8 @@ var controller = {
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
-      localStorage.appurl = "http://192.168.38.114/dt11";
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://192.168.38.114/dt11";
+      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://demo.devtrac.org";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
@@ -513,7 +513,7 @@ var controller = {
         
         var url = null;
         if($(".myurl").val().length > 0) {
-
+          
           devtrac.indexedDB.open(function (db) {
             devtrac.indexedDB.clearDatabase(db, 0, function() {
               localStorage.appurl = $(".myurl").val();
@@ -537,7 +537,7 @@ var controller = {
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 });
               });
-
+              
               break;
               
               
@@ -552,14 +552,14 @@ var controller = {
               break;
               
             case "manual":
-
+              
               devtrac.indexedDB.open(function (db) {
                 devtrac.indexedDB.clearDatabase(db, 0, function() {
                   localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 });
               });
-
+              
               break;
             case "DevtracUganda":
               
@@ -569,7 +569,7 @@ var controller = {
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 });
               });
-
+              
               break;
             case "Choose Url ...":
               
@@ -584,7 +584,7 @@ var controller = {
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 });
               });
-
+              
               break;
               
             default:
@@ -658,12 +658,12 @@ var controller = {
               break;
               
             case "manual":
-
+              
               controller.clearDBdialog().then(function(){
                 localStorage.appurl2 = localStorage.appurl;
                 localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-
+                
                 controller.updateDB().then(function(){
                   
                 }).fail(function(){
@@ -674,12 +674,12 @@ var controller = {
               });
               break;
             case "DevtracUganda":
-
+              
               controller.clearDBdialog().then(function(){
                 localStorage.appurl2 = localStorage.appurl;
                 localStorage.appurl = "http://devtrac.ug";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-
+                
                 controller.updateDB().then(function(){
                   
                 }).fail(function(){
@@ -695,12 +695,12 @@ var controller = {
               break;
               
             case "test":
-
+              
               controller.clearDBdialog().then(function() {
                 localStorage.appurl2 = localStorage.appurl;
                 localStorage.appurl = "http://test.devtrac.org";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-
+                
                 controller.updateDB().then(function(){
                   
                 }).fail(function(){
@@ -810,7 +810,7 @@ var controller = {
       
       //handle logout click from panel menu
       $('.panel_logout').bind("click", function (event, ui) {
-        
+        console.log("clicked logout");
         auth.logout();
       });
       
@@ -858,7 +858,15 @@ var controller = {
     
     doMenu: function(){
       //open panel on the current page
-      $.mobile.activePage.next().panel().panel( "open" );
+      var page = $(':mobile-pagecontainer').pagecontainer('getActivePage')[0].id;
+      var mypanel = $("#"+page).children(":first-child");
+      
+      console.log("we are on "+page+" "+mypanel.attr("id"));
+      if( mypanel.hasClass("ui-panel-open") == true ) {
+        mypanel.panel().panel("close");
+      }else{
+        mypanel.panel().panel("open");
+      }
     },
     
     //clear database and fetch new data

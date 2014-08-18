@@ -62,12 +62,13 @@ var controller = {
         controller.loadingMsg("Please Wait..", 0);
         auth.loginStatus().then(function () {
           console.log("logged in");
+          
           devtracnodes.countFieldtrips().then(function(){
             //load field trip details from the database if its one and the list if there's more.
             controller.loadFieldTripList();
             
           }).fail(function(){
-            console.log("logged out");
+            
             //download all devtrac data for user.
             controller.fetchAllData().then(function(){
               
@@ -82,7 +83,7 @@ var controller = {
           
           
         }).fail(function () {
-          
+          console.log("logged out");
           if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){
             $("#page_login_name").val(window.localStorage.getItem("usernam"));
             $("#page_login_pass").val(window.localStorage.getItem("passw"));  

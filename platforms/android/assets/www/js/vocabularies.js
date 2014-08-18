@@ -25,7 +25,7 @@ var vocabularies = {
           
           devtrac.indexedDB.open(function (dbs) {
             devtrac.indexedDB.addTaxonomyData(dbs, "oecdobj", data).then(function() {
-              d.resolve("Oecds Saved");
+              d.resolve("Oecds");
             }).fail(function(err) {
               d.resolve("Oecds Not Saved");
 
@@ -62,7 +62,7 @@ var vocabularies = {
             
             devtrac.indexedDB.open(function (dbs) {
               devtrac.indexedDB.addTaxonomyData(dbs, "placetype", data).then(function() {
-                d.resolve("Placetypes Saved");
+                d.resolve("Placetypes");
               }).fail(function(err) {
                 d.resolve("Placetypes Not Saved");
               });

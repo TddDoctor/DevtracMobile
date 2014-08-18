@@ -23,6 +23,9 @@
 
 <link rel="stylesheet"
   href="../assets/www/css/jquery.mobile.simpledialog.min.css">
+  
+      <!-- new notifications -->
+    <link rel="stylesheet" href="../assets/www/css/obNotificationCenter.css">
 
 <!-- Important Owl stylesheet -->
 <link rel="stylesheet" href="../assets/www/libs/owl-carousel/owl.carousel.css">
@@ -80,6 +83,7 @@ body {
 <script id="header-tpl" type="text/template">
   <a class="ui-btn-left" href="#navpanel_{{id}}" data-role="button"
   data-iconpos="notext" id="barsbutton_{{id}}"><i class="fa fa-bars fa-lg"></i></a> 
+{{{notes}}}
   <h1>{{ title }}</h1>
   {{{extra_buttons}}}
 </script>
@@ -163,6 +167,9 @@ body {
     <div data-role="panel" id="navpanel_fieldtrip" data-theme="b"
       data-position="left" class="leftmenu"></div>
 
+        <div id="content" class="hide">
+
+    </div>
     <div data-role="header" id="fieldtrip_details_header"></div>
     <!-- /header -->
 
@@ -725,7 +732,9 @@ body {
     <div data-role="content" class='content'>
       <form id="form_add_location" method="" action="">
         <label for="location_name">Name</label> <input type='text' value=''
-          id='location_name' name='location_name' required /> <label
+          id='location_name' name='location_name' required /> 
+          
+          <label
           for="location_placetypes">Location Types</label>
         <div id='location_placetypes'></div>
 
@@ -927,6 +936,9 @@ body {
 
   <script src="../assets/www/libs/handlebars-v1.3.0.js"></script>
   <script src="../assets/www/libs/jquery.mobile.simpledialog2.min.js"></script>
+
+  <!-- new notifications -->
+  <script src="../assets/www/libs/obNotificationCenter.min.js"></script>
 
   <script type="text/javascript" src="../assets/www/js/model/indexdb-store.js"></script>
   <script src="../assets/www/libs/movies-app.js"></script>

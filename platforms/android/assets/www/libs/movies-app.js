@@ -1,6 +1,8 @@
 $(document).ready(function() {
   owlhandler.initialise();
-   
+  
+  //owlhandler.notes();
+  
 });
 
 var owlhandler = {
@@ -19,11 +21,38 @@ var owlhandler = {
         paginationNumbers: true,
         navigation : false,
         responsive: true
-
+        
       });
       
       owlhandler.owlObject = owl;
+      
+    },
     
+    notes: function(notesy) {
+      $("body").obNotificationCenter({
+        trigger: "click",
+        selectors: "#notify_fieldtrip",
+        content: function(){
+          var data = "";
+          for(var note in notesy){
+            data = data + '<div class="obNotifItem">'+
+            '<div class="obNotifImgWrapper"></div><div class="obNotifContent">'+
+            
+            '<div class="obNotifTitleWrapper"><div class="obNotifTitle">'+notesy[note]+'</div><div class="obNotifCloseItem"></div>'+
+            '</div><p class="obNotifDescription"><a class="notifLink" href="">Saved</a></p></div></div>';
+
+          }
+          
+          return data;
+        },
+        beforeCloseItem: function (item) {
+
+        },
+        beforeLinkClicked: function (item) {
+          
+        }
+        
+      });
     },
     
     populateOwl: function(snid) {
@@ -38,73 +67,73 @@ var owlhandler = {
               owl.data('owlCarousel').addItem(firstslide);
               
               for (var qtn in qtns) {
-
+                
                 switch (qtns[qtn].questionnaire_question_type.und[0].value) {
-                case "radios":
-                  var radios = "";
-                  
-                  localStorage.numbercount = parseInt(localStorage.numbercount) + 1;
-
-                  for (var option in qtns[qtn].questionnaire_question_options.und) {
-                    var html = '<label for="'+qtns[qtn].nid+'_'+qtns[qtn].questionnaire_question_options.und[option].value+'">'+qtns[qtn].questionnaire_question_options.und[option].value+'</label><input type="radio" name="radio'+qtns[qtn].nid+'" id="'+qtns[qtn].nid+'_'+qtns[qtn].questionnaire_question_options.und[option].value+'" value="'+qtns[qtn].questionnaire_question_options.und[option].value+'">';            
-                    radios = radios + html;
-
-                  }
-
-                  var qtncontent = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div data-role="controlgroup" class="qtions">' + radios + '</div></div>';
-           
-                  owl.data('owlCarousel').addItem(qtncontent);
-                  
-                  break;
-
-                case "number":
-
-                  localStorage.numbercount = parseInt(localStorage.numbercount) + 1;
-
-                  var qtncontent = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div class="qtions"><input type="text" name="text_"'+qtns[qtn].nid+'" id=' + qtns[qtn].nid + ' value=""></div></div>';
-                  owl.data('owlCarousel').addItem(qtncontent);
-                  
-                  break;
-
-                case "select":
-                  
-                  localStorage.numbercount = parseInt(localStorage.numbercount) + 1;
-                  var arr =  [];
-                  var obj = {};
-
-                  for (var option in qtns[qtn].questionnaire_question_options.und) {                        
-                    arr.push(qtns[qtn].questionnaire_question_options.und[option].value);
-                  }        
-
-                  var options = '<option value="Select One">Select One</option>';
-                  for(var item in arr) {
-                    options = options + '<option value="'+arr[item]+'">'+arr[item]+'</option>';
-                  }
-
-                  var innerdiv = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div class="qtions" data-role="controlgroup"><select id=select_'+qtns[qtn].nid+' name=select'+qtns[qtn].nid+'>'+options+'</select></div></div>';                                
-
-                  owl.data('owlCarousel').addItem(innerdiv);
-                  
-                  break;
-
-                case "checkboxes":
-                  
-                  var checkbox = "";
-                  localStorage.numbercount = parseInt(localStorage.numbercount) + 1;
-
-                  for (var option in qtns[qtn].questionnaire_question_options.und) {
-                    var html = '<label for="'+qtns[qtn].nid+'_'+qtns[qtn].questionnaire_question_options.und[option].value+'">'+qtns[qtn].questionnaire_question_options.und[option].value+'</label><input type="checkbox" name="checkbox'+qtns[qtn].nid+'" id="'+qtns[qtn].nid+'_'+qtns[qtn].questionnaire_question_options.und[option].value+'" value="'+qtns[qtn].questionnaire_question_options.und[option].value+'">';            
-                    checkbox = checkbox + html;
-
-                  }
-
-                  var qtncontent = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div data-role="controlgroup" class="qtions">' + checkbox+'</div></div>';
-             
-                  owl.data('owlCarousel').addItem(qtncontent);
-                  
-                  break;
-                default:
-                  break;
+                  case "radios":
+                    var radios = "";
+                    
+                    localStorage.numbercount = parseInt(localStorage.numbercount) + 1;
+                    
+                    for (var option in qtns[qtn].questionnaire_question_options.und) {
+                      var html = '<label for="'+qtns[qtn].nid+'_'+qtns[qtn].questionnaire_question_options.und[option].value+'">'+qtns[qtn].questionnaire_question_options.und[option].value+'</label><input type="radio" name="radio'+qtns[qtn].nid+'" id="'+qtns[qtn].nid+'_'+qtns[qtn].questionnaire_question_options.und[option].value+'" value="'+qtns[qtn].questionnaire_question_options.und[option].value+'">';            
+                      radios = radios + html;
+                      
+                    }
+                    
+                    var qtncontent = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div data-role="controlgroup" class="qtions">' + radios + '</div></div>';
+                    
+                    owl.data('owlCarousel').addItem(qtncontent);
+                    
+                    break;
+                    
+                  case "number":
+                    
+                    localStorage.numbercount = parseInt(localStorage.numbercount) + 1;
+                    
+                    var qtncontent = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div class="qtions"><input type="text" name="text_"'+qtns[qtn].nid+'" id=' + qtns[qtn].nid + ' value=""></div></div>';
+                    owl.data('owlCarousel').addItem(qtncontent);
+                    
+                    break;
+                    
+                  case "select":
+                    
+                    localStorage.numbercount = parseInt(localStorage.numbercount) + 1;
+                    var arr =  [];
+                    var obj = {};
+                    
+                    for (var option in qtns[qtn].questionnaire_question_options.und) {                        
+                      arr.push(qtns[qtn].questionnaire_question_options.und[option].value);
+                    }        
+                    
+                    var options = '<option value="Select One">Select One</option>';
+                    for(var item in arr) {
+                      options = options + '<option value="'+arr[item]+'">'+arr[item]+'</option>';
+                    }
+                    
+                    var innerdiv = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div class="qtions" data-role="controlgroup"><select id=select_'+qtns[qtn].nid+' name=select'+qtns[qtn].nid+'>'+options+'</select></div></div>';                                
+                    
+                    owl.data('owlCarousel').addItem(innerdiv);
+                    
+                    break;
+                    
+                  case "checkboxes":
+                    
+                    var checkbox = "";
+                    localStorage.numbercount = parseInt(localStorage.numbercount) + 1;
+                    
+                    for (var option in qtns[qtn].questionnaire_question_options.und) {
+                      var html = '<label for="'+qtns[qtn].nid+'_'+qtns[qtn].questionnaire_question_options.und[option].value+'">'+qtns[qtn].questionnaire_question_options.und[option].value+'</label><input type="checkbox" name="checkbox'+qtns[qtn].nid+'" id="'+qtns[qtn].nid+'_'+qtns[qtn].questionnaire_question_options.und[option].value+'" value="'+qtns[qtn].questionnaire_question_options.und[option].value+'">';            
+                      checkbox = checkbox + html;
+                      
+                    }
+                    
+                    var qtncontent = '<div class="item"><h3>'+qtns[qtn].title+'</h3><div data-role="controlgroup" class="qtions">' + checkbox+'</div></div>';
+                    
+                    owl.data('owlCarousel').addItem(qtncontent);
+                    
+                    break;
+                  default:
+                    break;
                 }
               }   
               
@@ -119,13 +148,13 @@ var owlhandler = {
               
               owl.data('owlCarousel').addItem(noqtnscontent);
             }
-
+            
             $("#page_add_questionnaire").trigger("create");
-
+            
           });  
           
         });
-
+        
       }); 
       
     }

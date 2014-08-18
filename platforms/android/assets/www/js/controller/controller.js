@@ -22,7 +22,7 @@ var controller = {
       var leftMenu = Handlebars.compile($("#leftmenu-tpl").html()); 
       $(".leftmenu").html(leftMenu());
       var header = Handlebars.compile($("#header-tpl").html());
-      $("#fieldtrip_details_header").html(header({id: "fieldtrip", title: "Fieldtrip Details"}));
+      $("#fieldtrip_details_header").html(header({notes: '<a class="ui-btn-right" data-role="button" data-iconpos="notext" id="notify_fieldtrip"><i class="fa fa-info fa-lg"></i></a>', id: 'fieldtrip', title: 'Fieldtrip Details'}));
       $("#header_login").html(header({id: "login", title: "Devtrac Mobile"}));
       $("#header_home").html(header({id: "home", title: "Home"}));
       $("#header_sync").html(header({id: "sync", title: "Sync Nodes"}));
@@ -49,8 +49,8 @@ var controller = {
       //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
-      //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://192.168.38.114/dt11";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://demo.devtrac.org";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
@@ -112,30 +112,25 @@ var controller = {
     
     fetchAllData: function () {
       var d = $.Deferred();   
+      var notes = [];
       
       $('#refreshme').initBubble();
       devtrac.indexedDB.open(function (db) {
         devtracnodes.getFieldtrips(db).then(function () {
           
           controller.loadingMsg("Fieldtrips Saved",1500);
+
+          notes.push('fieldtrips');
           devtracnodes.getSiteVisits(db, function(response) {
             
             controller.loadingMsg("Sitevisits Saved", 1500);
-            
+            notes.push('sitevisits');
             devtracnodes.getPlaces(db);
             
-            for(var x = 0; x < controller.nodes.length; x++) {
-              controller.nodes[x](db).then(function(response) {
-                controller.loadingMsg(response, 1500);
-              }).fail(function(e) {
-                controller.loadingMsg(e, 1500);
-              });  
-              
-              if(x == controller.nodes.length - 1){
-                d.resolve();
-              }
-              
-            }
+            controller.recurseNodes(db, 0, notes, controller.nodes, function(notes){
+              owlhandler.notes(notes);
+              d.resolve();
+            });
             
           });
           
@@ -145,6 +140,26 @@ var controller = {
       });
       
       return d;
+    },
+    
+    recurseNodes: function(db, count, notes, nodes, callback){
+      if(count > nodes.length - 1) {
+        nodes[x](db).then(function(response) {
+          count = count + 1;
+          controller.loadingMsg(response+" Saved", 1500);
+          notes.push(response);
+          controller.recurseNodes(db, count, notes, nodes, callback);
+
+        }).fail(function(e) {
+          notes.push(e);
+          count = count + 1;
+          controller.loadingMsg(e, 1500);
+          controller.recurseNodes(db, count, notes, nodes, callback);
+        });
+      }else{
+        callback(notes);
+      }
+  
     },
     
     //Bind any events that are required on startup
@@ -185,6 +200,14 @@ var controller = {
         }
         
       });
+ 
+     $("#notify_fieldtrip").on('click', function() {
+        if($("#content").children().length == 0) {
+          controller.loadingMsg("No Notifications Now", 1000)
+        }
+        
+      });
+ 
       
       //stop gps
       $("#cancel_addlocation").on('click', function(){

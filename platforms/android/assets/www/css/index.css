@@ -74,4 +74,8 @@ body .ui-li .ui-li-desc {
   clear: left;
 }
 
+.hide {
+  display: none
+}
+
  

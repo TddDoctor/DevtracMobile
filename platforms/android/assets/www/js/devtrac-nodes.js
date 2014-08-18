@@ -1529,7 +1529,7 @@ var devtracnodes = {
               }else{
                 data[0]['submit'] = 0;
                 devtracnodes.saveActionItems(db, data, 0).then(function(){
-                  d.resolve("Action Items Saved");
+                  d.resolve("Action Items");
                 });
               }
             }
@@ -1649,7 +1649,7 @@ var devtracnodes = {
             
             devtrac.indexedDB.addQuestionsData(db, data).then(function(){
               //devtracnodes.notify("Questions Saved");
-              d.resolve("Questions Saved");
+              d.resolve("Questions");
             }).fail(function(e) {
               
               d.resolve();

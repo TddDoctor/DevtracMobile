@@ -113,15 +113,14 @@ var controller = {
     
     fetchAllData: function () {
       var d = $.Deferred();   
-      
-      $('#refreshme').initBubble();
+
       devtrac.indexedDB.open(function (db) {
         devtracnodes.getFieldtrips(db).then(function () {
           
-          controller.loadingMsg("Fieldtrips Saved",1500);
+          controller.loadingMsg("Fieldtrips Saved", 0);
           devtracnodes.getSiteVisits(db, function(response) {
             
-            controller.loadingMsg("Sitevisits Saved", 1500);
+            controller.loadingMsg("Sitevisits Saved", 0);
             
             devtracnodes.getPlaces(db);
             
@@ -307,7 +306,8 @@ var controller = {
                 }else{
                   controller.loadingMsg("Please Connect to Internet ...", 1000);
                 }
-              }
+              },
+              id: "redownload",
             },
             'Cancel' : {
               click : function() {
@@ -895,6 +895,7 @@ var controller = {
         buttons : {
           'OK' : {
             theme : "a",
+            id: "changeurl",
             click : function() {
               
               d.resolve();

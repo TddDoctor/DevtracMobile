@@ -90,8 +90,6 @@ var auth = {
             if (drupal_user.uid == 0)
             {
               //user is not logged in
-              $.unblockUI();
-              
               
               //hide and show dialog buttons
               $('#logoutdiv').hide();

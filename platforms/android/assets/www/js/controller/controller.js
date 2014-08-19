@@ -18,6 +18,14 @@ var controller = {
     
     // Application Constructor
     initialize: function () {
+      //center the loading message
+      $.fn.center = function () {
+        this.css("position","absolute");
+        this.css("top", ( $(window).height() - this.height() ) / 2+$(window).scrollTop() + "px");
+        this.css("left", ( $(window).width() - this.width() ) / 2+$(window).scrollLeft() + "px");
+        return this;
+      }
+      
       //initialise section for templates
       var leftMenu = Handlebars.compile($("#leftmenu-tpl").html()); 
       $(".leftmenu").html(leftMenu());
@@ -60,6 +68,7 @@ var controller = {
       if(controller.connectionStatus) {
         
         controller.loadingMsg("Please Wait..", 0);
+        $('.blockUI.blockMsg').center();
         auth.loginStatus().then(function () {
           console.log("logged in");
           
@@ -77,6 +86,7 @@ var controller = {
             }).fail(function(error){
               auth.logout();
               controller.loadingMsg(error,5000);
+              $('.blockUI.blockMsg').center();
             });
             
           });
@@ -97,11 +107,13 @@ var controller = {
         
         if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
           controller.loadingMsg("You are offline, cannot upload data. Now using offline data", 6000);
+          $('.blockUI.blockMsg').center();
           //load field trip details from the database if its one and the list if there's more.
           controller.loadFieldTripList();
           
         }else {
           controller.loadingMsg("Please connect to the internet to login and download your devtrac data.", 2000);
+          $('.blockUI.blockMsg').center();
           //hide logout button and show login button when offline
           $('#logoutdiv').hide();
           $('#logindiv').show();
@@ -119,17 +131,20 @@ var controller = {
         devtracnodes.getFieldtrips(db).then(function () {
           
           controller.loadingMsg("Fieldtrips Saved", 0);
+          $('.blockUI.blockMsg').center();
           devtracnodes.getSiteVisits(db, function(response) {
             
             controller.loadingMsg("Sitevisits Saved", 0);
-            
+            $('.blockUI.blockMsg').center();
             devtracnodes.getPlaces(db);
             
             for(var x = 0; x < controller.nodes.length; x++) {
               controller.nodes[x](db).then(function(response) {
                 controller.loadingMsg(response, 1500);
+                $('.blockUI.blockMsg').center();
               }).fail(function(e) {
                 controller.loadingMsg(e, 1500);
+                $('.blockUI.blockMsg').center();
               });  
               
               if(x == controller.nodes.length - 1){
@@ -181,6 +196,7 @@ var controller = {
             
           } else {
             controller.loadingMsg("Geolocation is not supported by this browser", 1000);
+            $('.blockUI.blockMsg').center();
           }
           
         }
@@ -282,6 +298,7 @@ var controller = {
                 
                 if(controller.connectionStatus){
                   controller.loadingMsg("Downloading Data ...", 0);
+                  $('.blockUI.blockMsg').center();
                   //get all bubbles and delete them to create room for new ones.
                   for (var notify in $('#refreshme').getNotifications()) {
                     $(this).deleteBubble($('#refreshme').getNotifications()[notify]);
@@ -295,6 +312,7 @@ var controller = {
                         auth.logout();
                         if(error.indexOf("field") != -1){
                           controller.loadingMsg(error,5000);  
+                          $('.blockUI.blockMsg').center();
                         }
                         
                       });
@@ -306,6 +324,7 @@ var controller = {
                   
                 }else{
                   controller.loadingMsg("Please Connect to Internet ...", 1000);
+                  $('.blockUI.blockMsg').center();
                 }
               },
               id: "redownload",
@@ -520,6 +539,7 @@ var controller = {
             devtrac.indexedDB.clearDatabase(db, 0, function() {
               localStorage.appurl = $(".myurl").val();
               controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+              $('.blockUI.blockMsg').center();
             });
           });
           
@@ -537,6 +557,7 @@ var controller = {
                 devtrac.indexedDB.clearDatabase(db, 0, function() {
                   localStorage.appurl = "http://192.168.38.114/dt11";
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                  $('.blockUI.blockMsg').center();
                 });
               });
               
@@ -548,6 +569,7 @@ var controller = {
                 devtrac.indexedDB.clearDatabase(db, 0, function() {
                   localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                  $('.blockUI.blockMsg').center();
                 });
               });
               
@@ -559,6 +581,7 @@ var controller = {
                 devtrac.indexedDB.clearDatabase(db, 0, function() {
                   localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                  $('.blockUI.blockMsg').center();
                 });
               });
               
@@ -569,6 +592,7 @@ var controller = {
                 devtrac.indexedDB.clearDatabase(db, 0, function() {
                   localStorage.appurl = "http://devtrac.ug";
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                  $('.blockUI.blockMsg').center();
                 });
               });
               
@@ -576,6 +600,7 @@ var controller = {
             case "Choose Url ...":
               
               controller.loadingMsg("Please select one url", 2000);
+              $('.blockUI.blockMsg').center();
               break;
               
             case "test":
@@ -584,6 +609,7 @@ var controller = {
                 devtrac.indexedDB.clearDatabase(db, 0, function() {
                   localStorage.appurl = "http://test.devtrac.org";
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                  $('.blockUI.blockMsg').center();
                 });
               });
               
@@ -606,7 +632,7 @@ var controller = {
             localStorage.appurl2 = localStorage.appurl;
             localStorage.appurl = $(".myurl").val();
             controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-            
+            $('.blockUI.blockMsg').center();
             controller.updateDB().then(function(){
               
             }).fail(function(){
@@ -614,6 +640,7 @@ var controller = {
             });
           }).fail(function(){
             controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+            $('.blockUI.blockMsg').center();
           });
           
         }else
@@ -630,7 +657,7 @@ var controller = {
               controller.clearDBdialog().then(function() {
                 var url = "http://192.168.38.114/dt11";
                 controller.loadingMsg("Saved Url "+url, 2000);
-                
+                $('.blockUI.blockMsg').center();
                 controller.updateDB(url).then(function(){
                   
                 }).fail(function(){
@@ -638,6 +665,7 @@ var controller = {
                 });
               }).fail(function(){
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
               });
               break;
               
@@ -647,13 +675,14 @@ var controller = {
               controller.clearDBdialog().then(function() {
                 var url = "http://jenkinsge.mountbatten.net/devtraccloud";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-                
+                $('.blockUI.blockMsg').center();
                 controller.updateDB(url).then(function(){
                 }).fail(function(){
                   
                 });
               }).fail(function(){
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
               });
               break;
               
@@ -663,7 +692,7 @@ var controller = {
 
                 var url = "http://jenkinsge.mountbatten.net/devtracmanual";
                 controller.loadingMsg("Saved Url "+url, 2000);
-                
+                $('.blockUI.blockMsg').center();
                 controller.updateDB(url).then(function(){
                   
                 }).fail(function(){
@@ -671,6 +700,7 @@ var controller = {
                 });
               }).fail(function(){
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
               });
               break;
             case "DevtracUganda":
@@ -679,7 +709,7 @@ var controller = {
 
                 var url = "http://devtrac.ug";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-                
+                $('.blockUI.blockMsg').center();
                 controller.updateDB(url).then(function(){
                   
                 }).fail(function(){
@@ -687,11 +717,13 @@ var controller = {
                 });
               }).fail(function(){
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
               });
               break;
             case "Choose Url ...":
               
               controller.loadingMsg("Please select one url", 2000);
+              $('.blockUI.blockMsg').center();
               break;
               
             case "test":
@@ -700,6 +732,7 @@ var controller = {
 
                 var url = "http://test.devtrac.org";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
                 
                 controller.updateDB(url).then(function(){
                   
@@ -708,6 +741,7 @@ var controller = {
                 });
               }).fail(function(){
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
               });
               break;
               
@@ -777,6 +811,7 @@ var controller = {
                   }).fail(function(error) {
                     auth.logout();
                     controller.loadingMsg(error,5000);
+                    $('.blockUI.blockMsg').center();
                   });
                   
                 });
@@ -790,6 +825,7 @@ var controller = {
             
           }else{
             controller.loadingMsg("Please Connect to Internet ...", 1000);
+            $('.blockUI.blockMsg').center();
           }
           
         }
@@ -804,6 +840,7 @@ var controller = {
           
         }else{
           controller.loadingMsg("Please Connect to Internet ...", 1000);
+          $('.blockUI.blockMsg').center();
         }
         
       });
@@ -933,18 +970,22 @@ var controller = {
       switch(error.code) {
         case error.PERMISSION_DENIED:
           controller.loadingMsg("User denied the request for Geolocation.", 1000);
+          $('.blockUI.blockMsg').center();
           $("#gpserror").html("User denied the request for Geolocation");
           break;
         case error.POSITION_UNAVAILABLE:
           controller.loadingMsg("Location information is unavailable.", 1000);
+          $('.blockUI.blockMsg').center();
           $("#gpserror").html("Location information is unavailable");
           break;
         case error.TIMEOUT:
           controller.loadingMsg("The request to get user location timed out.", 1000);
+          $('.blockUI.blockMsg').center();
           $("#gpserror").html("The request to get user location timed out");
           break;
         case error.UNKNOWN_ERROR:
           controller.loadingMsg("An unknown error occurred.", 1000);
+          $('.blockUI.blockMsg').center();
           $("#gpserror").html("An unknown error occurred");
           break;
       }
@@ -1110,7 +1151,7 @@ var controller = {
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.addSavedQuestions(db, questionnaire).then(function() {
             controller.loadingMsg("Saved", 2000);
-            
+            $('.blockUI.blockMsg').center();
             $(':input','.qtions')
             .not(':button, :submit, :reset, :hidden')
             .val('')
@@ -1124,12 +1165,12 @@ var controller = {
           }).fail(function() {
             //todo: check if we can answer numerous questions for one site visit
             controller.loadingMsg("Already Saved", 2000);
-            
+            $('.blockUI.blockMsg').center();
           });      
         });
       }else {
         controller.loadingMsg("Please Answer Atleast Once", 2000);
-        
+        $('.blockUI.blockMsg').center();
       }
     },
     
@@ -1693,7 +1734,7 @@ var controller = {
         
         devtrac.indexedDB.editPlace(db, pnid, updates).then(function () {
           controller.loadingMsg('Saved ' + updates['title'], 2000);
-          
+          $('.blockUI.blockMsg').center();
           $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
         });
       });
@@ -1823,6 +1864,7 @@ var controller = {
           if(trip['title'] == updates['title']){
             
             controller.loadingMsg("Nothing new was added !", 3000);
+            $('.blockUI.blockMsg').center();
           }else {
             
             updates['editflag'] = 1;
@@ -1834,6 +1876,7 @@ var controller = {
               $('#fieldtrip_details_title').html(updates['title']);
               
               controller.loadingMsg("Saved your Edits", 3000);
+              $('.blockUI.blockMsg').center();
             });      
             
             
@@ -2297,7 +2340,7 @@ var controller = {
             list_comment.listview('refresh');
             
             controller.loadingMsg("Saved", 1000);
-            
+            $('.blockUI.blockMsg').center();
             $('#actionitem_comment').val("");
             
           }); 	
@@ -2481,9 +2524,6 @@ var controller = {
         
         css: { 
           width: '300px', 
-          top : ($(window).height()) / 2 + 'px',
-          left : ($(window).width() - 225) / 2 + 'px',
-          right: '10px', 
           border: 'none', 
           padding: '5px', 
           backgroundColor: '#000', 

@@ -2075,6 +2075,7 @@ var controller = {
       updates['type'] = 'ftritem';
       updates['submit'] = 0;
       updates['uid'] = localStorage.uid;
+      updates['pnid'] = pnid;
       
       //get site visit type
       updates['taxonomy_vocabulary_7'] = {};

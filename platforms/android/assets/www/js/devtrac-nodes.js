@@ -237,7 +237,7 @@ var devtracnodes = {
           
           for(var ftritem in ftritems) {
             
-            if((ftritems[ftritem]['submit'] == 0 && ftritems[ftritem]['user-added'] == true && ftritems[ftritem]['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") || ftritems[ftritem]['editflag'] == 1) {              
+            if((ftritems[ftritem]['submit'] == 0 && ftritems[ftritem]['user-added'] == true && ftritems[ftritem]['taxonomy_vocabulary_7']['und'][0]['tid'] == "210")) {              
               sitevisits.push(ftritems[ftritem]);
             }
             
@@ -717,7 +717,7 @@ var devtracnodes = {
       
       var idcontainer = idcontainer;
       
-      devtrac.indexedDB.getSitevisit(db, parseInt(oldids[0])).then(function(sitevisit) {
+      devtrac.indexedDB.getSitevisitBypnid(db, parseInt(oldids[0])).then(function(sitevisit) {
         idcontainer.push(oldids[0]);
         
         oldids.splice(0, 1);

@@ -84,6 +84,7 @@ var controller = {
           
         }).fail(function () {
           console.log("logged out");
+          $.unblockUI();
           if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){
             $("#page_login_name").val(window.localStorage.getItem("usernam"));
             $("#page_login_pass").val(window.localStorage.getItem("passw"));  
@@ -627,11 +628,10 @@ var controller = {
             case "local":
               
               controller.clearDBdialog().then(function() {
-                localStorage.appurl2 = localStorage.appurl;
-                localStorage.appurl = "http://192.168.38.114/dt11";
-                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                var url = "http://192.168.38.114/dt11";
+                controller.loadingMsg("Saved Url "+url, 2000);
                 
-                controller.updateDB().then(function(){
+                controller.updateDB(url).then(function(){
                   
                 }).fail(function(){
                   
@@ -645,11 +645,10 @@ var controller = {
             case "cloud":
               
               controller.clearDBdialog().then(function() {
-                localStorage.appurl2 = localStorage.appurl;
-                localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
+                var url = "http://jenkinsge.mountbatten.net/devtraccloud";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 
-                controller.updateDB().then(function(){
+                controller.updateDB(url).then(function(){
                 }).fail(function(){
                   
                 });
@@ -661,11 +660,11 @@ var controller = {
             case "manual":
               
               controller.clearDBdialog().then(function(){
-                localStorage.appurl2 = localStorage.appurl;
-                localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+
+                var url = "http://jenkinsge.mountbatten.net/devtracmanual";
+                controller.loadingMsg("Saved Url "+url, 2000);
                 
-                controller.updateDB().then(function(){
+                controller.updateDB(url).then(function(){
                   
                 }).fail(function(){
                   
@@ -677,11 +676,11 @@ var controller = {
             case "DevtracUganda":
               
               controller.clearDBdialog().then(function(){
-                localStorage.appurl2 = localStorage.appurl;
-                localStorage.appurl = "http://devtrac.ug";
+
+                var url = "http://devtrac.ug";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 
-                controller.updateDB().then(function(){
+                controller.updateDB(url).then(function(){
                   
                 }).fail(function(){
                   
@@ -698,11 +697,11 @@ var controller = {
             case "test":
               
               controller.clearDBdialog().then(function() {
-                localStorage.appurl2 = localStorage.appurl;
-                localStorage.appurl = "http://test.devtrac.org";
+
+                var url = "http://test.devtrac.org";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 
-                controller.updateDB().then(function(){
+                controller.updateDB(url).then(function(){
                   
                 }).fail(function(){
                   
@@ -871,12 +870,16 @@ var controller = {
     },
     
     //clear database and fetch new data
-    updateDB: function() {
+    updateDB: function(url) {
       var d = $.Deferred();
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.clearDatabase(db, 0, function() {
-          localStorage.appurl = localStorage.appurl2;
-          auth.logout();
+          
+          auth.logout().then(function(){
+            localStorage.appurl = url;  
+          }).fail(function(){
+            
+          });
           
         });
       });

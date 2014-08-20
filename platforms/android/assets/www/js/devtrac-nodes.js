@@ -802,9 +802,11 @@ var devtracnodes = {
             devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, function(uploadedftritems, state) {
               if(state == "error"){
                 controller.loadingMsg(uploadedftritems, 3000);
+                $('.blockUI.blockMsg').center();
               }else{
                 ftritems = true;
                 controller.loadingMsg("Finished Syncing Roadside Sitevisits ...", 0);
+                $('.blockUI.blockMsg').center();
                 for(var k in ftritemdetails) {
                   uploadedftritems[k] = ftritemdetails[k];
                 }
@@ -848,6 +850,7 @@ var devtracnodes = {
             actionitems = true;
             
             controller.loadingMsg("Finished Syncing Action Items ...", 0);
+            $('.blockUI.blockMsg').center();
             if(ftritems == true && actionitems == true){
               devtracnodes.syncFieldtrips(actionitems);
               
@@ -855,6 +858,7 @@ var devtracnodes = {
             
           }).fail(function(e){
             controller.loadingMsg("Action Items "+e, 0);
+            $('.blockUI.blockMsg').center();
             actionitems = true;
             if(ftritems == true && actionitems == true){
               devtracnodes.syncFieldtrips(actionitems);
@@ -884,12 +888,14 @@ var devtracnodes = {
         devtracnodes.uploadFieldtrips().then(function() {
           fieldtrips = true;
           controller.loadingMsg("Finished Syncing Fieldtrips ...", 0);
+          $('.blockUI.blockMsg').center();
           if(fieldtrips == true && actionitems == true){
             $.unblockUI();
           }
           
         }).fail(function(e){
           controller.loadingMsg("Fieldtrips "+e, 0);
+          $('.blockUI.blockMsg').center();
           fieldtrips = true;
           if(fieldtrips == true && actionitems == true){
             $.unblockUI();
@@ -916,7 +922,7 @@ var devtracnodes = {
         if(parseInt($("#location_count").html()) > 0 || parseInt($("#sitevisit_count").html()) > 0 || parseInt($("#actionitem_count").html()) > 0 || parseInt($("#fieldtrip_count").html()) > 0) {
           
           controller.loadingMsg("Syncing, Please Wait...", 0);
-          
+          $('.blockUI.blockMsg').center();
           if(parseInt($("#location_count").html()) > 0) {
             
             //upload locations and sitevisits (human interest stories and site visits)
@@ -932,12 +938,14 @@ var devtracnodes = {
                   controller.loadingMsg(newnames, 3000);
                 }else {
                   controller.loadingMsg("Finished Syncing Locations ...", 0);
+                  $('.blockUI.blockMsg').center();
                   devtrac.indexedDB.open(function (dbs) {
                     devtracnodes.uploadFtritemswithLocations(newnames, newids, oldids, dbs).then(function(names, newnids, oldnids, sitevisits) {
                       
                       devtracnodes.postSitevisitHelper(sitevisits, names, newnids, [], function(ftritemdetails, state){
                         if(state == "result"){
                           controller.loadingMsg("Finished Syncing Sitevisits with Locations ...", 0);
+                          $('.blockUI.blockMsg').center();
                           ftritems_locs = true;
                           
                           devtracnodes.syncSitevisits(ftritemdetails, ftritems_locs);
@@ -965,6 +973,7 @@ var devtracnodes = {
           
         }else {
           controller.loadingMsg("Nothing New to Upload", 3000);
+          $('.blockUI.blockMsg').center();
         }
         
         
@@ -973,6 +982,7 @@ var devtracnodes = {
       else
       {
         controller.loadingMsg("No Internet Connection", 2000);
+        $('.blockUI.blockMsg').center();
       }
     },
     
@@ -1596,7 +1606,7 @@ var devtracnodes = {
               devtrac.indexedDB.addPlacesData(db, data[item]).then(function(){
                 devtracnodes.notify("Places Saved");
                 controller.loadingMsg("Places Saved",1000);
-                
+                $('.blockUI.blockMsg').center();
               }).fail(function(e) {
                 if(e.target.error.message != "Key already exists in the object store." && e.target.error.message != undefined) {
                   devtracnodes.notify("Places Error: "+e.target.error.message);

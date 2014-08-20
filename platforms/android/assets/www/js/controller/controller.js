@@ -46,7 +46,7 @@ var controller = {
       
       
       //set application url if its not set
-      //if (!localStorage.appurl) {
+      if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
       //localStorage.appurl = "http://192.168.38.114/dt11";
@@ -55,7 +55,7 @@ var controller = {
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
       
-      //}
+      }
       
       if(controller.connectionStatus) {
         
@@ -150,7 +150,6 @@ var controller = {
     //Bind any events that are required on startup
     bindEvents: function () {
       $(".seturlselect").chosen({width: "100%"}); 
-      
       $(".menulistview").listview().listview('refresh');
       
       document.addEventListener("deviceready", controller.onDeviceReady, false);
@@ -2295,6 +2294,7 @@ var controller = {
             controller.loadingMsg("Saved", 1000);
             
             $('#actionitem_comment').val("");
+            $('#commentcollapse').collapsible('collapse');
             
           }); 	
         });	

@@ -118,12 +118,12 @@ var controller = {
       devtrac.indexedDB.open(function (db) {
         devtracnodes.getFieldtrips(db).then(function () {
           
-          controller.loadingMsg("Fieldtrips Saved",1500);
+          controller.loadingMsg("Fieldtrips Saved", 0);
 
           notes.push('fieldtrips');
           devtracnodes.getSiteVisits(db, function(response) {
             
-            controller.loadingMsg("Sitevisits Saved", 1500);
+            controller.loadingMsg("Sitevisits Saved", 0);
             notes.push('sitevisits');
             devtracnodes.getPlaces(db);
             
@@ -143,22 +143,28 @@ var controller = {
     },
     
     recurseNodes: function(db, count, notes, nodes, callback){
-      if(count > nodes.length - 1) {
-        nodes[x](db).then(function(response) {
+      
+        nodes[count](db).then(function(response) {
           count = count + 1;
-          controller.loadingMsg(response+" Saved", 1500);
-          notes.push(response);
-          controller.recurseNodes(db, count, notes, nodes, callback);
+          if(count > nodes.length - 1) {
+            controller.loadingMsg(response+" Saved", 1500);
+            notes.push(response);
+            controller.recurseNodes(db, count, notes, nodes, callback);
+          }else{
+            callback(notes);
+          }
 
         }).fail(function(e) {
-          notes.push(e);
           count = count + 1;
-          controller.loadingMsg(e, 1500);
-          controller.recurseNodes(db, count, notes, nodes, callback);
+          if(count > nodes.length - 1) {
+            notes.push(e);
+            controller.loadingMsg(e, 1500);
+            controller.recurseNodes(db, count, notes, nodes, callback);  
+          }else{
+            callback(notes);
+          }
+          
         });
-      }else{
-        callback(notes);
-      }
   
     },
     

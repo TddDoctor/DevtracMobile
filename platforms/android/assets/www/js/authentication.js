@@ -95,7 +95,7 @@ var auth = {
             if (drupal_user.uid == 0)
             {
               //user is not logged in
-              
+              console.log("status not logged in");
               //hide and show dialog buttons
               $('#logoutdiv').hide();
               $('#logindiv').show();
@@ -108,6 +108,7 @@ var auth = {
             } else
             { 
               //user is logged in
+              console.log("status logged in");
               
               //set username in menu
               $(".username").html("Hi, "+localStorage.username+" !");
@@ -147,11 +148,11 @@ var auth = {
           type : 'post',
           data : 'username=' + encodeURIComponent(name) + '&password=' + encodeURIComponent(pass),
           dataType : 'json',
-          headers: {'X-CSRF-Token': token, 'Cookie': localStorage.sname +"="+localStorage.sid },
-          beforeSend: function( xhr ) {
-            controller.loadingMsg("Logging In ...", 0);
-            $('.blockUI.blockMsg').center();
-          },
+          headers: {
+            'X-CSRF-Token': token,
+            'Cookie': localStorage.sname +"="+localStorage.sid
+             
+            },
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
             alert("Sorry "+errorThrown);	
@@ -163,7 +164,7 @@ var auth = {
             d.reject();
           },
           success : function(data) {
-            
+            console.log("logged successfully");
             localStorage.username = name;
             localStorage.pass = pass;
             localStorage.uid = data.user.uid;
@@ -195,7 +196,7 @@ var auth = {
             // Obtain session token.
             auth.getToken().then(function (token) {
               localStorage.usertoken = token;
-              
+              console.log("logged in and second token is sweet");
               //set username in menu
               $(".username").html("Hi, "+localStorage.username+" !");
               
@@ -211,6 +212,8 @@ var auth = {
               $('.panel_logout').show();
               
               d.resolve();
+            }).fail(function(){
+              console.log("logged in but second token is fucked");
             });
             
           }
@@ -241,13 +244,14 @@ var auth = {
             //hide and show dialog auth buttons
             $('#logindiv').hide();
             $('#logoutdiv').show();
-            
+            console.log('response error '+XMLHttpRequest.responseText);
+            console.log("logged out error");
             d.reject();
             
           },
           success : function(data) {
             $.unblockUI();
-            
+            console.log("logged out okay");
             $.mobile.changePage("#page_login", "slide", true, false);
             
             localStorage.token = null;

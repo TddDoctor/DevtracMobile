@@ -868,12 +868,14 @@ var controller = {
       $('#page_login_submit').bind("click", function (event, ui) {
         $(".loginlogs").html("clicked sign in");
         if ($("#page_login_name").valid() && $("#page_login_pass").valid()) {
+          controller.loadingMsg("Logging In ...", 0);
+          $('.blockUI.blockMsg').center();
           
           if(controller.connectionStatus) {
             
             devtrac.indexedDB.open(function (db) {
               auth.login($('#page_login_name').val(), $('#page_login_pass').val(), db).then(function () {
-                
+                console.log("success logged in");
                 if($("#checkbox-mini-0").is(":checked")){
                   window.localStorage.setItem("usernam", $("#page_login_name").val());
                   window.localStorage.setItem("passw", $("#page_login_pass").val());
@@ -903,6 +905,7 @@ var controller = {
                 });
                 
               }).fail(function (errorThrown) {
+                console.log("fail not logged in");
                 $.unblockUI();
                 
               });

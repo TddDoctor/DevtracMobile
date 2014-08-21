@@ -1441,11 +1441,14 @@ var devtracnodes = {
         url : localStorage.appurl+"/api/views/api_fieldtrips.json?display_id=current_trip&filters[field_fieldtrip_status_value]=All",
         type : 'get',
         dataType : 'json',
-        //headers: {'X-CSRF-Token': localStorage.usertoken},
+        headers: {
+          'X-CSRF-Token': localStorage.usertoken,
+          'Cookie': localStorage.sname +"="+localStorage.sid
+        },
         error : function(XMLHttpRequest, textStatus, errorThrown) { 
           //creating bubble notification
           devtracnodes.notify("Fieldtrips. "+errorThrown);
-          
+          console.log('fieldtrips error '+XMLHttpRequest.responseText);
           d.reject(errorThrown);
         },
         success : function(data) {
@@ -1485,10 +1488,16 @@ var devtracnodes = {
               url : localStorage.appurl+"/api/views/api_fieldtrips.json?display_id=sitevisits&filters[field_ftritem_field_trip_target_id]="+fnid[key]['nid'],
               type : 'get',
               dataType : 'json',
+              headers: {
+                'X-CSRF-Token': localStorage.usertoken,
+                'Cookie': localStorage.sname +"="+localStorage.sid
+                },
               error : function(XMLHttpRequest, textStatus, errorThrown) { 
                 //create bubble notification
+                console.log('sitevisits error '+XMLHttpRequest.responseText);
                 devtracnodes.notify("Sitevisits. "+errorThrown);
                 callback("Error "+errorThrown);
+                
               },
               success : function(data) {
                 //create bubble notification
@@ -1514,10 +1523,6 @@ var devtracnodes = {
       });
     },
     
-    pullSitevisits: function(){
-      
-    },
-    
     //Returns devtrac action items json list 
     getActionItems: function(db) {
       var d = $.Deferred();
@@ -1531,6 +1536,7 @@ var devtracnodes = {
             error : function(XMLHttpRequest, textStatus, errorThrown) { 
               //create bubble notification
               devtracnodes.notify("Action items. "+errorThrown);
+              console.log('actionitems error '+XMLHttpRequest.responseText);
               d.reject(errorThrown);
             },
             success : function(data) {

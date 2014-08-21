@@ -55,16 +55,16 @@ var controller = {
       
       //set application url if its not set
       if (!localStorage.appurl) {
-      //localStorage.appurl = "http://localhost/dt11";
-      //localStorage.appurl = "http://192.168.38.113/dt11";
-      //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-      //localStorage.appurl = "http://demo.devtrac.org";
-      //localStorage.appurl = "http://10.0.2.2/dt11";
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
-      // console.log("url not set "+localStorage.appurl);
-      // }else{
-      //console.log("app url set "+localStorage.appurl);
+        //localStorage.appurl = "http://localhost/dt11";
+        //localStorage.appurl = "http://192.168.38.113/dt11";
+        //localStorage.appurl = "http://192.168.38.114/dt11";
+        localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+        //localStorage.appurl = "http://demo.devtrac.org";
+        //localStorage.appurl = "http://10.0.2.2/dt11";
+        //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
+        // console.log("url not set "+localStorage.appurl);
+        // }else{
+        //console.log("app url set "+localStorage.appurl);
       }
       
       if(controller.connectionStatus) {
@@ -227,8 +227,72 @@ var controller = {
         $("#page_fieldtrip_details").trigger("create");
       });
       
-      //Hide menu button on login before the page is displayed
-      $("#page_login").bind('pagebeforeshow', function(){
+      //show the connected url in the drop down select - login page
+      $("#page_login").bind('pagebeforeshow', function() {
+        var el = $('#loginselect');
+       
+        var url = localStorage.appurl;
+        
+        if(url.indexOf("test") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('test').selectmenu('refresh');
+
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }else if(url.indexOf("cloud") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('cloud').selectmenu('refresh');
+          
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }else if(url.indexOf("manual") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('manual').selectmenu('refresh');
+
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }else if(url.indexOf("dt11") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('local').selectmenu('refresh');
+          
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }
+        
+        $("#barsbutton_login").hide();
+      });
+      
+      //show the connected url in the drop down select - settings page
+      $("#page_add_settings").bind('pagebeforeshow', function() {
+        var el = $('#settingselect');
+       
+        var url = localStorage.appurl;
+        
+        if(url.indexOf("test") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('test').selectmenu('refresh');
+
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }else if(url.indexOf("cloud") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('cloud').selectmenu('refresh');
+          
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }else if(url.indexOf("manual") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('manual').selectmenu('refresh');
+
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }else if(url.indexOf("dt11") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('local').selectmenu('refresh');
+          
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }
         
         $("#barsbutton_login").hide();
       });

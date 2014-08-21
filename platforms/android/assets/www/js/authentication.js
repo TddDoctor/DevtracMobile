@@ -76,6 +76,7 @@ var auth = {
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
             
+            console.log('response error '+XMLHttpRequest.responseText);
             //hide and show dialog auth buttons
             $('#logoutdiv').hide();
             $('#logindiv').show();
@@ -153,7 +154,8 @@ var auth = {
           },
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
-            alert("Sorry "+errorThrown);	     
+            alert("Sorry "+errorThrown);	
+            console.log('response error '+XMLHttpRequest.responseText);
             //hide and show dialog auth buttons
             $('#logoutdiv').hide();
             $('#logindiv').show();

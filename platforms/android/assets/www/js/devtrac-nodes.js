@@ -44,6 +44,7 @@ var devtracnodes = {
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.log('error '+errorThrown);
+          console.log('response error '+XMLHttpRequest.responseText);
           d.reject(errorThrown);
         },
         success: function (data) {         

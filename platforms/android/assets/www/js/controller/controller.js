@@ -54,18 +54,18 @@ var controller = {
       
       
       //set application url if its not set
-      //if (!localStorage.appurl) {
+      if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
-      localStorage.appurl = "http://192.168.38.114/dt11";
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      //localStorage.appurl = "http://192.168.38.114/dt11";
+      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://demo.devtrac.org";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
-       // console.log("url not set "+localStorage.appurl);
-     // }else{
-        //console.log("app url set "+localStorage.appurl);
-     // }
+      // console.log("url not set "+localStorage.appurl);
+      // }else{
+      //console.log("app url set "+localStorage.appurl);
+      }
       
       if(controller.connectionStatus) {
         
@@ -128,7 +128,7 @@ var controller = {
     
     fetchAllData: function () {
       var d = $.Deferred();   
-
+      
       devtrac.indexedDB.open(function (db) {
         devtracnodes.getFieldtrips(db).then(function () {
           
@@ -167,7 +167,7 @@ var controller = {
     
     //Bind any events that are required on startup
     bindEvents: function () {
-      $(".seturlselect").chosen({width: "100%"}); 
+      //$(".seturlselect").chosen({width: "100%"}); 
       $(".menulistview").listview().listview('refresh');
       $(".myurl").hide();
       
@@ -556,15 +556,16 @@ var controller = {
             });
           });
           
-        }else
-        {
-          url = $('a.chosen-single span').html();
+        }else if($('.seturlselect option:selected"').val() == "custom" && $(".myurl").val().length == 0) {
+          controller.loadingMsg("Please Save a URL", 1500);
+          $('.blockUI.blockMsg').center();
           
-          if(url == null) {
-            url = $('.seturlselect option:selected"').val();
-            
-            $(".clickedurl").html($('.seturlselect option:selected"').val());
-          }
+        }else 
+        {
+          
+          url = $('.seturlselect option:selected"').val();
+          
+          $(".clickedurl").html($('.seturlselect option:selected"').val());
           
           switch (url) {
             case "local":
@@ -704,7 +705,7 @@ var controller = {
             case "manual":
               
               controller.clearDBdialog().then(function(){
-
+                
                 var url = "http://jenkinsge.mountbatten.net/devtracmanual";
                 controller.loadingMsg("Saved Url "+url, 2000);
                 $('.blockUI.blockMsg').center();
@@ -721,7 +722,7 @@ var controller = {
             case "DevtracUganda":
               
               controller.clearDBdialog().then(function(){
-
+                
                 var url = "http://devtrac.ug";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 $('.blockUI.blockMsg').center();
@@ -744,7 +745,7 @@ var controller = {
             case "test":
               
               controller.clearDBdialog().then(function() {
-
+                
                 var url = "http://test.devtrac.org";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 $('.blockUI.blockMsg').center();

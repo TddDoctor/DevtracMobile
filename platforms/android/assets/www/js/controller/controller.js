@@ -169,7 +169,12 @@ var controller = {
     bindEvents: function () {
       //$(".seturlselect").chosen({width: "100%"}); 
       $(".menulistview").listview().listview('refresh');
-      $(".myurl").hide();
+      
+      if($(".seturlselect option:selected").val() == "custom") {
+        $(".myurl").show();  
+      }else{
+        $(".myurl").hide();
+      }
       
       document.addEventListener("deviceready", controller.onDeviceReady, false);
       

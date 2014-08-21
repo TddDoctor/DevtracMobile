@@ -117,6 +117,7 @@ body {
           <button type="button" data-theme="a" id="page_login_submit"
             data-mini="true">Sign In</button>
         </div>
+        <div class="loginlogs"></div>
 
         <div id='logoutdiv'>
           <button type="button" data-theme="a" id="page_logout_submit"
@@ -130,11 +131,12 @@ body {
   
   
         <label for="myurl style='font-size: small'">Either Type in a url or Select one from the list below: </label>
-        <input type="url" placeholder="Start with http:// and remove trailing slash" name="myurl" class="myurl" value="">
+        <input type="url" placeholder="Start with http://" name="myurl" class="myurl" value="">
         <br>
         
-        <select data-placeholder="Choose Url ..." class="seturlselect" data-role="none">
+        <select data-placeholder="Choose Url ..." class="seturlselect">
         <option value="manual">manual</option>
+        <option value="custom">custom</option>
         <option value="DevtracUg" disabled="disabled">DevtracUganda</option>
         <option value="test">test</option>
         <option value="cloud">cloud</option>
@@ -146,6 +148,8 @@ body {
           <a href="#" data-role="button" data-inline="true" data-theme="b" data-mini="true"
             class='save_url'>Save Url</a>
         </div>
+        <div class="urllogging"></div>
+        <div class="clickedurl"></div>
     
       </form>
     </div>
@@ -826,11 +830,12 @@ body {
     <div data-role="content" class='content' id='Settingscontent'>
       <form action="" class="settingsform">
       <label for="myurl style='font-size: small'">Either Type in a url or Select one from the list below: </label>
-        <input type="url" placeholder="Start with http:// and remove trailing slash" name="myurl" class="myurl" value="">
+        <input type="url" placeholder="Start with http://" name="myurl" class="myurl" value="">
         <br>
         
-        <select data-placeholder="Choose Url ..." class="seturlselect" data-role="none">
+        <select data-placeholder="Choose Url ..." class="seturlselect">
         <option value="manual">manual</option>
+        <option value="custom">custom</option>
         <option value="DevtracUg" disabled="disabled">DevtracUganda</option>
         <option value="test">test</option>
         <option value="cloud">cloud</option>
@@ -842,6 +847,7 @@ body {
           <a href="#" data-role="button" data-inline="true" data-theme="b" data-mini="true"
             class='save_url_settings'>Save Url</a>
         </div>
+        <div class="urllogging"></div>
       
       </form>
     </div>

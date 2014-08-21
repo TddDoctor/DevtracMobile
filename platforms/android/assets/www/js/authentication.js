@@ -87,6 +87,8 @@ var auth = {
             
           },
           success : function(data) {
+            localStorage.sname = data.sessid;
+            localStorage.sid = data.session_name;
             
             var drupal_user = data.user;
             if (drupal_user.uid == 0)
@@ -144,7 +146,7 @@ var auth = {
           type : 'post',
           data : 'username=' + encodeURIComponent(name) + '&password=' + encodeURIComponent(pass),
           dataType : 'json',
-          headers: {'X-CSRF-Token': token},
+          headers: {'X-CSRF-Token': token, 'Cookie': localStorage.sname +"="+localStorage.sid },
           beforeSend: function( xhr ) {
             controller.loadingMsg("Logging In ...", 0);
             $('.blockUI.blockMsg').center();
@@ -230,7 +232,7 @@ var auth = {
           url : localStorage.appurl+"/api/user/logout.json",
           type : 'post',
           dataType : 'json',
-          headers: {'X-CSRF-Token': token},
+          headers: {'X-CSRF-Token': token, 'Cookie': localStorage.sname +"="+localStorage.sid},
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
             

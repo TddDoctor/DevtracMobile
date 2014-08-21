@@ -54,16 +54,18 @@ var controller = {
       
       
       //set application url if its not set
-      if (!localStorage.appurl) {
+      //if (!localStorage.appurl) {
       //localStorage.appurl = "http://localhost/dt11";
       //localStorage.appurl = "http://192.168.38.113/dt11";
-      //localStorage.appurl = "http://192.168.38.114/dt11";
-      localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+      localStorage.appurl = "http://192.168.38.114/dt11";
+      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
       //localStorage.appurl = "http://demo.devtrac.org";
       //localStorage.appurl = "http://10.0.2.2/dt11";
       //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
-      
-      }
+       // console.log("url not set "+localStorage.appurl);
+     // }else{
+        //console.log("app url set "+localStorage.appurl);
+     // }
       
       if(controller.connectionStatus) {
         
@@ -167,6 +169,7 @@ var controller = {
     bindEvents: function () {
       $(".seturlselect").chosen({width: "100%"}); 
       $(".menulistview").listview().listview('refresh');
+      $(".myurl").hide();
       
       document.addEventListener("deviceready", controller.onDeviceReady, false);
       
@@ -432,6 +435,16 @@ var controller = {
         }
       });
       
+      $(".seturlselect").live( "change", function(event, ui) {
+        if($(this).val() == "custom") {
+          console.log("custom");
+          $(".myurl").show();
+        }else{
+          console.log("not custom");
+          $(".myurl").hide();
+        }
+      });
+      
       //add hidden element
       $('#addactionitem').bind("click", function (event, ui) {
         var snid = $('#sitevisitId').val();
@@ -530,9 +543,10 @@ var controller = {
       
       //save url dialog
       $('.save_url').bind("click", function (event, ui) {
-        
+        $(".urllogging").html("clicked the save");
         var url = null;
         if($(".myurl").val().length > 0) {
+          $(".clickedurl").html($(".myurl").val());
           
           devtrac.indexedDB.open(function (db) {
             devtrac.indexedDB.clearDatabase(db, 0, function() {
@@ -546,8 +560,10 @@ var controller = {
         {
           url = $('a.chosen-single span').html();
           
-          if(url == null){
-            url = $('.seturlselect').val();
+          if(url == null) {
+            url = $('.seturlselect option:selected"').val();
+            
+            $(".clickedurl").html($('.seturlselect option:selected"').val());
           }
           
           switch (url) {
@@ -780,6 +796,7 @@ var controller = {
       
       //handle login click event
       $('#page_login_submit').bind("click", function (event, ui) {
+        $(".loginlogs").html("clicked sign in");
         if ($("#page_login_name").valid() && $("#page_login_pass").valid()) {
           
           if(controller.connectionStatus) {

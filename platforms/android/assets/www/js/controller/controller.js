@@ -1,4 +1,6 @@
-var controller = {    
+var controller = {
+    pictureSource: null, // picture source
+    destinationType: null,
     connectionStatus : true,
     base64Images : [],
     filenames : [],
@@ -2559,8 +2561,8 @@ var controller = {
       document.addEventListener("online", controller.online, false);
       document.addEventListener("menubutton", controller.doMenu, false);
       
-      /*pictureSource=navigator.camera.PictureSourceType;
-      destinationType=navigator.camera.DestinationType;*/
+      controller.pictureSource= navigator.camera.PictureSourceType;
+      controller.destinationType=navigator.camera.DestinationType;
     },
     
     // onOnline event handler

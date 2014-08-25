@@ -72,6 +72,15 @@ var controller = {
         controller.loadingMsg("Please Wait..", 0);
         $('.blockUI.blockMsg').center();
         auth.loginStatus().then(function () {
+          $(".menulistview").show();
+          
+          $("#form_add_location").show();
+          $("#form_fieldtrip_details").show();
+          $("#form_sitevisists_details").show();
+          
+          $(".settingsform").show();
+          $(".ui-navbar").show();
+          
           console.log("logged in");
           
           devtracnodes.countFieldtrips().then(function(){
@@ -95,6 +104,16 @@ var controller = {
           
           
         }).fail(function () {
+          $(".menulistview").hide();
+          $("#form_fieldtrip_details").hide();
+          $("#form_sitevisists_details").hide();
+          $("#form_add_location").hide();
+          $(".settingsform").hide();
+          $(".ui-navbar").hide();
+          $("#addquestionnaire").hide();
+          
+          controller.resetForm($('#form_fieldtrip_details'));
+          
           console.log("logged out");
           $.unblockUI();
           if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){

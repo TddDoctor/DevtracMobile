@@ -171,6 +171,15 @@ var auth = {
           },
           success : function(data) {
             console.log("logged successfully");
+            $(".menulistview").show();
+            
+            $("#form_add_location").show();
+            $("#form_fieldtrip_details").show();
+            $("#form_sitevisists_details").show();
+            $("#addquestionnaire").show();
+            $(".settingsform").show();
+            $(".ui-navbar").show();
+            
             localStorage.username = name;
             localStorage.pass = pass;
             localStorage.uid = data.user.uid;
@@ -260,6 +269,14 @@ var auth = {
           success : function(data) {
             $.unblockUI();
             console.log("logged out okay");
+            $(".menulistview").hide();
+            $("#form_fieldtrip_details").hide();
+            $("#form_sitevisists_details").hide();
+            $("#form_add_location").hide();
+            $(".settingsform").hide();
+            $("#addquestionnaire").hide();
+            $(".ui-navbar").hide();
+            
             $.mobile.changePage("#page_login", "slide", true, false);
             
             localStorage.token = null;

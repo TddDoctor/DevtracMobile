@@ -610,6 +610,11 @@ var controller = {
         
       });
       
+      //capture photo
+      $("#takephoto").bind("click", function (event, ui) {
+        
+      });
+      
       //save url dialog
       $('.save_url').bind("click", function (event, ui) {
         $(".urllogging").html("clicked the save");
@@ -966,6 +971,78 @@ var controller = {
       element_gps.html('code: '    + error.code    + '\n' +
           'message: ' + error.message + '\n');
     },
+    
+    //camera functions
+    
+    onPhotoDataSuccess: function(imageData) {
+      // Uncomment to view the base64-encoded image data
+      // console.log(imageData);
+
+      // Get image handle
+      //
+      var smallImage = document.getElementById('smallImage');
+
+      // Unhide image elements
+      //
+      smallImage.style.display = 'block';
+
+      // Show the captured photo
+      // The in-line CSS rules are used to resize the image
+      //
+      smallImage.src = "data:image/jpeg;base64," + imageData;
+    },
+
+    // Called when a photo is successfully retrieved
+    //
+    onPhotoURISuccess: function(imageURI) {
+      // Uncomment to view the image file URI
+      // console.log(imageURI);
+
+      // Get image handle
+      //
+      var largeImage = document.getElementById('largeImage');
+
+      // Unhide image elements
+      //
+      largeImage.style.display = 'block';
+
+      // Show the captured photo
+      // The in-line CSS rules are used to resize the image
+      //
+      largeImage.src = imageURI;
+    },
+
+    // A button will call this function
+    //
+    capturePhoto: function() {
+      // Take picture using device camera and retrieve image as base64-encoded string
+      navigator.camera.getPicture(onPhotoDataSuccess, onFail, { quality: 50,
+        destinationType: destinationType.DATA_URL });
+    },
+
+    // A button will call this function
+    //
+    capturePhotoEdit: function() {
+      // Take picture using device camera, allow edit, and retrieve image as base64-encoded string
+      navigator.camera.getPicture(onPhotoDataSuccess, onFail, { quality: 20, allowEdit: true,
+        destinationType: destinationType.DATA_URL });
+    },
+
+    // A button will call this function
+    //
+    getPhoto: function(source) {
+      // Retrieve image file location from specified source
+      navigator.camera.getPicture(onPhotoURISuccess, onFail, { quality: 50,
+        destinationType: destinationType.FILE_URI,
+        sourceType: source });
+    },
+
+    // Called if something bad happens.
+    //
+    onFail: function(message) {
+      alert('Failed because: ' + message);
+    },
+    
     
     //clear the watch that was started earlier
     clearWatch: function() {
@@ -2454,6 +2531,8 @@ var controller = {
       document.addEventListener("online", controller.online, false);
       document.addEventListener("menubutton", controller.doMenu, false);
       
+      pictureSource=navigator.camera.PictureSourceType;
+      destinationType=navigator.camera.DestinationType;
     },
     
     // onOnline event handler

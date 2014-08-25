@@ -2550,8 +2550,8 @@ var controller = {
       document.addEventListener("online", controller.online, false);
       document.addEventListener("menubutton", controller.doMenu, false);
       
-      pictureSource=navigator.camera.PictureSourceType;
-      destinationType=navigator.camera.DestinationType;
+      /*pictureSource=navigator.camera.PictureSourceType;
+      destinationType=navigator.camera.DestinationType;*/
     },
     
     // onOnline event handler

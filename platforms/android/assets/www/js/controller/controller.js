@@ -481,17 +481,26 @@ var controller = {
             required: true
           },
           gpslat:{
-            number: true,
+            number: true
           },
           gpslon:{
-            number: true,
+            number: true
+          },
+          locationphone:{
+            digits: true
+          },
+          locationemail:{
+            email: true
+          },
+          locationwebsite:{
+            url: true
           }
         }
       });
       
       //site report type validation
       var site_report_form = $("#form_sitereporttype");
-      location_form.validate({
+      site_report_form.validate({
         rules: {
           sitevisit_add_type: {
             required: true,
@@ -2217,17 +2226,17 @@ var controller = {
         updates['field_place_responsible_phone'] = {};
         updates['field_place_responsible_phone']['und'] = [];
         updates['field_place_responsible_phone']['und'][0] = {};
-        updates['field_place_responsible_phone']['und'][0]['value'] = $('#location_phone').val();
+        updates['field_place_responsible_phone']['und'][0]['value'] = $('#locationphone').val();
         
         updates['field_place_responsible_email'] = {};
         updates['field_place_responsible_email']['und'] = [];
         updates['field_place_responsible_email']['und'][0] = {};
-        updates['field_place_responsible_email']['und'][0]['email'] = $('#location_email').val();
+        updates['field_place_responsible_email']['und'][0]['email'] = $('#locationemail').val();
         
         updates['field_place_responsible_website'] = {};
         updates['field_place_responsible_website']['und'] = [];
         updates['field_place_responsible_website']['und'][0] = {};
-        updates['field_place_responsible_website']['und'][0]['url'] = $('#location_website').val();
+        updates['field_place_responsible_website']['und'][0]['url'] = $('#locationwebsite').val();
         
         updates['field_actionitem_status'] = {};
         updates['field_actionitem_status']['und'] = [];
@@ -2237,13 +2246,13 @@ var controller = {
         updates['taxonomy_vocabulary_1'] = {};
         updates['taxonomy_vocabulary_1']['und'] = [];
         updates['taxonomy_vocabulary_1']['und'][0] = {};
-        updates['taxonomy_vocabulary_1']['und'][0]['tid'] = "58";//$('#select_placetype').val();
+        updates['taxonomy_vocabulary_1']['und'][0]['tid'] = $('#select_placetype').val();
         
         //get district information
-        updates['taxonomy_vocabulary_6'] = {};
+/*        updates['taxonomy_vocabulary_6'] = {};
         updates['taxonomy_vocabulary_6']['und'] = [];
         updates['taxonomy_vocabulary_6']['und'][0] = {};
-        updates['taxonomy_vocabulary_6']['und'][0]['tid'] = "93";
+        updates['taxonomy_vocabulary_6']['und'][0]['tid'] = "93";*/
         
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getAllplaces(db, function (locations) {

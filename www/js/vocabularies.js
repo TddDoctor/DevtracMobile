@@ -25,9 +25,9 @@ var vocabularies = {
           
           devtrac.indexedDB.open(function (dbs) {
             devtrac.indexedDB.addTaxonomyData(dbs, "oecdobj", data).then(function() {
-              d.resolve();
+              d.resolve("Oecds Saved");
             }).fail(function(err) {
-              d.resolve();
+              d.resolve("Oecds Not Saved");
 
             });
           });
@@ -57,14 +57,14 @@ var vocabularies = {
         //create bubble notification
           if(data.length <= 0) {
             devtracnodes.notify("Placetypes Data Unavailable.");
+            d.reject("No Placetypes Found");
           }else{
             
             devtrac.indexedDB.open(function (dbs) {
               devtrac.indexedDB.addTaxonomyData(dbs, "placetype", data).then(function() {
-                d.resolve();
+                d.resolve("Placetypes Saved");
               }).fail(function(err) {
-                d.resolve();
-
+                d.resolve("Placetypes Not Saved");
               });
             });
 

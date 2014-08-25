@@ -37,8 +37,14 @@ var auth = {
           d.reject();
         },
         success: function (token) {
-          console.log("token "+ " from "+localStorage.appurl);
-          d.resolve(token);
+          if(token.indexOf(" ") != -1) {
+            token = token.substring(2);
+
+            console.log("token "+ " from "+localStorage.appurl);
+            d.resolve(token);
+          }else{
+            d.resolve(token);
+          }
         }
       });
       
@@ -66,7 +72,8 @@ var auth = {
     loginStatus: function() {
       var d = $.Deferred();
       
-      auth.getToken().then(function(token){
+      auth.getToken().then(function(token) {
+        
         // Call system connect with session token.
         $.ajax({
           url : localStorage.appurl+"/api/system/connect.json",
@@ -149,8 +156,7 @@ var auth = {
           data : 'username=' + encodeURIComponent(name) + '&password=' + encodeURIComponent(pass),
           dataType : 'json',
           headers: {
-            'X-CSRF-Token': token,
-            'Cookie': localStorage.sname +"="+localStorage.sid
+            'X-CSRF-Token': token
              
             },
           error : function(XMLHttpRequest, textStatus, errorThrown) {
@@ -237,7 +243,9 @@ var auth = {
           url : localStorage.appurl+"/api/user/logout.json",
           type : 'post',
           dataType : 'json',
-          headers: {'X-CSRF-Token': token, 'Cookie': localStorage.sname +"="+localStorage.sid},
+          headers: {
+            'X-CSRF-Token': localStorage.usertoken
+          },
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
             

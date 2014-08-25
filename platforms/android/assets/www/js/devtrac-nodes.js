@@ -1442,8 +1442,8 @@ var devtracnodes = {
         type : 'get',
         dataType : 'json',
         headers: {
-          'X-CSRF-Token': localStorage.usertoken,
-          'Cookie': localStorage.sname +"="+localStorage.sid
+          'X-CSRF-Token': localStorage.usertoken//,
+          //'Cookie': localStorage.sname +"="+localStorage.sid
         },
         error : function(XMLHttpRequest, textStatus, errorThrown) { 
           //creating bubble notification

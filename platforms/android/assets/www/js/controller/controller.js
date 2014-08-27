@@ -1012,11 +1012,14 @@ var controller = {
           'message: ' + error.message + '\n');
       
       if(error.code == 1 || error.code == "1") {//PERMISSION_DENIED
-        
+        controller.loadingMsg("User denied the request for Geolocation.", 3000);
+        $('.blockUI.blockMsg').center();
       }else if(error.code == 2 || error.code == "2") {//POSITION_UNAVAILABLE
-        
+        controller.loadingMsg("Please Check GPS is Switched ON.", 3000);
+        $('.blockUI.blockMsg').center();
       }else if(error.code == 3 || error.code == "3") {//TIMEOUT
-        
+        //controller.loadingMsg("The request to get user location timed out.", 1000);
+       // $('.blockUI.blockMsg').center();
       }
     },
     
@@ -1060,7 +1063,8 @@ var controller = {
     // Called if something bad happens.
     //
     onFail: function(message) {
-      alert('Failed because: ' + message);
+      console.log("camera error "+message);
+      
     },
     
     

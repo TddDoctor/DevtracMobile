@@ -419,7 +419,7 @@ var controller = {
                   $(".notification-bubble").html(0);          
                   
                 }else{
-                  controller.loadingMsg("Please Connect to Internet ...", 1000);
+                  controller.loadingMsg("Please Connect to Internet ...", 2000);
                   $('.blockUI.blockMsg').center();
                 }
               },
@@ -2535,9 +2535,9 @@ var controller = {
     // device ready event handler
     onDeviceReady: function () {
       controller.checkOnline().then(function(){
-        alert("online u r");
+        controller.connectionStatus = true;
       }).fail(function(){
-        alert("offline u r");
+        controller.connectionStatus = false;
       });
       
       document.addEventListener("menubutton", controller.doMenu, false);

@@ -42,4 +42,5 @@
     </author>
     <content src="index.html" />
     <access origin="*" />
+    <icon src="favicon.png" /> 
 </widget>

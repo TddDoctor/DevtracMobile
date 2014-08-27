@@ -18,6 +18,13 @@ var controller = {
     
     objectstores: ["oecdobj", "placetype", "fieldtripobj", "sitevisit", "actionitemsobj", "placesitemsobj", "qtnsitemsobj", "qtionairesitemsobj", "commentsitemsobj","images"],
     
+    //on body load
+    onLoad: function(){
+      document.addEventListener("offline", controller.onOffline, false);
+      document.addEventListener("online", controller.online, false);
+      document.addEventListener("deviceready", controller.onDeviceReady, false);
+    },
+    
     // Application Constructor
     initialize: function () {
       //center the loading message
@@ -70,7 +77,11 @@ var controller = {
       }
       
       if(controller.connectionStatus) {
-        
+        controller.checkOnline().then(function(){
+          alert("online u r");
+        }).fail(function(){
+          alert("offline u r");
+        });
         controller.loadingMsg("Please Wait..", 0);
         $('.blockUI.blockMsg').center();
         auth.loginStatus().then(function () {
@@ -196,9 +207,7 @@ var controller = {
       }else{
         $(".myurl").hide();
       }
-      
-      document.addEventListener("deviceready", controller.onDeviceReady, false);
-      
+
       //start gps
       $( "#page_add_location" ).bind("pagebeforeshow", function( event ) {
         console.log("inside page add location");        
@@ -251,13 +260,13 @@ var controller = {
       //show the connected url in the drop down select - login page
       $("#page_login").bind('pagebeforeshow', function() {
         var el = $('#loginselect');
-       
+        
         var url = localStorage.appurl;
         
         if(url.indexOf("test") != -1) {
           // Select the relevant option, de-select any others
           el.val('test').selectmenu('refresh');
-
+          
           // jQM refresh
           //el.selectmenu("refresh", true);
         }else if(url.indexOf("cloud") != -1) {
@@ -269,7 +278,7 @@ var controller = {
         }else if(url.indexOf("manual") != -1) {
           // Select the relevant option, de-select any others
           el.val('manual').selectmenu('refresh');
-
+          
           // jQM refresh
           //el.selectmenu("refresh", true);
         }else if(url.indexOf("dt11") != -1) {
@@ -286,13 +295,13 @@ var controller = {
       //show the connected url in the drop down select - settings page
       $("#page_add_settings").bind('pagebeforeshow', function() {
         var el = $('#settingselect');
-       
+        
         var url = localStorage.appurl;
         
         if(url.indexOf("test") != -1) {
           // Select the relevant option, de-select any others
           el.val('test').selectmenu('refresh');
-
+          
           // jQM refresh
           //el.selectmenu("refresh", true);
         }else if(url.indexOf("cloud") != -1) {
@@ -304,7 +313,7 @@ var controller = {
         }else if(url.indexOf("manual") != -1) {
           // Select the relevant option, de-select any others
           el.val('manual').selectmenu('refresh');
-
+          
           // jQM refresh
           //el.selectmenu("refresh", true);
         }else if(url.indexOf("dt11") != -1) {
@@ -1005,23 +1014,32 @@ var controller = {
     //camera functions
     
     onPhotoDataSuccess: function(imageData) {
-      // Uncomment to view the base64-encoded image data
-      // console.log(imageData);
-
+      var currentdate = new Date(); 
+      var datetime = currentdate.getDate()
+      + (currentdate.getMonth()+1)
+      + currentdate.getFullYear() + "_"  
+      + currentdate.getHours()
+      + currentdate.getMinutes()
+      + currentdate.getSeconds();
+      
+      var imagename = "img_"+datetime+".jpeg";
       // Get image handle
-      //
-      var smallImage = document.getElementById('smallImage');
-
-      // Unhide image elements
-      //
-      smallImage.style.display = 'block';
-
-      // Show the captured photo
-      // The in-line CSS rules are used to resize the image
-      //
-      smallImage.src = "data:image/jpeg;base64," + imageData;
+      
+      if(localStorage.ftritemtype == "210") 
+      {
+        controller.filenames.push(imagename);
+        controller.base64Images.push(imageData);
+        $("#uploadPreview").append('<div>'+imagename+'</div>');
+        
+      }else
+      {
+        controller.fnames.push(imagename);
+        controller.b64Images.push(imageData);
+        
+        $("#imagePreview").append('<div>'+imagename+'</div>');
+      }
     },
-
+    
     // A button will call this function
     //
     capturePhoto: function() {
@@ -1029,7 +1047,7 @@ var controller = {
       navigator.camera.getPicture(controller.onPhotoDataSuccess, controller.onFail, { quality: 30,
         destinationType: controller.destinationType.DATA_URL });
     },
-
+    
     // Called if something bad happens.
     //
     onFail: function(message) {
@@ -1228,6 +1246,7 @@ var controller = {
     onOffline: function() {
       controller.connectionStatus = false;
       controller.loadingMsg("You are offline. Connect to Upload and Download your Data", 2000);
+      $('.blockUI.blockMsg').center();
     },
     
     //cordova online event
@@ -2214,7 +2233,7 @@ var controller = {
         updates['taxonomy_vocabulary_1']['und'][0]['tid'] = $('#select_placetype').val();
         
         //get district information
-/*        updates['taxonomy_vocabulary_6'] = {};
+        /*        updates['taxonomy_vocabulary_6'] = {};
         updates['taxonomy_vocabulary_6']['und'] = [];
         updates['taxonomy_vocabulary_6']['und'][0] = {};
         updates['taxonomy_vocabulary_6']['und'][0]['tid'] = "93";*/
@@ -2520,12 +2539,18 @@ var controller = {
     
     // device ready event handler
     onDeviceReady: function () {
-      document.addEventListener("offline", controller.onOffline, false);
-      document.addEventListener("online", controller.online, false);
       document.addEventListener("menubutton", controller.doMenu, false);
       
       controller.pictureSource= navigator.camera.PictureSourceType;
       controller.destinationType=navigator.camera.DestinationType;
+      
+      if(navigator.network.connection.type == Connection.NONE) {
+        controller.loadingMsg("Sorry, you are offline", 2000);
+        $('.blockUI.blockMsg').center();
+        controller.connectionStatus = false;
+      } else {
+        controller.connectionStatus = true;
+      }
     },
     
     // onOnline event handler

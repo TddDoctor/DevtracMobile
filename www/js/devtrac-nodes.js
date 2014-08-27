@@ -937,6 +937,7 @@ var devtracnodes = {
                 
                 if(newids == "" && oldids == "") {
                   controller.loadingMsg(newnames, 3000);
+                  $('.blockUI.blockMsg').center();
                 }else {
                   controller.loadingMsg("Finished Syncing Locations ...", 0);
                   $('.blockUI.blockMsg').center();
@@ -952,6 +953,7 @@ var devtracnodes = {
                           devtracnodes.syncSitevisits(ftritemdetails, ftritems_locs);
                         }else{
                           controller.loadingMsg(ftritemdetails, 3000);
+                          $('.blockUI.blockMsg').center();
                         }
                         
                       });

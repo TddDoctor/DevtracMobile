@@ -27,6 +27,11 @@ var controller = {
     
     // Application Constructor
     initialize: function () {
+      //faster button clicks
+      window.addEventListener('load', function() {
+        FastClick.attach(document.body);
+      }, false);
+      
       //center the loading message
       $.fn.center = function () {
         this.css("position","absolute");
@@ -202,7 +207,7 @@ var controller = {
       }else{
         $(".myurl").hide();
       }
-
+      
       //start gps
       $( "#page_add_location" ).bind("pagebeforeshow", function( event ) {
         console.log("inside page add location");        
@@ -999,11 +1004,20 @@ var controller = {
     
     // onError Callback receives a PositionError object
     onError: function(error) {
-      var element_gps = $("#gpserror").html("");
-      console.log("gps error "+error.message);
+      $("#gpserror").html("");
+      console.log('code: '    + error.code    + '\n' +
+          'message: ' + error.message + '\n');
       var element_gps = $("#gpserror");
       element_gps.html('code: '    + error.code    + '\n' +
           'message: ' + error.message + '\n');
+      
+      if(error.code == 1 || error.code == "1") {//PERMISSION_DENIED
+        
+      }else if(error.code == 2 || error.code == "2") {//POSITION_UNAVAILABLE
+        
+      }else if(error.code == 3 || error.code == "3") {//TIMEOUT
+        
+      }
     },
     
     //camera functions
@@ -2232,7 +2246,7 @@ var controller = {
         updates['taxonomy_vocabulary_6']['und'] = [];
         updates['taxonomy_vocabulary_6']['und'][0] = {};
         updates['taxonomy_vocabulary_6']['und'][0]['tid'] = "93";
-      
+        
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getAllplaces(db, function (locations) {
             for (var k in locations) {

@@ -641,8 +641,8 @@ var controller = {
       });
       
       //capture photo
-      $("#takephoto").bind("click", function (event, ui) {
-        
+      $(".takephoto").bind("click", function (event, ui) {
+        controller.capturePhoto();
       });
       
       //save url dialog
@@ -1005,66 +1005,38 @@ var controller = {
     //camera functions
     
     onPhotoDataSuccess: function(imageData) {
-      // Uncomment to view the base64-encoded image data
-      // console.log(imageData);
-
+      var currentdate = new Date(); 
+      var datetime = currentdate.getDate()
+      + (currentdate.getMonth()+1)
+      + currentdate.getFullYear() + "_"  
+      + currentdate.getHours()
+      + currentdate.getMinutes()
+      + currentdate.getSeconds();
+      
+      var imagename = "img_"+datetime+".jpeg";
       // Get image handle
-      //
-      var smallImage = document.getElementById('smallImage');
-
-      // Unhide image elements
-      //
-      smallImage.style.display = 'block';
-
-      // Show the captured photo
-      // The in-line CSS rules are used to resize the image
-      //
-      smallImage.src = "data:image/jpeg;base64," + imageData;
-    },
-
-    // Called when a photo is successfully retrieved
-    //
-    onPhotoURISuccess: function(imageURI) {
-      // Uncomment to view the image file URI
-      // console.log(imageURI);
-
-      // Get image handle
-      //
-      var largeImage = document.getElementById('largeImage');
-
-      // Unhide image elements
-      //
-      largeImage.style.display = 'block';
-
-      // Show the captured photo
-      // The in-line CSS rules are used to resize the image
-      //
-      largeImage.src = imageURI;
+      
+      if(localStorage.ftritemtype == "210") 
+      {
+        controller.filenames.push(imagename);
+        controller.base64Images.push(imageData);
+        $("#uploadPreview").append('<div>'+imagename+'</div>');
+        
+      }else
+      {
+        controller.fnames.push(imagename);
+        controller.b64Images.push(imageData);
+        
+        $("#imagePreview").append('<div>'+imagename+'</div>');
+      }
     },
 
     // A button will call this function
     //
     capturePhoto: function() {
       // Take picture using device camera and retrieve image as base64-encoded string
-      navigator.camera.getPicture(onPhotoDataSuccess, onFail, { quality: 50,
-        destinationType: destinationType.DATA_URL });
-    },
-
-    // A button will call this function
-    //
-    capturePhotoEdit: function() {
-      // Take picture using device camera, allow edit, and retrieve image as base64-encoded string
-      navigator.camera.getPicture(onPhotoDataSuccess, onFail, { quality: 20, allowEdit: true,
-        destinationType: destinationType.DATA_URL });
-    },
-
-    // A button will call this function
-    //
-    getPhoto: function(source) {
-      // Retrieve image file location from specified source
-      navigator.camera.getPicture(onPhotoURISuccess, onFail, { quality: 50,
-        destinationType: destinationType.FILE_URI,
-        sourceType: source });
+      navigator.camera.getPicture(controller.onPhotoDataSuccess, controller.onFail, { quality: 30,
+        destinationType: controller.destinationType.DATA_URL });
     },
 
     // Called if something bad happens.

@@ -44,6 +44,34 @@ module.exports = [
         ]
     },
     {
+        "file": "plugins/org.apache.cordova.dialogs/www/notification.js",
+        "id": "org.apache.cordova.dialogs.notification",
+        "merges": [
+            "navigator.notification"
+        ]
+    },
+    {
+        "file": "plugins/org.apache.cordova.dialogs/www/android/notification.js",
+        "id": "org.apache.cordova.dialogs.notification_android",
+        "merges": [
+            "navigator.notification"
+        ]
+    },
+    {
+        "file": "plugins/org.apache.cordova.vibration/www/vibration.js",
+        "id": "org.apache.cordova.vibration.notification",
+        "merges": [
+            "navigator.notification"
+        ]
+    },
+    {
+        "file": "plugins/org.apache.cordova.battery-status/www/battery.js",
+        "id": "org.apache.cordova.battery-status.battery",
+        "clobbers": [
+            "navigator.battery"
+        ]
+    },
+    {
         "file": "plugins/org.apache.cordova.file/www/DirectoryEntry.js",
         "id": "org.apache.cordova.file.DirectoryEntry",
         "clobbers": [
@@ -161,29 +189,15 @@ module.exports = [
     {
         "file": "plugins/org.apache.cordova.file/www/resolveLocalFileSystemURI.js",
         "id": "org.apache.cordova.file.resolveLocalFileSystemURI",
-        "clobbers": [
-            "window.resolveLocalFileSystemURI"
+        "merges": [
+            "window"
         ]
     },
     {
-        "file": "plugins/org.apache.cordova.dialogs/www/notification.js",
-        "id": "org.apache.cordova.dialogs.notification",
+        "file": "plugins/org.apache.cordova.file/www/android/FileSystem.js",
+        "id": "org.apache.cordova.file.androidFileSystem",
         "merges": [
-            "navigator.notification"
-        ]
-    },
-    {
-        "file": "plugins/org.apache.cordova.dialogs/www/android/notification.js",
-        "id": "org.apache.cordova.dialogs.notification_android",
-        "merges": [
-            "navigator.notification"
-        ]
-    },
-    {
-        "file": "plugins/org.apache.cordova.vibration/www/vibration.js",
-        "id": "org.apache.cordova.vibration.notification",
-        "merges": [
-            "navigator.notification"
+            "window.FileSystem"
         ]
     },
     {
@@ -206,10 +220,11 @@ module.exports.metadata =
 {
     "org.apache.cordova.geolocation": "0.3.5",
     "org.apache.cordova.network-information": "0.2.6",
-    "org.apache.cordova.file": "0.2.5",
     "org.apache.cordova.dialogs": "0.2.5",
     "org.apache.cordova.vibration": "0.3.6",
-    "org.apache.cordova.file-transfer": "0.4.0"
+    "org.apache.cordova.battery-status": "0.2.5",
+    "org.apache.cordova.file": "1.1.0",
+    "org.apache.cordova.file-transfer": "0.4.3"
 }
 // BOTTOM OF METADATA
 });

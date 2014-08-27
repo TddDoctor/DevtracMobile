@@ -1,4 +1,6 @@
-var controller = {    
+var controller = {
+    pictureSource: null, // picture source
+    destinationType: null,
     connectionStatus : true,
     base64Images : [],
     filenames : [],
@@ -72,6 +74,15 @@ var controller = {
         controller.loadingMsg("Please Wait..", 0);
         $('.blockUI.blockMsg').center();
         auth.loginStatus().then(function () {
+          $(".menulistview").show();
+          
+          $("#form_add_location").show();
+          $("#form_fieldtrip_details").show();
+          $("#form_sitevisists_details").show();
+          
+          $(".settingsform").show();
+          $(".ui-navbar").show();
+          
           console.log("logged in");
           
           devtracnodes.countFieldtrips().then(function(){
@@ -95,6 +106,16 @@ var controller = {
           
           
         }).fail(function () {
+          $(".menulistview").hide();
+          $("#form_fieldtrip_details").hide();
+          $("#form_sitevisists_details").hide();
+          $("#form_add_location").hide();
+          $(".settingsform").hide();
+          $(".ui-navbar").hide();
+          $("#addquestionnaire").hide();
+          
+          controller.resetForm($('#form_fieldtrip_details'));
+          
           console.log("logged out");
           $.unblockUI();
           if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){
@@ -462,17 +483,26 @@ var controller = {
             required: true
           },
           gpslat:{
-            number: true,
+            number: true
           },
           gpslon:{
-            number: true,
+            number: true
+          },
+          locationphone:{
+            digits: true
+          },
+          locationemail:{
+            email: true
+          },
+          locationwebsite:{
+            url: true
           }
         }
       });
       
       //site report type validation
       var site_report_form = $("#form_sitereporttype");
-      location_form.validate({
+      site_report_form.validate({
         rules: {
           sitevisit_add_type: {
             required: true,
@@ -611,8 +641,8 @@ var controller = {
       });
       
       //capture photo
-      $("#takephoto").bind("click", function (event, ui) {
-        
+      $(".takephoto").bind("click", function (event, ui) {
+        controller.capturePhoto();
       });
       
       //save url dialog
@@ -992,49 +1022,12 @@ var controller = {
       smallImage.src = "data:image/jpeg;base64," + imageData;
     },
 
-    // Called when a photo is successfully retrieved
-    //
-    onPhotoURISuccess: function(imageURI) {
-      // Uncomment to view the image file URI
-      // console.log(imageURI);
-
-      // Get image handle
-      //
-      var largeImage = document.getElementById('largeImage');
-
-      // Unhide image elements
-      //
-      largeImage.style.display = 'block';
-
-      // Show the captured photo
-      // The in-line CSS rules are used to resize the image
-      //
-      largeImage.src = imageURI;
-    },
-
     // A button will call this function
     //
     capturePhoto: function() {
       // Take picture using device camera and retrieve image as base64-encoded string
-      navigator.camera.getPicture(onPhotoDataSuccess, onFail, { quality: 50,
-        destinationType: destinationType.DATA_URL });
-    },
-
-    // A button will call this function
-    //
-    capturePhotoEdit: function() {
-      // Take picture using device camera, allow edit, and retrieve image as base64-encoded string
-      navigator.camera.getPicture(onPhotoDataSuccess, onFail, { quality: 20, allowEdit: true,
-        destinationType: destinationType.DATA_URL });
-    },
-
-    // A button will call this function
-    //
-    getPhoto: function(source) {
-      // Retrieve image file location from specified source
-      navigator.camera.getPicture(onPhotoURISuccess, onFail, { quality: 50,
-        destinationType: destinationType.FILE_URI,
-        sourceType: source });
+      navigator.camera.getPicture(controller.onPhotoDataSuccess, controller.onFail, { quality: 30,
+        destinationType: controller.destinationType.DATA_URL });
     },
 
     // Called if something bad happens.
@@ -2198,17 +2191,17 @@ var controller = {
         updates['field_place_responsible_phone'] = {};
         updates['field_place_responsible_phone']['und'] = [];
         updates['field_place_responsible_phone']['und'][0] = {};
-        updates['field_place_responsible_phone']['und'][0]['value'] = $('#location_phone').val();
+        updates['field_place_responsible_phone']['und'][0]['value'] = $('#locationphone').val();
         
         updates['field_place_responsible_email'] = {};
         updates['field_place_responsible_email']['und'] = [];
         updates['field_place_responsible_email']['und'][0] = {};
-        updates['field_place_responsible_email']['und'][0]['email'] = $('#location_email').val();
+        updates['field_place_responsible_email']['und'][0]['email'] = $('#locationemail').val();
         
         updates['field_place_responsible_website'] = {};
         updates['field_place_responsible_website']['und'] = [];
         updates['field_place_responsible_website']['und'][0] = {};
-        updates['field_place_responsible_website']['und'][0]['url'] = $('#location_website').val();
+        updates['field_place_responsible_website']['und'][0]['url'] = $('#locationwebsite').val();
         
         updates['field_actionitem_status'] = {};
         updates['field_actionitem_status']['und'] = [];
@@ -2218,13 +2211,13 @@ var controller = {
         updates['taxonomy_vocabulary_1'] = {};
         updates['taxonomy_vocabulary_1']['und'] = [];
         updates['taxonomy_vocabulary_1']['und'][0] = {};
-        updates['taxonomy_vocabulary_1']['und'][0]['tid'] = "58";//$('#select_placetype').val();
+        updates['taxonomy_vocabulary_1']['und'][0]['tid'] = $('#select_placetype').val();
         
         //get district information
-        updates['taxonomy_vocabulary_6'] = {};
+/*        updates['taxonomy_vocabulary_6'] = {};
         updates['taxonomy_vocabulary_6']['und'] = [];
         updates['taxonomy_vocabulary_6']['und'][0] = {};
-        updates['taxonomy_vocabulary_6']['und'][0]['tid'] = "93";
+        updates['taxonomy_vocabulary_6']['und'][0]['tid'] = "93";*/
         
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getAllplaces(db, function (locations) {
@@ -2531,8 +2524,8 @@ var controller = {
       document.addEventListener("online", controller.online, false);
       document.addEventListener("menubutton", controller.doMenu, false);
       
-      pictureSource=navigator.camera.PictureSourceType;
-      destinationType=navigator.camera.DestinationType;
+      controller.pictureSource= navigator.camera.PictureSourceType;
+      controller.destinationType=navigator.camera.DestinationType;
     },
     
     // onOnline event handler

@@ -27,13 +27,15 @@ var auth = {
           
           if(errorThrown == ""){
             controller.loadingMsg("Selected Url "+localStorage.appurl+" is Unavailable. Make sure you have an internet connection or try another url.", 5000)
+            controller.loadingMsg("Check that your Internet bundle has not expired.", 9000);
             $('.blockUI.blockMsg').center();
           }else if(jqXHR.responseText.indexOf('<') != -1 || jqXHR.responseText.indexOf('/>') != -1) {
             controller.loadingMsg("Error: "+errorThrown, 3000);
             $('.blockUI.blockMsg').center();
             $('.errorHTML').html(jqXHR.responseText);
-          else{
+            
           }
+          else{
             controller.loadingMsg("Error: "+errorThrown+" Try another url.", 5000);
             $('.blockUI.blockMsg').center();
           }

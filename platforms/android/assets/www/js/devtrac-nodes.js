@@ -238,7 +238,7 @@ var devtracnodes = {
           
           for(var ftritem in ftritems) {
             
-            if((ftritems[ftritem]['submit'] == 0 && ftritems[ftritem]['user-added'] == true && ftritems[ftritem]['taxonomy_vocabulary_7']['und'][0]['tid'] == "210")) {              
+            if((ftritems[ftritem]['submit'] == 0 && ftritems[ftritem]['user-added'] == true && ftritems[ftritem]['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") || ftritems[ftritem]['editflag'] == 1) {              
               sitevisits.push(ftritems[ftritem]);
             }
             

@@ -543,6 +543,24 @@ var controller = {
         }
       });
       
+    //site visit validation
+      var sitevisit_form_edit = $("#form_sitevisit_edits");
+      sitevisit_form_edit.validate({
+        rules: {
+          sitevisit_title: {
+            required: true
+          },
+
+          sitevisit_date:{
+            required: true,
+            date: true
+          },
+          sitevisit_summary:{
+            required: true
+          }
+        }
+      });
+      
       $(".seturlselect").live( "change", function(event, ui) {
         if($(this).val() == "custom") {
           console.log("custom");
@@ -631,7 +649,7 @@ var controller = {
             var fieldset = $("<fieldset ></fieldset>");
             
             var titlelabel = $("<label for='sitevisit_title' >Title</label>");
-            var titletextffield = $("<input type='text' value='" + fieldtripObject['title'] + "' id='fieldtrip_title_edit'>");
+            var titletextffield = $("<input type='text' value='" + fieldtripObject['title'] + "' id='fieldtrip_title_edit' required/>");
             
             var savesitevisitedits = $('<input type="button" data-inline="true" data-theme="b" id="save_fieldtrip_edits" onclick="controller.onFieldtripsave();" value="Save" />');
             
@@ -1861,43 +1879,46 @@ var controller = {
     
     //save site visit edits
     onSitevisitedit: function () {
-      //save site visit edits
-      var updates = {};
-      $('#form_sitevisit_edits *').filter(':input').each(function () {
-        var key = $(this).attr('id').substring($(this).attr('id').indexOf('_') + 1);
-        if (key.indexOf('_') == -1) {
-          updates[key] = $(this).val();
-        }
+      if($("#form_sitevisit_edits").valid()) {
         
-      });
-      
-      updates['editflag'] = 1;
-      var snid = localStorage.snid;
-      if(localStorage.user == "true"){
-        snid = parseInt(snid);
-      }else{
-        snid = snid.toString();
-      }
-      
-      devtrac.indexedDB.open(function (db) {
-        //console.log("siite visit is "+localStorage.snid);
-        
-        devtrac.indexedDB.editSitevisit(db, snid, updates).then(function () {
-          
-          $("#sitevisists_details_title").html($("#sitevisit_title").val());
-          
-          if(localStorage.user == "true"){
-            $("#user"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
-          }else{
-            $("#snid"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+        //save site visit edits
+        var updates = {};
+        $('#form_sitevisit_edits *').filter(':input').each(function () {
+          var key = $(this).attr('id').substring($(this).attr('id').indexOf('_') + 1);
+          if (key.indexOf('_') == -1) {
+            updates[key] = $(this).val();
           }
           
-          $("#sitevisists_details_date").html($("#sitevisit_date").val());
-          $("#sitevisists_details_summary").html($("#sitevisit_summary").val());
-          
-          $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
         });
-      });
+        
+        updates['editflag'] = 1;
+        var snid = localStorage.snid;
+        if(localStorage.user == "true"){
+          snid = parseInt(snid);
+        }else{
+          snid = snid.toString();
+        }
+        
+        devtrac.indexedDB.open(function (db) {
+          //console.log("siite visit is "+localStorage.snid);
+          
+          devtrac.indexedDB.editSitevisit(db, snid, updates).then(function () {
+            
+            $("#sitevisists_details_title").html($("#sitevisit_title").val());
+            
+            if(localStorage.user == "true"){
+              $("#user"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+            }else{
+              $("#snid"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+            }
+            
+            $("#sitevisists_details_date").html($("#sitevisit_date").val());
+            $("#sitevisists_details_summary").html($("#sitevisit_summary").val());
+            
+            $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
+          });
+        });
+      }
       
     },
     
@@ -2050,31 +2071,38 @@ var controller = {
       var updates = {};
       
       updates['title'] = $('#fieldtrip_title_edit').val();
-      devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getFieldtrip(db, localStorage.fnid, function(trip) {
-          if(trip['title'] == updates['title']){
-            
-            controller.loadingMsg("Nothing new was added !", 3000);
-            $('.blockUI.blockMsg').center();
-          }else {
-            
-            updates['editflag'] = 1;
-            
-            
-            devtrac.indexedDB.editFieldtrip(db, localStorage.fnid, updates).then(function() {
+      var txt = updates['title'];
+      
+      if(txt.length > 0) {
+        devtrac.indexedDB.open(function (db) {
+          devtrac.indexedDB.getFieldtrip(db, localStorage.fnid, function(trip) {
+            if(trip['title'] == updates['title']){
               
-              $("#fieldtrip_count").html("1");
-              $('#fieldtrip_details_title').html(updates['title']);
-              
-              controller.loadingMsg("Saved your Edits", 3000);
+              controller.loadingMsg("Nothing new was added !", 3000);
               $('.blockUI.blockMsg').center();
-            });      
-            
-            
-          }
-          $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
+            }else {
+              
+              updates['editflag'] = 1;
+              
+              
+              devtrac.indexedDB.editFieldtrip(db, localStorage.fnid, updates).then(function() {
+                
+                $("#fieldtrip_count").html("1");
+                $('#fieldtrip_details_title').html(updates['title']);
+                
+                controller.loadingMsg("Saved your Edits", 3000);
+                $('.blockUI.blockMsg').center();
+              });      
+              
+              
+            }
+            $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
+          });
         });
-      });
+      }else{
+        controller.loadingMsg("Please Enter a Fieldtrip Title", 2000);
+        $('.blockUI.blockMsg').center();
+      }
       
     },
     

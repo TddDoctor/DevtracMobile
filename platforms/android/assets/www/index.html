@@ -439,11 +439,11 @@ body {
       <form id="form_sitevisit_edits" method="" action="">
         <fieldset>
           <label for='sitevisit_title'>Title</label> <input type='text' value=''
-            id='sitevisit_title'> <label for='sitevisit_date'>Date
-              Visited</label> <input type='text' value='' id='sitevisit_date' readonly='true'/> <label
+            id='sitevisit_title' required> <label for='sitevisit_date'>Date
+              Visited</label> <input type='text' value='' id='sitevisit_date' readonly='true' required/> <label
               for='sitevisit_summary'>Summary</label>
               <div class="summarytextareadiv">
-                <textarea id="sitevisit_summary" rows="4" cols="12"></textarea>
+                <textarea id="sitevisit_summary" rows="4" cols="12" required></textarea>
               </div>
         </fieldset>
       </form>
@@ -461,12 +461,11 @@ body {
   <!-- Edit fieldtrips details -->
   <div data-role="page" id="page_fieldtrip_edit">
     <div data-role="header" id="header_editfieldtrip">
-      <!-- <h3 title="Edit FieldTrip">Edit Fieldtrip</h3> -->
     </div>
     <!-- /header -->
 
     <div data-role="content" class='content'>
-      <form id="form_fieldtrip_edits" method="" action=""></form>
+    <form id="form_fieldtrip_edits" method="" action=""></form>
 
     </div>
     <!-- /content -->

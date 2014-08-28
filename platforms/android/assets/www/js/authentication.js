@@ -28,7 +28,12 @@ var auth = {
           if(errorThrown == ""){
             controller.loadingMsg("Selected Url "+localStorage.appurl+" is Unavailable. Make sure you have an internet connection or try another url.", 5000)
             $('.blockUI.blockMsg').center();
-          }else{
+          }else if(jqXHR.responseText.indexOf('<') != -1 || jqXHR.responseText.indexOf('/>') != -1) {
+            controller.loadingMsg("Error: "+errorThrown, 3000);
+            $('.blockUI.blockMsg').center();
+            $('.errorHTML').html(jqXHR.responseText);
+          else{
+          }
             controller.loadingMsg("Error: "+errorThrown+" Try another url.", 5000);
             $('.blockUI.blockMsg').center();
           }

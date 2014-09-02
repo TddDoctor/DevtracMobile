@@ -23,6 +23,7 @@ var controller = {
       document.addEventListener("offline", controller.onOffline, false);
       document.addEventListener("online", controller.online, false);
       document.addEventListener("deviceready", controller.onDeviceReady, false);
+
     },
     
     // Application Constructor
@@ -199,6 +200,7 @@ var controller = {
     
     //Bind any events that are required on startup
     bindEvents: function () {
+
       //$(".seturlselect").chosen({width: "100%"}); 
       $(".menulistview").listview().listview('refresh');
       
@@ -252,7 +254,46 @@ var controller = {
         controller.onSavesitevisit();
       });
       
-      //apply jquerymobile styles b4 this page is displayed
+      //apply tinymce b4 this page is displayed
+      $("#page_sitevisit_add").bind('pagebeforeshow', function(){
+        tinymce.init({
+          
+          selector: "textarea",
+          /* selector: "div#page_login textarea", */
+          plugins: [
+                  "advlist autolink autosave link lists charmap hr anchor",
+                  "visualblocks visualchars code fullscreen nonbreaking",
+                  "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+          ],
+
+          toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+          toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+
+          menubar: false,
+          toolbar_items_size: 'small'
+      });
+      });
+      
+      //apply tinymce b4 this page is displayed
+      $("#page_sitevisit_edits").bind('pagebeforeshow', function() {
+        tinymce.init({
+          
+          selector: "textarea",
+          /* selector: "div#page_login textarea", */
+          plugins: [
+                  "advlist autolink autosave link lists charmap hr anchor",
+                  "visualblocks visualchars code fullscreen nonbreaking",
+                  "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+          ],
+
+          toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+          toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+
+          menubar: false,
+          toolbar_items_size: 'small'
+      });
+      });
+      
       $("#page_fieldtrip_details").bind('pagebeforeshow', function(){
         $("#page_fieldtrip_details").trigger("create");
       });
@@ -543,14 +584,14 @@ var controller = {
         }
       });
       
-    //site visit validation
+      //site visit validation
       var sitevisit_form_edit = $("#form_sitevisit_edits");
       sitevisit_form_edit.validate({
         rules: {
           sitevisit_title: {
             required: true
           },
-
+          
           sitevisit_date:{
             required: true,
             date: true
@@ -1037,7 +1078,7 @@ var controller = {
         $('.blockUI.blockMsg').center();
       }else if(error.code == 3 || error.code == "3") {//TIMEOUT
         //controller.loadingMsg("The request to get user location timed out.", 1000);
-       // $('.blockUI.blockMsg').center();
+        // $('.blockUI.blockMsg').center();
       }
     },
     
@@ -1084,8 +1125,7 @@ var controller = {
       console.log("camera error "+message);
       
     },
-    
-    
+
     //clear the watch that was started earlier
     clearWatch: function() {
       
@@ -1680,7 +1720,7 @@ var controller = {
           });
           
           controller.buildSelect("oecdobj", []);
-          
+
         }
         else{
           

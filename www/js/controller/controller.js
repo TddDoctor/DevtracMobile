@@ -23,10 +23,16 @@ var controller = {
       document.addEventListener("offline", controller.onOffline, false);
       document.addEventListener("online", controller.online, false);
       document.addEventListener("deviceready", controller.onDeviceReady, false);
+
     },
     
     // Application Constructor
     initialize: function () {
+      //faster button clicks
+      window.addEventListener('load', function() {
+        FastClick.attach(document.body);
+      }, false);
+      
       //center the loading message
       $.fn.center = function () {
         this.css("position","absolute");
@@ -77,11 +83,6 @@ var controller = {
       }
       
       if(controller.connectionStatus) {
-        controller.checkOnline().then(function(){
-          alert("online u r");
-        }).fail(function(){
-          alert("offline u r");
-        });
         controller.loadingMsg("Please Wait..", 0);
         $('.blockUI.blockMsg').center();
         auth.loginStatus().then(function () {
@@ -199,6 +200,7 @@ var controller = {
     
     //Bind any events that are required on startup
     bindEvents: function () {
+
       //$(".seturlselect").chosen({width: "100%"}); 
       $(".menulistview").listview().listview('refresh');
       
@@ -207,7 +209,7 @@ var controller = {
       }else{
         $(".myurl").hide();
       }
-
+      
       //start gps
       $( "#page_add_location" ).bind("pagebeforeshow", function( event ) {
         console.log("inside page add location");        
@@ -424,7 +426,7 @@ var controller = {
                   $(".notification-bubble").html(0);          
                   
                 }else{
-                  controller.loadingMsg("Please Connect to Internet ...", 1000);
+                  controller.loadingMsg("Please Connect to Internet ...", 2000);
                   $('.blockUI.blockMsg').center();
                 }
               },
@@ -543,6 +545,24 @@ var controller = {
         }
       });
       
+      //site visit validation
+      var sitevisit_form_edit = $("#form_sitevisit_edits");
+      sitevisit_form_edit.validate({
+        rules: {
+          sitevisit_title: {
+            required: true
+          },
+          
+          sitevisit_date:{
+            required: true,
+            date: true
+          },
+          sitevisit_summary:{
+            required: true
+          }
+        }
+      });
+      
       $(".seturlselect").live( "change", function(event, ui) {
         if($(this).val() == "custom") {
           console.log("custom");
@@ -631,7 +651,7 @@ var controller = {
             var fieldset = $("<fieldset ></fieldset>");
             
             var titlelabel = $("<label for='sitevisit_title' >Title</label>");
-            var titletextffield = $("<input type='text' value='" + fieldtripObject['title'] + "' id='fieldtrip_title_edit'>");
+            var titletextffield = $("<input type='text' value='" + fieldtripObject['title'] + "' id='fieldtrip_title_edit' required/>");
             
             var savesitevisitedits = $('<input type="button" data-inline="true" data-theme="b" id="save_fieldtrip_edits" onclick="controller.onFieldtripsave();" value="Save" />');
             
@@ -1004,11 +1024,23 @@ var controller = {
     
     // onError Callback receives a PositionError object
     onError: function(error) {
-      var element_gps = $("#gpserror").html("");
-      console.log("gps error "+error.message);
+      $("#gpserror").html("");
+      console.log('code: '    + error.code    + '\n' +
+          'message: ' + error.message + '\n');
       var element_gps = $("#gpserror");
       element_gps.html('code: '    + error.code    + '\n' +
           'message: ' + error.message + '\n');
+      
+      if(error.code == 1 || error.code == "1") {//PERMISSION_DENIED
+        controller.loadingMsg("User denied the request for Geolocation.", 3000);
+        $('.blockUI.blockMsg').center();
+      }else if(error.code == 2 || error.code == "2") {//POSITION_UNAVAILABLE
+        controller.loadingMsg("Please Check GPS is Switched ON.", 3000);
+        $('.blockUI.blockMsg').center();
+      }else if(error.code == 3 || error.code == "3") {//TIMEOUT
+        //controller.loadingMsg("The request to get user location timed out.", 1000);
+        // $('.blockUI.blockMsg').center();
+      }
     },
     
     //camera functions
@@ -1051,10 +1083,10 @@ var controller = {
     // Called if something bad happens.
     //
     onFail: function(message) {
-      alert('Failed because: ' + message);
+      console.log("camera error "+message);
+      
     },
-    
-    
+
     //clear the watch that was started earlier
     clearWatch: function() {
       
@@ -1649,7 +1681,7 @@ var controller = {
           });
           
           controller.buildSelect("oecdobj", []);
-          
+
         }
         else{
           
@@ -1848,43 +1880,46 @@ var controller = {
     
     //save site visit edits
     onSitevisitedit: function () {
-      //save site visit edits
-      var updates = {};
-      $('#form_sitevisit_edits *').filter(':input').each(function () {
-        var key = $(this).attr('id').substring($(this).attr('id').indexOf('_') + 1);
-        if (key.indexOf('_') == -1) {
-          updates[key] = $(this).val();
-        }
+      if($("#form_sitevisit_edits").valid()) {
         
-      });
-      
-      updates['editflag'] = 1;
-      var snid = localStorage.snid;
-      if(localStorage.user == "true"){
-        snid = parseInt(snid);
-      }else{
-        snid = snid.toString();
-      }
-      
-      devtrac.indexedDB.open(function (db) {
-        //console.log("siite visit is "+localStorage.snid);
-        
-        devtrac.indexedDB.editSitevisit(db, snid, updates).then(function () {
-          
-          $("#sitevisists_details_title").html($("#sitevisit_title").val());
-          
-          if(localStorage.user == "true"){
-            $("#user"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
-          }else{
-            $("#snid"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+        //save site visit edits
+        var updates = {};
+        $('#form_sitevisit_edits *').filter(':input').each(function () {
+          var key = $(this).attr('id').substring($(this).attr('id').indexOf('_') + 1);
+          if (key.indexOf('_') == -1) {
+            updates[key] = $(this).val();
           }
           
-          $("#sitevisists_details_date").html($("#sitevisit_date").val());
-          $("#sitevisists_details_summary").html($("#sitevisit_summary").val());
-          
-          $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
         });
-      });
+        
+        updates['editflag'] = 1;
+        var snid = localStorage.snid;
+        if(localStorage.user == "true"){
+          snid = parseInt(snid);
+        }else{
+          snid = snid.toString();
+        }
+        
+        devtrac.indexedDB.open(function (db) {
+          //console.log("siite visit is "+localStorage.snid);
+          
+          devtrac.indexedDB.editSitevisit(db, snid, updates).then(function () {
+            
+            $("#sitevisists_details_title").html($("#sitevisit_title").val());
+            
+            if(localStorage.user == "true"){
+              $("#user"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+            }else{
+              $("#snid"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+            }
+            
+            $("#sitevisists_details_date").html($("#sitevisit_date").val());
+            $("#sitevisists_details_summary").html($("#sitevisit_summary").val());
+            
+            $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
+          });
+        });
+      }
       
     },
     
@@ -2037,31 +2072,38 @@ var controller = {
       var updates = {};
       
       updates['title'] = $('#fieldtrip_title_edit').val();
-      devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getFieldtrip(db, localStorage.fnid, function(trip) {
-          if(trip['title'] == updates['title']){
-            
-            controller.loadingMsg("Nothing new was added !", 3000);
-            $('.blockUI.blockMsg').center();
-          }else {
-            
-            updates['editflag'] = 1;
-            
-            
-            devtrac.indexedDB.editFieldtrip(db, localStorage.fnid, updates).then(function() {
+      var txt = updates['title'];
+      
+      if(txt.length > 0) {
+        devtrac.indexedDB.open(function (db) {
+          devtrac.indexedDB.getFieldtrip(db, localStorage.fnid, function(trip) {
+            if(trip['title'] == updates['title']){
               
-              $("#fieldtrip_count").html("1");
-              $('#fieldtrip_details_title').html(updates['title']);
-              
-              controller.loadingMsg("Saved your Edits", 3000);
+              controller.loadingMsg("Nothing new was added !", 3000);
               $('.blockUI.blockMsg').center();
-            });      
-            
-            
-          }
-          $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
+            }else {
+              
+              updates['editflag'] = 1;
+              
+              
+              devtrac.indexedDB.editFieldtrip(db, localStorage.fnid, updates).then(function() {
+                
+                $("#fieldtrip_count").html("1");
+                $('#fieldtrip_details_title').html(updates['title']);
+                
+                controller.loadingMsg("Saved your Edits", 3000);
+                $('.blockUI.blockMsg').center();
+              });      
+              
+              
+            }
+            $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
+          });
         });
-      });
+      }else{
+        controller.loadingMsg("Please Enter a Fieldtrip Title", 2000);
+        $('.blockUI.blockMsg').center();
+      }
       
     },
     
@@ -2233,10 +2275,10 @@ var controller = {
         updates['taxonomy_vocabulary_1']['und'][0]['tid'] = $('#select_placetype').val();
         
         //get district information
-        /*        updates['taxonomy_vocabulary_6'] = {};
+        updates['taxonomy_vocabulary_6'] = {};
         updates['taxonomy_vocabulary_6']['und'] = [];
         updates['taxonomy_vocabulary_6']['und'][0] = {};
-        updates['taxonomy_vocabulary_6']['und'][0]['tid'] = "93";*/
+        updates['taxonomy_vocabulary_6']['und'][0]['tid'] = "93";
         
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getAllplaces(db, function (locations) {
@@ -2539,6 +2581,12 @@ var controller = {
     
     // device ready event handler
     onDeviceReady: function () {
+      controller.checkOnline().then(function(){
+        controller.connectionStatus = true;
+      }).fail(function(){
+        controller.connectionStatus = false;
+      });
+      
       document.addEventListener("menubutton", controller.doMenu, false);
       
       controller.pictureSource= navigator.camera.PictureSourceType;

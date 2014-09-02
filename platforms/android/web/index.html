@@ -51,6 +51,24 @@ body {
 }
 </style>
 
+<script type="text/javascript" src="../assets/www/libs/tinymce/tinymce.min.js"></script>
+    <script type="text/javascript">
+    tinymce.init({
+      selector: "textarea",
+      plugins: [
+              "advlist autolink autosave link lists charmap hr anchor",
+              "visualblocks visualchars code fullscreen nonbreaking",
+              "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+      ],
+
+      toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+      toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+
+      menubar: false,
+      toolbar_items_size: 'small'
+});
+      
+      </script>
 </head>
 <body>
 
@@ -199,7 +217,8 @@ body {
             <a class="" data-role="button" id="edit_fieldtrip"
               href="#page_fieldtrip_edit" data-rel="dialog" data-iconpos=""><i
               class="fa fa-edit fa-lg"></i>&nbsp&nbsp Edit</a>
-
+<textarea id='sitevisit_add_public_summary' name='sitevisit_add_public_summary'
+          required></textarea>
           </div>
         </fieldset>
 

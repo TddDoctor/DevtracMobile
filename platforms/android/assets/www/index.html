@@ -7,7 +7,7 @@
 <meta name="viewport"
   content="initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
 <link href='http://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet'
-  type='text/css'>
+  type='text/css'/>
   <link rel="stylesheet" type="text/css" href="css/style_light.css" />
   <link rel="stylesheet" href="css/jquery.mobile-1.4.0.min.css" />
   <!-- <link rel="stylesheet" href="css/jquery.mobile.theme-1.4.0.min.css" /> -->
@@ -18,19 +18,19 @@
 
   <link rel="stylesheet" href="css/normalize.css" />
   <link media="screen" href="css/index.css" rel="stylesheet" type="text/css" />
-  <link rel="stylesheet" href="css/chosen.css">
+  <link rel="stylesheet" href="css/chosen.css"/>
 
     <!-- Important Owl stylesheet -->
-    <link rel="stylesheet" href="libs/owl-carousel/owl.carousel.css">
+    <link rel="stylesheet" href="libs/owl-carousel/owl.carousel.css"/>
 
       <!-- Default Theme -->
-      <link rel="stylesheet" href="libs/owl-carousel/owl.theme.css">
+      <link rel="stylesheet" href="libs/owl-carousel/owl.theme.css"/>
 
-        <link rel="stylesheet" href="css/jquery.mobile.simpledialog.min.css">
+        <link rel="stylesheet" href="css/jquery.mobile.simpledialog.min.css"/>
           <link rel="stylesheet" href="css/leaflet.css" />
 
           <link rel="stylesheet"
-            href="libs/FontAwesome/css/font-awesome.min.css">
+            href="libs/FontAwesome/css/font-awesome.min.css"/>
 
             <style type="text/css">
 /* Attempt to fix the flicker of page transitions */
@@ -46,6 +46,7 @@ body {
   height: 100%;
 }
 </style>
+
 </head>
 <body onload="controller.onLoad()">
   <!-- 
@@ -92,7 +93,8 @@ body {
     <div data-role="panel" id="navpanel_login" data-theme="b"
       data-position="left" class="leftmenu"></div>
 
-    <div data-role="header" id="header_login"></div>
+    <div data-role="header" id="header_login">
+    </div>
     <!-- /header -->
 
     <div data-role="content" class='content'>
@@ -117,6 +119,7 @@ body {
             <button type="button" data-theme="a" id="page_login_submit"
               data-mini="true">Sign In</button>
           </div>
+
           <div class="loginlogs"></div>
 
           <div id='logoutdiv'>
@@ -161,7 +164,9 @@ body {
     <div data-role="panel" id="navpanel_fieldtrip" data-theme="b"
       data-position="left" class="leftmenu"></div>
 
-    <div data-role="header" id="fieldtrip_details_header"></div>
+    <div data-role="header" id="fieldtrip_details_header">
+
+    </div>
     <!-- /header -->
 
     <div data-role="content" class='content fieldtriplist'>
@@ -431,7 +436,7 @@ body {
   <!-- Edit site visit details -->
   <div data-role="page" id="page_sitevisit_edits">
     <div data-role="header" id="header_editsitevisit">
-      <!-- <h3 title="Edit Site Visit">Edit Site Visit</h3> -->
+
     </div>
     <!-- /header -->
 
@@ -440,11 +445,9 @@ body {
         <fieldset>
           <label for='sitevisit_title'>Title</label> <input type='text' value=''
             id='sitevisit_title' required> <label for='sitevisit_date'>Date
-              Visited</label> <input type='text' value='' id='sitevisit_date' readonly='true' required/> <label
-              for='sitevisit_summary'>Summary</label>
-              <div class="summarytextareadiv">
-                <textarea id="sitevisit_summary" rows="4" cols="12" required></textarea>
-              </div>
+              Visited</label> <input type='text' value='' id='sitevisit_date'
+            readonly='true' required /> <label for='sitevisit_summary'>Summary</label>
+              <textarea id="sitevisit_summary" name="sitevisit_summary" required></textarea>
         </fieldset>
       </form>
       <input type="button" data-inline="true" data-theme="b"
@@ -460,12 +463,11 @@ body {
 
   <!-- Edit fieldtrips details -->
   <div data-role="page" id="page_fieldtrip_edit">
-    <div data-role="header" id="header_editfieldtrip">
-    </div>
+    <div data-role="header" id="header_editfieldtrip"></div>
     <!-- /header -->
 
     <div data-role="content" class='content'>
-    <form id="form_fieldtrip_edits" method="" action=""></form>
+      <form id="form_fieldtrip_edits" method="" action=""></form>
 
     </div>
     <!-- /content -->
@@ -475,14 +477,10 @@ body {
 
   <!-- Add site visit details -->
   <div data-role="page" id="page_sitevisit_add">
+  
     <div data-role="panel" id="navpanel_addsitereport" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header" id="header_addsitereport">
-      <!-- 
-      <a id="" href="#page_site_report_type" data-rel="dialog"
-        data-role="button" data-iconpos="notext"><i
-        class="fa fa-chevron-circle-left fa-lg"></i></a>
-      <h3>Add Site Visit</h3> -->
 
     </div>
     <!-- /header -->
@@ -496,16 +494,14 @@ body {
         <label for='sitevisit_add_oecds'>Oecds</label>
         <div id="select_oecds"></div>
         <label for="sitevisit_add_date">Date</label> <input type='text'
-          id='sitevisit_add_date' readonly='true' name='sitevisit_add_date' data-role="date"
-          required /> <label for="sitevisit_add_public_summary">Public
-          Summary</label>
-        <textarea rows="8" type='text' value=''
-          id='sitevisit_add_public_summary' name='sitevisit_add_public_summary'
+          id='sitevisit_add_date' readonly='true' name='sitevisit_add_date'
+          data-role="date" required /> <label
+          for="sitevisit_add_public_summary">Public Summary</label>
+          <textarea id='sitevisit_add_public_summary' name='sitevisit_add_public_summary'
           required></textarea>
 
         <label for="sitevisit_add_report">Full Report</label>
-        <textarea rows="8" type='text' value='' id='sitevisit_add_report'
-          name='sitevisit_add_report' required></textarea>
+        <textarea id='sitevisit_add_report' name='sitevisit_add_report' required></textarea>
 
 
 
@@ -581,9 +577,9 @@ body {
 
         <label for="actionitem_date">Due Date</label> <input type='text'
           id='actionitem_date' name='actionitem_date' data-role="date"
-          data-inline="false" readonly='true' required /> <label for="actionitem_followuptask">Follow
-          up task</label>
-        <textarea rows="8" type='text' value='' id='actionitem_followuptask'
+          data-inline="false" readonly='true' required /> <label
+          for="actionitem_followuptask">Follow up task</label>
+        <textarea value='' id='actionitem_followuptask'
           name='actionitem_followuptask' required></textarea>
 
         <label for="actionitem_report">Report</label> <input type='text'
@@ -637,7 +633,7 @@ body {
               <h4>Comment</h4>
               <label for="actionitem_comment"><h5>Tell Us What You
                   Think</h5></label>
-              <textarea rows="8" type='text' value='' id='actionitem_comment'
+              <textarea value='' id='actionitem_comment'
                 required></textarea>
               <input type='button' onclick="controller.onSavecomment();"
                 value='Save' data-mini="true" id='actionitem_comment_save' />
@@ -914,6 +910,9 @@ body {
   <!-- /page -->
 
   <script src="libs/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="libs/tinymce/tinymce.min.js"></script>
+
+      
   <script type="text/javascript">
       //Attempt to fix transition flicker
       $(document).one("mobileinit", function() {
@@ -926,9 +925,10 @@ body {
         
       });
     </script>
+
   <script src="libs/jquery-ui-1.10.4.custom.js"></script>
   <script type="text/javascript" src="cordova.js"></script>
-<script type='application/javascript' src='libs/fastclick.js'></script>
+  <script type='application/javascript' src='libs/fastclick.js'></script>
   <script type="text/javascript"
     src="libs/IndexedDBShim-master/dist/IndexedDBShim.js"></script>
 
@@ -961,8 +961,7 @@ body {
 
   <script type="text/javascript">
       controller.initialize();
-      
-  </script>
+    </script>
 
 </body>
 </html>

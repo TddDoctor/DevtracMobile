@@ -23,6 +23,7 @@ var controller = {
       document.addEventListener("offline", controller.onOffline, false);
       document.addEventListener("online", controller.online, false);
       document.addEventListener("deviceready", controller.onDeviceReady, false);
+
     },
     
     // Application Constructor
@@ -199,6 +200,7 @@ var controller = {
     
     //Bind any events that are required on startup
     bindEvents: function () {
+
       //$(".seturlselect").chosen({width: "100%"}); 
       $(".menulistview").listview().listview('refresh');
       
@@ -252,7 +254,96 @@ var controller = {
         controller.onSavesitevisit();
       });
       
-      //apply jquerymobile styles b4 this page is displayed
+      //apply tinymce b4 this page is displayed
+      $("#page_sitevisit_add").bind('pagebeforeshow', function(){
+        tinymce.init({
+          
+          selector: "textarea#sitevisit_add_public_summary, textarea#sitevisit_add_report",
+          plugins: [
+                  "advlist autolink autosave link lists charmap hr anchor",
+                  "visualblocks visualchars code fullscreen nonbreaking",
+                  "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+          ],
+
+          toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+          toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+
+          menubar: false,
+          toolbar_items_size: 'small',          
+          setup : function(ed) {
+            
+            ed.on('click', function(e) {
+              console.log('Editor was clicked');
+            });
+     }
+      });
+      });
+      
+     //apply tinymce b4 this page is displayed
+      $("#page_sitevisit_edits").bind('pagebeforeshow', function() {
+        //$("#page_sitevisit_edits").trigger('create');
+        
+        tinymce.init({
+          
+          selector: "textarea#sitevisit_summary",
+          plugins: [
+                  "advlist autolink autosave link lists charmap hr anchor",
+                  "visualblocks visualchars code fullscreen nonbreaking",
+                  "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+          ],
+
+          toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+          toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+
+          menubar: false,
+          toolbar_items_size: 'small',
+       // update validation status on change
+          onchange_callback: function (editor)
+          {
+              tinyMCE.triggerSave();
+              $("#" + editor.id).valid();
+          }
+      });
+      });
+      
+      //apply tinymce b4 this page is displayed
+      $("#page_add_actionitems").bind('pagebeforeshow', function() {
+        tinymce.init({
+          
+          selector: "textarea#actionitem_followuptask",
+          plugins: [
+                  "advlist autolink autosave link lists charmap hr anchor",
+                  "visualblocks visualchars code fullscreen nonbreaking",
+                  "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+          ],
+
+          toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+          toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+
+          menubar: false,
+          toolbar_items_size: 'small'
+      });
+      });
+      
+      //apply tinymce b4 this page is displayed
+      $("#page_actionitemdetails").bind('pagebeforeshow', function() {
+        tinymce.init({
+          
+          selector: "textarea#actionitem_comment",
+          plugins: [
+                  "advlist autolink autosave link lists charmap hr anchor",
+                  "visualblocks visualchars code fullscreen nonbreaking",
+                  "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+          ],
+
+          toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+          toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+
+          menubar: false,
+          toolbar_items_size: 'small'
+      });
+      });
+      
       $("#page_fieldtrip_details").bind('pagebeforeshow', function(){
         $("#page_fieldtrip_details").trigger("create");
       });
@@ -543,14 +634,14 @@ var controller = {
         }
       });
       
-    //site visit validation
+      //site visit validation
       var sitevisit_form_edit = $("#form_sitevisit_edits");
       sitevisit_form_edit.validate({
         rules: {
           sitevisit_title: {
             required: true
           },
-
+          
           sitevisit_date:{
             required: true,
             date: true
@@ -632,7 +723,7 @@ var controller = {
             
             $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und'][0]['value']);
             
-            $("#page_sitevisit_edits").trigger('create');
+            //
           });
         });
         
@@ -1037,7 +1128,7 @@ var controller = {
         $('.blockUI.blockMsg').center();
       }else if(error.code == 3 || error.code == "3") {//TIMEOUT
         //controller.loadingMsg("The request to get user location timed out.", 1000);
-       // $('.blockUI.blockMsg').center();
+        // $('.blockUI.blockMsg').center();
       }
     },
     
@@ -1084,8 +1175,7 @@ var controller = {
       console.log("camera error "+message);
       
     },
-    
-    
+
     //clear the watch that was started earlier
     clearWatch: function() {
       
@@ -1680,7 +1770,7 @@ var controller = {
           });
           
           controller.buildSelect("oecdobj", []);
-          
+
         }
         else{
           
@@ -2413,6 +2503,7 @@ var controller = {
     
     //save sitevisit
     onSavesitevisit: function () {
+      tinyMCE.triggerSave();
       
       if ($("#form_sitevisit_add").valid()) {
         //save added site visits
@@ -2443,15 +2534,17 @@ var controller = {
         updates['field_ftritem_date_visited']['und'][0] = {};
         updates['field_ftritem_date_visited']['und'][0]['value'] = $('#sitevisit_add_date').val();
         
+        var summary = tinyMCE.get('sitevisit_add_public_summary').getContent();
         updates['field_ftritem_public_summary'] = {};
         updates['field_ftritem_public_summary']['und'] = [];
         updates['field_ftritem_public_summary']['und'][0] = {};
-        updates['field_ftritem_public_summary']['und'][0]['value'] = $('#sitevisit_add_public_summary').val();
+        updates['field_ftritem_public_summary']['und'][0]['value'] = summary;
         
+        var narative = tinyMCE.get('sitevisit_add_report').getContent();
         updates['field_ftritem_narrative'] = {};
         updates['field_ftritem_narrative']['und'] = [];
         updates['field_ftritem_narrative']['und'][0] = {};
-        updates['field_ftritem_narrative']['und'][0]['value'] =  $('#sitevisit_add_report').val();
+        updates['field_ftritem_narrative']['und'][0]['value'] =  narative;
         
         updates['field_ftritem_field_trip'] = {};
         updates['field_ftritem_field_trip']['und'] = [];

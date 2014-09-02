@@ -7,7 +7,7 @@
 <meta name="viewport"
   content="initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
 <link href='http://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet'
-  type='text/css'>
+  type='text/css'/>
   <link rel="stylesheet" type="text/css" href="css/style_light.css" />
   <link rel="stylesheet" href="css/jquery.mobile-1.4.0.min.css" />
   <!-- <link rel="stylesheet" href="css/jquery.mobile.theme-1.4.0.min.css" /> -->
@@ -18,19 +18,38 @@
 
   <link rel="stylesheet" href="css/normalize.css" />
   <link media="screen" href="css/index.css" rel="stylesheet" type="text/css" />
-  <link rel="stylesheet" href="css/chosen.css">
+  <link rel="stylesheet" href="css/chosen.css"/>
 
     <!-- Important Owl stylesheet -->
-    <link rel="stylesheet" href="libs/owl-carousel/owl.carousel.css">
+    <link rel="stylesheet" href="libs/owl-carousel/owl.carousel.css"/>
 
       <!-- Default Theme -->
-      <link rel="stylesheet" href="libs/owl-carousel/owl.theme.css">
+      <link rel="stylesheet" href="libs/owl-carousel/owl.theme.css"/>
 
-        <link rel="stylesheet" href="css/jquery.mobile.simpledialog.min.css">
+        <link rel="stylesheet" href="css/jquery.mobile.simpledialog.min.css"/>
           <link rel="stylesheet" href="css/leaflet.css" />
 
           <link rel="stylesheet"
-            href="libs/FontAwesome/css/font-awesome.min.css">
+            href="libs/FontAwesome/css/font-awesome.min.css"/>
+            
+    <script type="text/javascript" src="libs/tinymce/tinymce.min.js"></script>
+    <script type="text/javascript">
+    tinymce.init({
+      selector: "textarea",
+      plugins: [
+              "advlist autolink autosave link lists charmap hr anchor",
+              "visualblocks visualchars code fullscreen nonbreaking",
+              "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+      ],
+
+      toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+      toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+
+      menubar: false,
+      toolbar_items_size: 'small'
+});
+      
+      </script>
 
             <style type="text/css">
 /* Attempt to fix the flicker of page transitions */
@@ -46,6 +65,7 @@ body {
   height: 100%;
 }
 </style>
+
 </head>
 <body onload="controller.onLoad()">
   <!-- 
@@ -147,6 +167,7 @@ body {
               </div>
               <div class="urllogging"></div>
               <div class="clickedurl"></div>
+              <div class="errorHTML"></div>
       </form>
     </div>
     <!-- /content -->
@@ -160,7 +181,9 @@ body {
     <div data-role="panel" id="navpanel_fieldtrip" data-theme="b"
       data-position="left" class="leftmenu"></div>
 
-    <div data-role="header" id="fieldtrip_details_header"></div>
+    <div data-role="header" id="fieldtrip_details_header">
+
+    </div>
     <!-- /header -->
 
     <div data-role="content" class='content fieldtriplist'>
@@ -194,7 +217,8 @@ body {
             <a class="" data-role="button" id="edit_fieldtrip"
               href="#page_fieldtrip_edit" data-rel="dialog" data-iconpos=""><i
               class="fa fa-edit fa-lg"></i>&nbsp&nbsp Edit</a>
-
+<textarea id='sitevisit_add_public_summary' name='sitevisit_add_public_summary'
+          required></textarea>
           </div>
         </fieldset>
 
@@ -277,6 +301,7 @@ body {
               class="fa fa-upload fa-lg"></i>&nbsp&nbsp Sync All</a></li>
 
         </ul>
+        <div class="errorHTML"></div>
       </form>
     </div>
     <!-- /content -->
@@ -437,12 +462,12 @@ body {
       <form id="form_sitevisit_edits" method="" action="">
         <fieldset>
           <label for='sitevisit_title'>Title</label> <input type='text' value=''
-            id='sitevisit_title'> <label for='sitevisit_date'>Date
-              Visited</label> <input type='text' value='' id='sitevisit_date'> <label
-              for='sitevisit_summary'>Summary</label>
-              <div class="summarytextareadiv">
-                <textarea id="sitevisit_summary" rows="4" cols="12"></textarea>
-              </div>
+            id='sitevisit_title' required> <label for='sitevisit_date'>Date
+              Visited</label> <input type='text' value='' id='sitevisit_date'
+            readonly='true' required /> <label for='sitevisit_summary'>Summary</label>
+            <div class="summarytextareadiv">
+              <textarea id="sitevisit_summary" rows="4" cols="12" required></textarea>
+            </div>
         </fieldset>
       </form>
       <input type="button" data-inline="true" data-theme="b"
@@ -458,9 +483,7 @@ body {
 
   <!-- Edit fieldtrips details -->
   <div data-role="page" id="page_fieldtrip_edit">
-    <div data-role="header" id="header_editfieldtrip">
-      <!-- <h3 title="Edit FieldTrip">Edit Fieldtrip</h3> -->
-    </div>
+    <div data-role="header" id="header_editfieldtrip"></div>
     <!-- /header -->
 
     <div data-role="content" class='content'>
@@ -474,6 +497,7 @@ body {
 
   <!-- Add site visit details -->
   <div data-role="page" id="page_sitevisit_add">
+  
     <div data-role="panel" id="navpanel_addsitereport" data-theme="b"
       data-position="left" class="leftmenu"></div>
     <div data-role="header" id="header_addsitereport">
@@ -495,16 +519,14 @@ body {
         <label for='sitevisit_add_oecds'>Oecds</label>
         <div id="select_oecds"></div>
         <label for="sitevisit_add_date">Date</label> <input type='text'
-          id='sitevisit_add_date' name='sitevisit_add_date' data-role="date"
-          required /> <label for="sitevisit_add_public_summary">Public
-          Summary</label>
-        <textarea rows="8" type='text' value=''
-          id='sitevisit_add_public_summary' name='sitevisit_add_public_summary'
-          required></textarea>
+          id='sitevisit_add_date' readonly='true' name='sitevisit_add_date'
+          data-role="date" required /> <label
+          for="sitevisit_add_public_summary">Public Summary</label>
+        <!-- <textarea id='sitevisit_add_public_summary' name='sitevisit_add_public_summary'
+          required></textarea> -->
 
         <label for="sitevisit_add_report">Full Report</label>
-        <textarea rows="8" type='text' value='' id='sitevisit_add_report'
-          name='sitevisit_add_report' required></textarea>
+        <textarea id='sitevisit_add_report' name='sitevisit_add_report' required></textarea>
 
 
 
@@ -580,8 +602,8 @@ body {
 
         <label for="actionitem_date">Due Date</label> <input type='text'
           id='actionitem_date' name='actionitem_date' data-role="date"
-          data-inline="false" required /> <label for="actionitem_followuptask">Follow
-          up task</label>
+          data-inline="false" readonly='true' required /> <label
+          for="actionitem_followuptask">Follow up task</label>
         <textarea rows="8" type='text' value='' id='actionitem_followuptask'
           name='actionitem_followuptask' required></textarea>
 
@@ -744,7 +766,7 @@ body {
           placeholder="Enter your own Longitude" /> <small><p
             class="error" id="coordserror"></p></small> <label for="gpserror">GPS
           Errors</label> <input type='text' value='' id='gpserror' class="error"
-          name='latlon' />
+          name='gpserror' />
 
         <div data-role="collapsible" data-theme="a">
           <h4>Contact</h4>
@@ -925,9 +947,10 @@ body {
         
       });
     </script>
+
   <script src="libs/jquery-ui-1.10.4.custom.js"></script>
   <script type="text/javascript" src="cordova.js"></script>
-<script type='application/javascript' src='libs/fastclick.js'></script>
+  <script type='application/javascript' src='libs/fastclick.js'></script>
   <script type="text/javascript"
     src="libs/IndexedDBShim-master/dist/IndexedDBShim.js"></script>
 
@@ -960,8 +983,7 @@ body {
 
   <script type="text/javascript">
       controller.initialize();
-      
-  </script>
+    </script>
 
 </body>
 </html>

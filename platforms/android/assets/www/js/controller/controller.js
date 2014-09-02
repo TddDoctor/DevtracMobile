@@ -269,13 +269,13 @@ var controller = {
           toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
 
           menubar: false,
-          toolbar_items_size: 'small',
-       // update validation status on change
-          onchange_callback: function (editor)
-          {
-              tinyMCE.triggerSave();
-              $("#" + editor.id).valid();
-          }
+          toolbar_items_size: 'small',          
+          setup : function(ed) {
+            
+            ed.on('click', function(e) {
+              console.log('Editor was clicked');
+            });
+     }
       });
       });
       

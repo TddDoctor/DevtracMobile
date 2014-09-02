@@ -51,24 +51,6 @@ body {
 }
 </style>
 
-<script type="text/javascript" src="../assets/www/libs/tinymce/tinymce.min.js"></script>
-    <script type="text/javascript">
-    tinymce.init({
-      selector: "textarea",
-      plugins: [
-              "advlist autolink autosave link lists charmap hr anchor",
-              "visualblocks visualchars code fullscreen nonbreaking",
-              "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
-      ],
-
-      toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
-      toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
-
-      menubar: false,
-      toolbar_items_size: 'small'
-});
-      
-      </script>
 </head>
 <body>
 
@@ -217,8 +199,7 @@ body {
             <a class="" data-role="button" id="edit_fieldtrip"
               href="#page_fieldtrip_edit" data-rel="dialog" data-iconpos=""><i
               class="fa fa-edit fa-lg"></i>&nbsp&nbsp Edit</a>
-<textarea id='sitevisit_add_public_summary' name='sitevisit_add_public_summary'
-          required></textarea>
+
           </div>
         </fieldset>
 
@@ -468,9 +449,7 @@ body {
             id='sitevisit_title' required/> <label for='sitevisit_date'>Date
             Visited</label> <input type='text' value='' id='sitevisit_date' readonly='true' required/> <label
             for='sitevisit_summary'>Summary</label>
-          <div class="summarytextareadiv">
             <textarea id="sitevisit_summary" rows="4" cols="12" required></textarea>
-          </div>
 
         </fieldset>
       </form>
@@ -525,12 +504,12 @@ body {
         <input type='text' readonly='true' id='sitevisit_add_date' name='sitevisit_add_date'
           data-role="date" required /> <label
           for="sitevisit_add_public_summary">Public Summary</label>
-        <textarea rows="8" type='text' value=''
+        <textarea rows="8" value=''
           id='sitevisit_add_public_summary' name='sitevisit_add_public_summary'
           required></textarea>
 
         <label for="sitevisit_add_report">Full Report</label>
-        <textarea rows="8" type='text' value='' id='sitevisit_add_report'
+        <textarea rows="8" value='' id='sitevisit_add_report'
           name='sitevisit_add_report' required></textarea>
 
         <div
@@ -594,7 +573,7 @@ body {
           id='actionitem_date' name='actionitem_date' readonly='true' data-role="date"
           data-inline="false" required /> <label for="actionitem_followuptask">Follow
           up task</label>
-        <textarea rows="8" type='text' value='' id='actionitem_followuptask'
+        <textarea rows="8" value='' id='actionitem_followuptask'
           name='actionitem_followuptask' required></textarea>
 
         <label for="actionitem_report">Report</label> <input type='text'
@@ -648,7 +627,7 @@ body {
               <h4>Comment</h4>
               <label for="actionitem_comment"><h5>Tell Us What You
                   Think</h5></label>
-              <textarea rows="8" type='text' value='' id='actionitem_comment'
+              <textarea rows="8" value='' id='actionitem_comment'
                 required></textarea>
               <input type='button' onclick="controller.onSavecomment();"
                 value='Save' data-mini="true" id='actionitem_comment_save' />
@@ -934,6 +913,7 @@ body {
 
 
   <script src="../assets/www/libs/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="../assets/www/libs/tinymce/tinymce.min.js"></script>
   <script type="text/javascript">
   //Attempt to fix transition flicker
         $(document).one("mobileinit", function () {

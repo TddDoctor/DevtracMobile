@@ -23,7 +23,7 @@ var controller = {
       document.addEventListener("offline", controller.onOffline, false);
       document.addEventListener("online", controller.online, false);
       document.addEventListener("deviceready", controller.onDeviceReady, false);
-
+      
     },
     
     // Application Constructor
@@ -200,7 +200,7 @@ var controller = {
     
     //Bind any events that are required on startup
     bindEvents: function () {
-
+      
       //$(".seturlselect").chosen({width: "100%"}); 
       $(".menulistview").listview().listview('refresh');
       
@@ -260,50 +260,53 @@ var controller = {
           
           selector: "textarea#sitevisit_add_public_summary, textarea#sitevisit_add_report",
           plugins: [
-                  "advlist autolink autosave link lists charmap hr anchor",
-                  "visualblocks visualchars code fullscreen nonbreaking",
-                  "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
-          ],
-
-          toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
-          toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
-
-          menubar: false,
-          toolbar_items_size: 'small',          
-          setup : function(ed) {
-            
-            ed.on('click', function(e) {
-              console.log('Editor was clicked');
-            });
-     }
-      });
+                    "advlist autolink autosave link lists charmap hr anchor",
+                    "visualblocks visualchars code fullscreen nonbreaking",
+                    "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+                    ],
+                    
+                    toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+                    toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+                    
+                    menubar: false,
+                    toolbar_items_size: 'small',          
+                    setup : function(ed) {
+                      
+                      ed.on('click', function(e) {
+                        console.log('Editor was clicked');
+                      });
+                    }
+        });
       });
       
-     //apply tinymce b4 this page is displayed
-      $("#page_sitevisit_edits").bind('pagebeforeshow', function() {
-        //$("#page_sitevisit_edits").trigger('create');
+      //apply tinymce b4 this page is displayed
+      $("#page_sitevisit_edits").bind('pagebeforeshow', function(event, data) {
+        tinymce.execCommand('mceSetContent', false, localStorage.sitevisit_summary);
         
         tinymce.init({
-          
           selector: "textarea#sitevisit_summary",
           plugins: [
-                  "advlist autolink autosave link lists charmap hr anchor",
-                  "visualblocks visualchars code fullscreen nonbreaking",
-                  "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
-          ],
+                    "advlist autolink autosave link lists charmap hr anchor",
+                    "visualblocks visualchars code fullscreen nonbreaking",
+                    "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+                    ],
+                    
+                    toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+                    toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+                    
+                    menubar: false,
+                    toolbar_items_size: 'small',
+                    setup: function(ed){
+                      ed.on("init",
+                            function(ed) {
+                              tinyMCE.get('sitevisit_summary').setContent(localStorage.sitevisit_summary);
+                              tinyMCE.execCommand('mceRepaint');
 
-          toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
-          toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
-
-          menubar: false,
-          toolbar_items_size: 'small',
-       // update validation status on change
-          onchange_callback: function (editor)
-          {
-              tinyMCE.triggerSave();
-              $("#" + editor.id).valid();
-          }
-      });
+                            }
+                      );
+                  }
+        });
+        
       });
       
       //apply tinymce b4 this page is displayed
@@ -312,17 +315,17 @@ var controller = {
           
           selector: "textarea#actionitem_followuptask",
           plugins: [
-                  "advlist autolink autosave link lists charmap hr anchor",
-                  "visualblocks visualchars code fullscreen nonbreaking",
-                  "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
-          ],
-
-          toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
-          toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
-
-          menubar: false,
-          toolbar_items_size: 'small'
-      });
+                    "advlist autolink autosave link lists charmap hr anchor",
+                    "visualblocks visualchars code fullscreen nonbreaking",
+                    "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+                    ],
+                    
+                    toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+                    toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+                    
+                    menubar: false,
+                    toolbar_items_size: 'small'
+        });
       });
       
       //apply tinymce b4 this page is displayed
@@ -331,17 +334,17 @@ var controller = {
           
           selector: "textarea#actionitem_comment",
           plugins: [
-                  "advlist autolink autosave link lists charmap hr anchor",
-                  "visualblocks visualchars code fullscreen nonbreaking",
-                  "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
-          ],
-
-          toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
-          toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
-
-          menubar: false,
-          toolbar_items_size: 'small'
-      });
+                    "advlist autolink autosave link lists charmap hr anchor",
+                    "visualblocks visualchars code fullscreen nonbreaking",
+                    "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+                    ],
+                    
+                    toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+                    toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+                    
+                    menubar: false,
+                    toolbar_items_size: 'small'
+        });
       });
       
       $("#page_fieldtrip_details").bind('pagebeforeshow', function(){
@@ -566,8 +569,6 @@ var controller = {
             required: true
           },actionitem_followuptask:{
             required: true
-          },actionitem_report:{
-            required: true
           }
         }
       });
@@ -721,9 +722,10 @@ var controller = {
             
             $("#sitevisit_date").val(sitevisitObject['field_ftritem_date_visited']['und'][0]['value']);
             
-            $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und'][0]['value']);
-            
-            //
+            $("#sitevisit_summary").html(sitevisitObject['field_ftritem_public_summary']['und'][0]['value']);
+            localStorage.sitevisit_summary = sitevisitObject['field_ftritem_public_summary']['und'][0]['value'];
+
+            $.mobile.changePage("#page_sitevisit_edits", {transition: "slide"});  
           });
         });
         
@@ -1175,7 +1177,7 @@ var controller = {
       console.log("camera error "+message);
       
     },
-
+    
     //clear the watch that was started earlier
     clearWatch: function() {
       
@@ -1770,7 +1772,10 @@ var controller = {
           });
           
           controller.buildSelect("oecdobj", []);
-
+          
+          $('#sitevisit_add_report').html("Please Provide a small summary for the public");
+          $('#sitevisit_add_public_summary').html("Please Provide a small summary for the public");
+          
         }
         else{
           
@@ -1969,13 +1974,22 @@ var controller = {
     
     //save site visit edits
     onSitevisitedit: function () {
-      if($("#form_sitevisit_edits").valid()) {
+      tinyMCE.triggerSave();
+      
+      var editsummary = $("#sitevisit_summary").val();
+      var editsummaryvalue = editsummary.substring(editsummary.lastIndexOf("<body>")+6, editsummary.lastIndexOf("</body>")).trim();
+      
+      if($("#form_sitevisit_edits").valid() && editsummaryvalue.length > 0) {
         
         //save site visit edits
         var updates = {};
-        $('#form_sitevisit_edits *').filter(':input').each(function () {
+        $('#form_sitevisit_edits *').filter(':input').not(':button').each(function () {
           var key = $(this).attr('id').substring($(this).attr('id').indexOf('_') + 1);
-          if (key.indexOf('_') == -1) {
+          if (this.localName == "textarea") {
+            var summary = $(this)[0].value;
+            var clean_summary = summary.substring(summary.lastIndexOf('<body>')+6, summary.lastIndexOf('</body>')).trim();
+            updates["summary"] = clean_summary;
+          }else{
             updates[key] = $(this).val();
           }
           
@@ -2003,11 +2017,13 @@ var controller = {
             }
             
             $("#sitevisists_details_date").html($("#sitevisit_date").val());
-            $("#sitevisists_details_summary").html($("#sitevisit_summary").val());
+            $("#sitevisists_details_summary").html(editsummaryvalue);
             
             $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
           });
         });
+      }else {
+        controller.loadingMsg("Please enter an Edit Summary", 2000)
       }
       
     },
@@ -2045,7 +2061,12 @@ var controller = {
     
     //save action item
     onSaveactionitem: function () {
-      if ($("#form_add_actionitems").valid()) {
+      tinyMCE.triggerSave();
+      
+      var summarytextarea = $("#actionitem_followuptask").val();
+      var summaryvalue = summarytextarea.substring(summarytextarea.lastIndexOf("<body>")+6, summarytextarea.lastIndexOf("</body>")).trim();
+      
+      if ($("#form_add_actionitems").valid() && summaryvalue.length > 0) {
         //save added action items
         var updates = {};
         
@@ -2096,7 +2117,7 @@ var controller = {
         updates['status'] = 1;
         updates['title'] = $("#actionitem_title").val();
         updates['field_actionitem_due_date']['und'][0]['value']['date'] = $("#actionitem_date").val();
-        updates['field_actionitem_followuptask']['und'][0]['value'] = $("#actionitem_followuptask").val();
+        updates['field_actionitem_followuptask']['und'][0]['value'] = summaryvalue;
         updates['field_actionitem_status']['und'][0]['value'] = $("#actionitem_status").val();
         updates['field_actionitem_severity']['und'][0]['value'] = $("#actionitem_priority").val();
         updates['field_actionitem_responsible']['und'][0]['target_id'] = localStorage.realname+" ("+localStorage.uid+")";
@@ -2153,6 +2174,8 @@ var controller = {
           });
           
         });    
+      }else {
+        controller.loadingMsg("Please fill in a followuptask", 2000)
       }
     },
     
@@ -2505,7 +2528,13 @@ var controller = {
     onSavesitevisit: function () {
       tinyMCE.triggerSave();
       
-      if ($("#form_sitevisit_add").valid()) {
+      var summarytextarea = $("#sitevisit_add_public_summary").val();
+      var summaryvalue = summarytextarea.substring(summarytextarea.lastIndexOf("<body>")+6, summarytextarea.lastIndexOf("</body>")).trim();
+      
+      var reporttextarea = $("#sitevisit_add_report").val();
+      var reporttextarea = reporttextarea.substring(reporttextarea.lastIndexOf("<body>")+6, reporttextarea.lastIndexOf("</body>")).trim();
+      
+      if ($("#form_sitevisit_add").valid() && summaryvalue.length > 0 && reporttextarea.length > 0) {
         //save added site visits
         
         var updates = {};
@@ -2538,7 +2567,7 @@ var controller = {
         updates['field_ftritem_public_summary'] = {};
         updates['field_ftritem_public_summary']['und'] = [];
         updates['field_ftritem_public_summary']['und'][0] = {};
-        updates['field_ftritem_public_summary']['und'][0]['value'] = summary;
+        updates['field_ftritem_public_summary']['und'][0]['value'] = summaryvalue;
         
         var narative = tinyMCE.get('sitevisit_add_report').getContent();
         updates['field_ftritem_narrative'] = {};
@@ -2593,12 +2622,18 @@ var controller = {
           });
           
         });  
+      }else {
+        controller.loadingMsg("Please enter Summary and Report", 2000)
       }
     },
     
     //save comment
     onSavecomment: function() {
-      if ($("#actionitem_comment").valid()) {
+      tinyMCE.triggerSave();
+      var commenttextarea = $("#actionitem_comment").val();
+      var commentvalue = commenttextarea.substring(commenttextarea.lastIndexOf("<body>")+6, commenttextarea.lastIndexOf("</body>")).trim();
+      
+      if ($("#actionitem_comment").valid() && commentvalue.length > 0) {
         var anid = "";
         
         if(localStorage.actionuser){
@@ -2615,7 +2650,7 @@ var controller = {
         comment['comment_body'] = {};
         comment['comment_body']['und']  = [];
         comment['comment_body']['und'][0] = {};
-        comment['comment_body']['und'][0]['value'] = $('#actionitem_comment').val();
+        comment['comment_body']['und'][0]['value'] = commentvalue;
         comment['comment_body']['und'][0]['format'] = 1;   
         comment['language'] = 'und';
         comment['nid'] = localStorage.anid;
@@ -2658,7 +2693,12 @@ var controller = {
             
           }); 	
         });	
-      }    
+        
+        tinymce.execCommand('mceSetContent', false, "");
+        
+      }else{
+        controller.loadingMsg("Please fill in a comment", 2000);
+      } 
     },
     
     //add hidden element: there's a better way to do this

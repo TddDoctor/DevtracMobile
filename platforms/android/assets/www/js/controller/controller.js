@@ -52,10 +52,8 @@ var controller = {
       $("#header_sitereports").html(header({extra_buttons: '<div data-role="navbar" data-theme="a">'+
         '<ul>'+
         '<li><a data-role="button" data-mini="true" id="addquestionnaire"><i class="fa fa-list-alt fa-lg"></i>&nbsp&nbsp Questionnaire</a></li>'+
-        '<li><a href="#mappage" data-role="button" class="panel_map"'+
-        'onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li>'+
-        '</ul>'+
-        '</div>', id: "sitereport", title: "Site Report"}));
+        '<li><a href="#mappage" data-role="button" class="panel_map" onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li>'+
+        '</ul></div>', id: "sitereport", title: "Site Report"}));
       $("#header_location").html(header({id: "location", title: "Locations"}));
       $("#header_about").html(header({id: "about", title: "About"}));
       $("#header_addlocation").html(header({id: "addlocation", title: "Locations"})); 
@@ -77,9 +75,7 @@ var controller = {
         //localStorage.appurl = "http://demo.devtrac.org";
         //localStorage.appurl = "http://10.0.2.2/dt11";
         //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
-        // console.log("url not set "+localStorage.appurl);
-        // }else{
-        //console.log("app url set "+localStorage.appurl);
+
       }
       
       if(controller.connectionStatus) {
@@ -127,10 +123,9 @@ var controller = {
           $("#addquestionnaire").hide();
           
           controller.resetForm($('#form_fieldtrip_details'));
-          
-          console.log("logged out");
           $.unblockUI();
-          if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){
+          
+          if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null) {
             $("#page_login_name").val(window.localStorage.getItem("usernam"));
             $("#page_login_pass").val(window.localStorage.getItem("passw"));  
           }
@@ -601,7 +596,7 @@ var controller = {
         }
       });
       
-      //site report type validation
+/*      //site report type validation
       var site_report_form = $("#form_sitereporttype");
       site_report_form.validate({
         rules: {
@@ -610,7 +605,7 @@ var controller = {
           }
       
         }
-      });
+      });*/
       
       //site visit validation
       var sitevisit_form = $("#form_sitevisit_add");
@@ -619,12 +614,8 @@ var controller = {
           sitevisit_add_title: {
             required: true
           },
-          sitevisit_add_type: {
-            required: true
-          },
           sitevisit_add_date:{
-            required: true,
-            date: true
+            required: true
           },
           sitevisit_add_public_summary:{
             required: true
@@ -1749,7 +1740,6 @@ var controller = {
     
     //handle submit of site report type
     submitSitereporttype: function() {
-      if ($("#form_sitereporttype").valid()) {
         localStorage.ftritemtype = $("#sitevisit_add_type").val();
         
         localStorage.ftritemdistrict = $("#location_district").val();
@@ -1773,7 +1763,7 @@ var controller = {
           
           controller.buildSelect("oecdobj", []);
           
-          $('#sitevisit_add_report').html("Please Provide a small summary for the public");
+          $('#sitevisit_add_report').html("Please provide a full report");
           $('#sitevisit_add_public_summary').html("Please Provide a small summary for the public");
           
         }
@@ -1783,10 +1773,7 @@ var controller = {
           
         }
         controller.resetForm($('#form_sitereporttype'));
-        
-      }
-      
-      
+
     },
     
     //handle site visit click
@@ -2623,7 +2610,7 @@ var controller = {
           
         });  
       }else {
-        controller.loadingMsg("Please enter Summary and Report", 2000)
+        controller.loadingMsg("Please enter all Fields", 2000)
       }
     },
     

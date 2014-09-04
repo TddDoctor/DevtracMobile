@@ -29,9 +29,9 @@ var controller = {
     // Application Constructor
     initialize: function () {
       //faster button clicks
-      window.addEventListener('load', function() {
+/*      window.addEventListener('load', function() {
         FastClick.attach(document.body);
-      }, false);
+      }, false);*/
       
       //center the loading message
       $.fn.center = function () {
@@ -163,32 +163,39 @@ var controller = {
         devtracnodes.getFieldtrips(db).then(function () {
           
           controller.loadingMsg("Fieldtrips Saved", 0);
-          notes.push('fieldtrips');
+          notes.push('Fieldtrips');
 
           $('.blockUI.blockMsg').center();
           devtracnodes.getSiteVisits(db, function(response) {
             
             controller.loadingMsg("Sitevisits Saved", 0);
             $('.blockUI.blockMsg').center();
-            notes.push('sitevisits');
+            notes.push('Sitevisits');
             devtracnodes.getPlaces(db);
-            
+            var counter = 0;
             for(var x = 0; x < controller.nodes.length; x++) {
               controller.nodes[x](db).then(function(response) {
+                counter = counter + 1;
                 controller.loadingMsg(response, 1500);
                 $('.blockUI.blockMsg').center();
                 notes.push(response);
+                if(counter >= controller.nodes.length - 1){
+                  console.log("creating notes");
+                  owlhandler.notes(notes);
+                  d.resolve();
+                }
               }).fail(function(e) {
+                counter = counter + 1;
                 controller.loadingMsg(e, 1500);
                 $('.blockUI.blockMsg').center();
                 notes.push(e);
+                if(counter >= controller.nodes.length - 1){
+                  console.log("creating notes");
+                  owlhandler.notes(notes);
+                  d.resolve();
+                }
               });  
-              
-              if(x == controller.nodes.length - 1){
-                owlhandler.notes(notes);
-                d.resolve();
-              }
-              
+               
             }
 
             
@@ -200,32 +207,6 @@ var controller = {
       });
       
       return d;
-    },
-    
-    recurseNodes: function(db, count, notes, nodes, callback){
-      
-        nodes[count](db).then(function(response) {
-          count = count + 1;
-          if(count > nodes.length - 1) {
-            controller.loadingMsg(response+" Saved", 1500);
-            notes.push(response);
-            controller.recurseNodes(db, count, notes, nodes, callback);
-          }else{
-            callback(notes);
-          }
-
-        }).fail(function(e) {
-          count = count + 1;
-          if(count > nodes.length - 1) {
-            notes.push(e);
-            controller.loadingMsg(e, 1500);
-            controller.recurseNodes(db, count, notes, nodes, callback);  
-          }else{
-            callback(notes);
-          }
-          
-        });
-  
     },
     
     //Bind any events that are required on startup
@@ -274,7 +255,8 @@ var controller = {
  
      $("#notify_fieldtrip").on('click', function() {
         if($("#content").children().length == 0) {
-          controller.loadingMsg("No Notifications Now", 1000)
+          controller.loadingMsg("No Notifications Now", 1000);
+          $('.blockUI.blockMsg').center();
         }
         
       });
@@ -399,26 +381,18 @@ var controller = {
           // Select the relevant option, de-select any others
           el.val('test').selectmenu('refresh');
           
-          // jQM refresh
-          //el.selectmenu("refresh", true);
         }else if(url.indexOf("cloud") != -1) {
           // Select the relevant option, de-select any others
           el.val('cloud').selectmenu('refresh');
-          
-          // jQM refresh
-          //el.selectmenu("refresh", true);
+
         }else if(url.indexOf("manual") != -1) {
           // Select the relevant option, de-select any others
           el.val('manual').selectmenu('refresh');
-          
-          // jQM refresh
-          //el.selectmenu("refresh", true);
+
         }else if(url.indexOf("dt11") != -1) {
           // Select the relevant option, de-select any others
           el.val('local').selectmenu('refresh');
-          
-          // jQM refresh
-          //el.selectmenu("refresh", true);
+
         }
         
         $("#barsbutton_login").hide();
@@ -434,26 +408,18 @@ var controller = {
           // Select the relevant option, de-select any others
           el.val('test').selectmenu('refresh');
           
-          // jQM refresh
-          //el.selectmenu("refresh", true);
         }else if(url.indexOf("cloud") != -1) {
           // Select the relevant option, de-select any others
           el.val('cloud').selectmenu('refresh');
           
-          // jQM refresh
-          //el.selectmenu("refresh", true);
         }else if(url.indexOf("manual") != -1) {
           // Select the relevant option, de-select any others
           el.val('manual').selectmenu('refresh');
-          
-          // jQM refresh
-          //el.selectmenu("refresh", true);
+
         }else if(url.indexOf("dt11") != -1) {
           // Select the relevant option, de-select any others
           el.val('local').selectmenu('refresh');
-          
-          // jQM refresh
-          //el.selectmenu("refresh", true);
+
         }
         
         $("#barsbutton_login").hide();
@@ -508,13 +474,6 @@ var controller = {
         $.mobile.changePage("#page_add_questionnaire", "slide", true, false);
         
       }); 
-      
-      //hide the notification button if there are no notifcations and its been clicked.
-      $('#notify-anchor').bind('click', function () {
-        if ($(".notification-bubble").html() <= 0) {
-          $("#notify-nav").hide();
-        }
-      });
       
       //redownload the devtrac data
       $('.refresh-button').bind('click', function () {

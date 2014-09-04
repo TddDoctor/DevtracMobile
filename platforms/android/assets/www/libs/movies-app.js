@@ -34,7 +34,7 @@ var owlhandler = {
         selectors: "#notify_fieldtrip",
         content: function(){
           var data = "";
-          for(var note in notesy){
+          for(var note in notesy) {
             data = data + '<div class="obNotifItem">'+
             '<div class="obNotifImgWrapper"></div><div class="obNotifContent">'+
             
@@ -46,10 +46,11 @@ var owlhandler = {
           return data;
         },
         beforeCloseItem: function (item) {
+          item.empty();
 
         },
         beforeLinkClicked: function (item) {
-          
+          console.log("clicked");
         }
         
       });

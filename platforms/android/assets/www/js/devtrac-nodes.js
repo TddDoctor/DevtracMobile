@@ -44,6 +44,7 @@ var devtracnodes = {
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           console.log('error '+errorThrown);
+          console.log('response error '+XMLHttpRequest.responseText);
           d.reject(errorThrown);
         },
         success: function (data) {         
@@ -717,7 +718,7 @@ var devtracnodes = {
       
       var idcontainer = idcontainer;
       
-      devtrac.indexedDB.getSitevisit(db, parseInt(oldids[0])).then(function(sitevisit) {
+      devtrac.indexedDB.getSitevisitBypnid(db, parseInt(oldids[0])).then(function(sitevisit) {
         idcontainer.push(oldids[0]);
         
         oldids.splice(0, 1);
@@ -802,9 +803,11 @@ var devtracnodes = {
             devtracnodes.uploadsitevisits(db, sitevisits, newsitevisits, function(uploadedftritems, state) {
               if(state == "error"){
                 controller.loadingMsg(uploadedftritems, 3000);
+                $('.blockUI.blockMsg').center();
               }else{
                 ftritems = true;
                 controller.loadingMsg("Finished Syncing Roadside Sitevisits ...", 0);
+                $('.blockUI.blockMsg').center();
                 for(var k in ftritemdetails) {
                   uploadedftritems[k] = ftritemdetails[k];
                 }
@@ -848,6 +851,7 @@ var devtracnodes = {
             actionitems = true;
             
             controller.loadingMsg("Finished Syncing Action Items ...", 0);
+            $('.blockUI.blockMsg').center();
             if(ftritems == true && actionitems == true){
               devtracnodes.syncFieldtrips(actionitems);
               
@@ -855,6 +859,7 @@ var devtracnodes = {
             
           }).fail(function(e){
             controller.loadingMsg("Action Items "+e, 0);
+            $('.blockUI.blockMsg').center();
             actionitems = true;
             if(ftritems == true && actionitems == true){
               devtracnodes.syncFieldtrips(actionitems);
@@ -884,12 +889,14 @@ var devtracnodes = {
         devtracnodes.uploadFieldtrips().then(function() {
           fieldtrips = true;
           controller.loadingMsg("Finished Syncing Fieldtrips ...", 0);
+          $('.blockUI.blockMsg').center();
           if(fieldtrips == true && actionitems == true){
             $.unblockUI();
           }
           
         }).fail(function(e){
           controller.loadingMsg("Fieldtrips "+e, 0);
+          $('.blockUI.blockMsg').center();
           fieldtrips = true;
           if(fieldtrips == true && actionitems == true){
             $.unblockUI();
@@ -916,7 +923,7 @@ var devtracnodes = {
         if(parseInt($("#location_count").html()) > 0 || parseInt($("#sitevisit_count").html()) > 0 || parseInt($("#actionitem_count").html()) > 0 || parseInt($("#fieldtrip_count").html()) > 0) {
           
           controller.loadingMsg("Syncing, Please Wait...", 0);
-          
+          $('.blockUI.blockMsg').center();
           if(parseInt($("#location_count").html()) > 0) {
             
             //upload locations and sitevisits (human interest stories and site visits)
@@ -930,19 +937,23 @@ var devtracnodes = {
                 
                 if(newids == "" && oldids == "") {
                   controller.loadingMsg(newnames, 3000);
+                  $('.blockUI.blockMsg').center();
                 }else {
                   controller.loadingMsg("Finished Syncing Locations ...", 0);
+                  $('.blockUI.blockMsg').center();
                   devtrac.indexedDB.open(function (dbs) {
                     devtracnodes.uploadFtritemswithLocations(newnames, newids, oldids, dbs).then(function(names, newnids, oldnids, sitevisits) {
                       
                       devtracnodes.postSitevisitHelper(sitevisits, names, newnids, [], function(ftritemdetails, state){
                         if(state == "result"){
                           controller.loadingMsg("Finished Syncing Sitevisits with Locations ...", 0);
+                          $('.blockUI.blockMsg').center();
                           ftritems_locs = true;
                           
                           devtracnodes.syncSitevisits(ftritemdetails, ftritems_locs);
                         }else{
                           controller.loadingMsg(ftritemdetails, 3000);
+                          $('.blockUI.blockMsg').center();
                         }
                         
                       });
@@ -965,6 +976,7 @@ var devtracnodes = {
           
         }else {
           controller.loadingMsg("Nothing New to Upload", 3000);
+          $('.blockUI.blockMsg').center();
         }
         
         
@@ -973,6 +985,7 @@ var devtracnodes = {
       else
       {
         controller.loadingMsg("No Internet Connection", 2000);
+        $('.blockUI.blockMsg').center();
       }
     },
     
@@ -1430,11 +1443,14 @@ var devtracnodes = {
         url : localStorage.appurl+"/api/views/api_fieldtrips.json?display_id=current_trip&filters[field_fieldtrip_status_value]=All",
         type : 'get',
         dataType : 'json',
-        //headers: {'X-CSRF-Token': localStorage.usertoken},
+        headers: {
+          'X-CSRF-Token': localStorage.usertoken//,
+          //'Cookie': localStorage.sname +"="+localStorage.sid
+        },
         error : function(XMLHttpRequest, textStatus, errorThrown) { 
           //creating bubble notification
           devtracnodes.notify("Fieldtrips. "+errorThrown);
-          
+          console.log('fieldtrips error '+XMLHttpRequest.responseText);
           d.reject(errorThrown);
         },
         success : function(data) {
@@ -1474,10 +1490,16 @@ var devtracnodes = {
               url : localStorage.appurl+"/api/views/api_fieldtrips.json?display_id=sitevisits&filters[field_ftritem_field_trip_target_id]="+fnid[key]['nid'],
               type : 'get',
               dataType : 'json',
+              headers: {
+                'X-CSRF-Token': localStorage.usertoken,
+                'Cookie': localStorage.sname +"="+localStorage.sid
+                },
               error : function(XMLHttpRequest, textStatus, errorThrown) { 
                 //create bubble notification
+                console.log('sitevisits error '+XMLHttpRequest.responseText);
                 devtracnodes.notify("Sitevisits. "+errorThrown);
                 callback("Error "+errorThrown);
+                
               },
               success : function(data) {
                 //create bubble notification
@@ -1503,10 +1525,6 @@ var devtracnodes = {
       });
     },
     
-    pullSitevisits: function(){
-      
-    },
-    
     //Returns devtrac action items json list 
     getActionItems: function(db) {
       var d = $.Deferred();
@@ -1520,6 +1538,7 @@ var devtracnodes = {
             error : function(XMLHttpRequest, textStatus, errorThrown) { 
               //create bubble notification
               devtracnodes.notify("Action items. "+errorThrown);
+              console.log('actionitems error '+XMLHttpRequest.responseText);
               d.reject(errorThrown);
             },
             success : function(data) {
@@ -1596,7 +1615,7 @@ var devtracnodes = {
               devtrac.indexedDB.addPlacesData(db, data[item]).then(function(){
                 devtracnodes.notify("Places Saved");
                 controller.loadingMsg("Places Saved",1000);
-                
+                $('.blockUI.blockMsg').center();
               }).fail(function(e) {
                 if(e.target.error.message != "Key already exists in the object store." && e.target.error.message != undefined) {
                   devtracnodes.notify("Places Error: "+e.target.error.message);

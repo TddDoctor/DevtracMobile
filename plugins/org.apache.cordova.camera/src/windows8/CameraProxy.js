@@ -22,12 +22,8 @@
 /*global Windows:true, URL:true */
 
 
-
-var cordova = require('cordova'),
-    Camera = require('./Camera'),
-    FileEntry = require('org.apache.cordova.file.FileEntry'),
-    FileError = require('org.apache.cordova.file.FileError'),
-    FileReader = require('org.apache.cordova.file.FileReader');
+    var cordova = require('cordova'),
+        Camera = require('./Camera');
 
 module.exports = {
 
@@ -54,13 +50,6 @@ module.exports = {
         var mediaType = args[6];
         var saveToPhotoAlbum = args[9];
 
-        var pkg = Windows.ApplicationModel.Package.current;
-        var packageId = pkg.installedLocation;
-
-        var fail = function (fileError) {
-            errorCallback("FileError, code:" + fileError.code);
-        };
-
         // resize method :)
         var resizeImage = function (file) {
             var tempPhotoFileName = "";
@@ -69,119 +58,74 @@ module.exports = {
             } else {
                 tempPhotoFileName = "camera_cordova_temp_return.jpg";
             }
-            var imgObj = new Image();
-            var success = function (fileEntry) {
-                var successCB = function (filePhoto) {
-                    var fileType = file.contentType,
-                        reader = new FileReader();
-                    reader.onloadend = function () {
-                        var image = new Image();
-                        image.src = reader.result;
-                        image.onload = function () {
-                            var imageWidth = targetWidth,
-                                imageHeight = targetHeight;
-                            var canvas = document.createElement('canvas');
-
-                            canvas.width = imageWidth;
-                            canvas.height = imageHeight;
-
-                            var ctx = canvas.getContext("2d");
-                            ctx.drawImage(this, 0, 0, imageWidth, imageHeight);
-
-                            // The resized file ready for upload
-                            var _blob = canvas.msToBlob();
-                            var _stream = _blob.msDetachStream();
-
-                            var storageFolder = Windows.Storage.ApplicationData.current.localFolder;
-                            storageFolder.createFileAsync(tempPhotoFileName, Windows.Storage.CreationCollisionOption.generateUniqueName).done(function (file) {
-                                file.openAsync(Windows.Storage.FileAccessMode.readWrite).done(function (fileStream) {
-                                    Windows.Storage.Streams.RandomAccessStream.copyAndCloseAsync(_stream, fileStream).done(function () {
-                                        var _imageUrl = URL.createObjectURL(file);
-                                        successCallback(_imageUrl);
-                                    }, function () {
-                                        errorCallback("Resize picture error.");
-                                    });
-                                }, function () {
-                                    errorCallback("Resize picture error.");
-                                });
-                            }, function () {
-                                errorCallback("Resize picture error.");
-                            });
-
-                        };
-                    };
-
-                    reader.readAsDataURL(filePhoto);
-                };
-
-                var failCB = function () {
-                    errorCallback("File not found.");
-                };
-                fileEntry.file(successCB, failCB);
-            };
 
             var storageFolder = Windows.Storage.ApplicationData.current.localFolder;
             file.copyAsync(storageFolder, file.name, Windows.Storage.NameCollisionOption.replaceExisting).then(function (storageFile) {
-                success(new FileEntry(storageFile.name, storageFile.path));
+                Windows.Storage.FileIO.readBufferAsync(storageFile).then(function(buffer) {
+                    var strBase64 = Windows.Security.Cryptography.CryptographicBuffer.encodeToBase64String(buffer);
+                    var imageData = "data:" + file.contentType + ";base64," + strBase64;
+                    var image = new Image();
+                    image.src = imageData;
+                    image.onload = function() {
+                        var imageWidth = targetWidth,
+                            imageHeight = targetHeight;
+                        var canvas = document.createElement('canvas');
+
+                        canvas.width = imageWidth;
+                        canvas.height = imageHeight;
+
+                        canvas.getContext("2d").drawImage(this, 0, 0, imageWidth, imageHeight);
+
+                        var fileContent = canvas.toDataURL(file.contentType).split(',')[1];
+
+                        var storageFolder = Windows.Storage.ApplicationData.current.localFolder;
+
+                        storageFolder.createFileAsync(tempPhotoFileName, Windows.Storage.CreationCollisionOption.generateUniqueName).done(function (storagefile) {
+                            var content = Windows.Security.Cryptography.CryptographicBuffer.decodeFromBase64String(fileContent);
+                            Windows.Storage.FileIO.writeBufferAsync(storagefile, content).then(function () {
+                                successCallback("ms-appdata:///local/" + storagefile.name);
+                            }, function () {
+                                errorCallback("Resize picture error.");
+                            });
+                        });
+                    };
+                });
             }, function () {
-                fail(FileError.INVALID_MODIFICATION_ERR);
-            }, function () {
-                errorCallback("Folder not access.");
+                errorCallback("Can't access localStorage folder");
             });
 
         };
 
         // because of asynchronous method, so let the successCallback be called in it.
         var resizeImageBase64 = function (file) {
-            var imgObj = new Image();
-            var success = function (fileEntry) {
-                var successCB = function (filePhoto) {
-                    var fileType = file.contentType,
-                        reader = new FileReader();
-                    reader.onloadend = function () {
-                        var image = new Image();
-                        image.src = reader.result;
 
-                        image.onload = function () {
-                            var imageWidth = targetWidth,
-                                imageHeight = targetHeight;
-                            var canvas = document.createElement('canvas');
+            Windows.Storage.FileIO.readBufferAsync(file).done( function(buffer) {
+                var strBase64 = Windows.Security.Cryptography.CryptographicBuffer.encodeToBase64String(buffer);
+                var imageData = "data:" + file.contentType + ";base64," + strBase64;
 
-                            canvas.width = imageWidth;
-                            canvas.height = imageHeight;
+                var image = new Image();
+                image.src = imageData;
 
-                            var ctx = canvas.getContext("2d");
-                            ctx.drawImage(this, 0, 0, imageWidth, imageHeight);
+                image.onload = function() {
+                    var imageWidth = targetWidth,
+                        imageHeight = targetHeight;
+                    var canvas = document.createElement('canvas');
 
-                            // The resized file ready for upload
-                            var finalFile = canvas.toDataURL(fileType);
+                    canvas.width = imageWidth;
+                    canvas.height = imageHeight;
 
-                            // Remove the prefix such as "data:" + contentType + ";base64," , in order to meet the Cordova API.
-                            var arr = finalFile.split(",");
-                            var newStr = finalFile.substr(arr[0].length + 1);
-                            successCallback(newStr);
-                        };
-                    };
+                    var ctx = canvas.getContext("2d");
+                    ctx.drawImage(this, 0, 0, imageWidth, imageHeight);
 
-                    reader.readAsDataURL(filePhoto);
+                    // The resized file ready for upload
+                    var finalFile = canvas.toDataURL(file.contentType);
 
+                    // Remove the prefix such as "data:" + contentType + ";base64," , in order to meet the Cordova API.
+                    var arr = finalFile.split(",");
+                    var newStr = finalFile.substr(arr[0].length + 1);
+                    successCallback(newStr);
                 };
-                var failCB = function () {
-                    errorCallback("File not found.");
-                };
-                fileEntry.file(successCB, failCB);
-            };
-
-            var storageFolder = Windows.Storage.ApplicationData.current.localFolder;
-            file.copyAsync(storageFolder, file.name, Windows.Storage.NameCollisionOption.replaceExisting).then(function (storageFile) {
-                success(new FileEntry(storageFile.name, "ms-appdata:///local/" + storageFile.name));
-            }, function () {
-                fail(FileError.INVALID_MODIFICATION_ERR);
-            }, function () {
-                errorCallback("Folder not access.");
             });
-
-
         };
 
         if (sourceType != Camera.PictureSourceType.CAMERA) {
@@ -209,9 +153,7 @@ module.exports = {
                             file.copyAsync(storageFolder, file.name, Windows.Storage.NameCollisionOption.replaceExisting).then(function (storageFile) {
                                 successCallback(URL.createObjectURL(storageFile));
                             }, function () {
-                                fail(FileError.INVALID_MODIFICATION_ERR);
-                            }, function () {
-                                errorCallback("Folder not access.");
+                                errorCallback("Can't access localStorage folder.");
                             });
 
                         }
@@ -273,7 +215,7 @@ module.exports = {
             cameraCaptureUI.captureFileAsync(Windows.Media.Capture.CameraCaptureUIMode.photo).then(function (picture) {
                 if (picture) {
                     // save to photo album successCallback
-                    var success = function (fileEntry) {
+                    var success = function () {
                         if (destinationType == Camera.DestinationType.FILE_URI) {
                             if (targetHeight > 0 && targetWidth > 0) {
                                 resizeImage(picture);
@@ -283,9 +225,7 @@ module.exports = {
                                 picture.copyAsync(storageFolder, picture.name, Windows.Storage.NameCollisionOption.replaceExisting).then(function (storageFile) {
                                     successCallback("ms-appdata:///local/" + storageFile.name);
                                 }, function () {
-                                    fail(FileError.INVALID_MODIFICATION_ERR);
-                                }, function () {
-                                    errorCallback("Folder not access.");
+                                    errorCallback("Can't access localStorage folder.");
                                 });
                             }
                         } else {
@@ -308,7 +248,7 @@ module.exports = {
                     if (saveToPhotoAlbum) {
                         Windows.Storage.StorageFile.getFileFromPathAsync(picture.path).then(function (storageFile) {
                             storageFile.copyAsync(Windows.Storage.KnownFolders.picturesLibrary, picture.name, Windows.Storage.NameCollisionOption.generateUniqueName).then(function (storageFile) {
-                                success(storageFile);
+                                success();
                             }, function () {
                                 fail();
                             });
@@ -325,9 +265,7 @@ module.exports = {
                                 picture.copyAsync(storageFolder, picture.name, Windows.Storage.NameCollisionOption.replaceExisting).then(function (storageFile) {
                                     successCallback("ms-appdata:///local/" + storageFile.name);
                                 }, function () {
-                                    fail(FileError.INVALID_MODIFICATION_ERR);
-                                }, function () {
-                                    errorCallback("Folder not access.");
+                                    errorCallback("Can't access localStorage folder.");
                                 });
                             }
                         } else {

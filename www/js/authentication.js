@@ -1,46 +1,67 @@
 var auth = {
-
+    
     //delete bubble
     deleteBubble: function(notifications, notification){
       notifications.deleteNotification(notification);
-
+      
     },
-
+    
     //get site token
     getToken: function() {
       var d = $.Deferred();
-
+      
       // Obtain session token.
       $.ajax({
         url: localStorage.appurl+"/services/session/token",
         type:"get",
         dataType:"text",
         error:function (jqXHR, textStatus, errorThrown) {
-
+          
           //hide and show dialog auth buttons
           $('#logoutdiv').hide();
           $('#logindiv').show();
-
+          
           //hide and show panel auth buttons
           $('.panel_login').show();
           $('.panel_logout').hide();
-
-          alert(errorThrown);
-
+          
+          if(errorThrown == ""){
+            controller.loadingMsg("Selected Url "+localStorage.appurl+" is Unavailable. Make sure you have an internet connection or try another url.", 5000)
+            controller.loadingMsg("Check that your Internet bundle has not expired.", 9000);
+            $('.blockUI.blockMsg').center();
+          }else if(jqXHR.responseText.indexOf('<') != -1 || jqXHR.responseText.indexOf('/>') != -1) {
+            controller.loadingMsg("Error: "+errorThrown, 3000);
+            $('.blockUI.blockMsg').center();
+            $('.errorHTML').html(jqXHR.responseText);
+            
+          }
+          else{
+            controller.loadingMsg("Error: "+errorThrown+" Try another url.", 5000);
+            $('.blockUI.blockMsg').center();
+          }
+          
+          $.mobile.changePage("#page_login", "slide", true, false);
           d.reject();
         },
         success: function (token) {
-          console.log("token "+ " from "+localStorage.appurl);
-          d.resolve(token);
+          if(token.indexOf(" ") != -1) {
+            token = token.substring(2);
+
+            console.log("token "+ " from "+localStorage.appurl);
+            d.resolve(token);
+          }else{
+            d.resolve(token);
+          }
         }
       });
-
+      
       return d;
     },
-
+    
+    //check if we have a token
     checkToken: function() {
       var d = $.Deferred();
-
+      
       if(!(localStorage.token == null)){
         d.resolve(localStorage.token);
       }else{
@@ -53,12 +74,13 @@ var auth = {
       }  
       return d;
     },
-
+    
     //check if user is logged in
     loginStatus: function() {
       var d = $.Deferred();
       
-      auth.getToken().then(function(token){
+      auth.getToken().then(function(token) {
+        
         // Call system connect with session token.
         $.ajax({
           url : localStorage.appurl+"/api/system/connect.json",
@@ -67,131 +89,103 @@ var auth = {
           headers: {'X-CSRF-Token': token},
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
-
+            
+            console.log('response error '+XMLHttpRequest.responseText);
             //hide and show dialog auth buttons
             $('#logoutdiv').hide();
             $('#logindiv').show();
-
+            
             //hide and show panel auth buttons
             $('.panel_login').show();
             $('.panel_logout').hide();
-
-            alert(errorThrown);
-
+            
+            
           },
           success : function(data) {
-
+            localStorage.sname = data.sessid;
+            localStorage.sid = data.session_name;
+            
             var drupal_user = data.user;
             if (drupal_user.uid == 0)
             {
               //user is not logged in
-              $.unblockUI();
-              //hide panel options
-              $('.panel_oecd').hide();
-              $('.panel_placetype').hide();
-
+              console.log("status not logged in");
               //hide and show dialog buttons
               $('#logoutdiv').hide();
               $('#logindiv').show();
-
+              
               //hide and show panel auth buttons
               $('.panel_logout').hide();
               $('.panel_login').show();
-
-              //show panel set up urls button
-              $('#setup_urls').show();
               
-              //hide user details
-              $('.user_details').hide();
-
-              $('.refresh-button').hide();
-
               d.reject();
             } else
             { 
               //user is logged in
-
+              console.log("status logged in");
+              
               //set username in menu
               $(".username").html("Hi, "+localStorage.username+" !");
               
               //set user title in menu
               $(".user_title").html(localStorage.usertitle);
               
-              //show panel options
-              $('.panel_oecd').show();
-              $('.panel_placetype').show();
-
               //hide and show dialog auth buttons
               $('#logindiv').hide();
               $('#logoutdiv').show();
-
+              
               //hide and show panel auth buttons
               $('.panel_login').hide();
               $('.panel_logout').show();
               
-
-              //show panel urls button
-              $('.setup_urls').show();
-
-              $('.refresh-button').show();
-
               d.resolve();
-
+              
             }
           }
         });
       }).fail(function() {
-
+        
       });
-
+      
       return d;
     },
-
+    
     //login to devtrac
-    login: function(name, pass) {
+    login: function(name, pass, db) {
       var d = $.Deferred();
       // Obtain session token.
       auth.getToken().then(function (token) {
-
+        
         // Call system login with session token.
         $.ajax({
           url : localStorage.appurl+"/api/user/login.json",
           type : 'post',
           data : 'username=' + encodeURIComponent(name) + '&password=' + encodeURIComponent(pass),
           dataType : 'json',
-          headers: {'X-CSRF-Token': token},
-          beforeSend: function( xhr ) {
-            controller.loadingMsg("Logging In ...", 0);
-
-          },
+          headers: {
+            'X-CSRF-Token': token
+             
+            },
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
-            alert("Sorry, unrecognized username or password");	     
+            alert("Sorry "+errorThrown);	
+            console.log('response error '+XMLHttpRequest.responseText);
             //hide and show dialog auth buttons
             $('#logoutdiv').hide();
             $('#logindiv').show();
-
+            
             d.reject();
           },
           success : function(data) {
+            console.log("logged successfully");
+            $(".menulistview").show();
             
-            if(window.localStorage.getItem("dataflag") != data.user.uid){
-              window.localStorage.removeItem("dataflag");
-              window.localStorage.setItem("dataflag", data.user.uid)
-              devtrac.indexedDB.open(function (db) {
-                for(var x in controller.objectstores) {
-                  devtrac.indexedDB.deleteAllTables(db, controller.objectstores[x]).then(function(){
-
-                  }).fail(function(){
-
-                  });
-                }
-
-
-
-              });
-            }
-
+            $("#form_add_location").show();
+            $("#form_fieldtrip_details").show();
+            $("#form_sitevisists_details").show();
+            $("#addquestionnaire").show();
+            $(".settingsform").show();
+            $(".ui-navbar").show();
             
             localStorage.username = name;
             localStorage.pass = pass;
@@ -206,51 +200,58 @@ var auth = {
             }else{
               localStorage.usertitle = "Unavailable";
             }
-
+            
+            if(window.localStorage.getItem("dataflag") != data.user.uid) {
+              window.localStorage.removeItem("dataflag");
+              window.localStorage.setItem("dataflag", data.user.uid);
+              
+              devtrac.indexedDB.open(function (db) {
+                devtrac.indexedDB.clearDatabase(db, 0, function() {
+                  
+                  console.log("deleted all stores");
+                  
+                });
+              });
+ 
+            }
+            
             // Obtain session token.
             auth.getToken().then(function (token) {
               localStorage.usertoken = token;
-              
+              console.log("logged in and second token is sweet");
               //set username in menu
               $(".username").html("Hi, "+localStorage.username+" !");
               
               //set user title in menu
               $(".user_title").html(localStorage.usertitle);
-
-              //show panel options
-              $('.panel_oecd').show();
-              $('.panel_placetype').show();
-              $('.panel_fieldtrips').show();
-
+              
               //hide and show dialog auth buttons
               $('#logindiv').hide();
               $('#logoutdiv').show();
-
+              
               //hide and show panel auth buttons
               $('.panel_login').hide();
               $('.panel_logout').show();
-
-              //show refresh button
-              $('.refresh-button').show();
-
-              $('.setup_urls').hide();
-
+              
               d.resolve();
+            }).fail(function(){
+              console.log("logged in but second token is fucked");
             });
-
+            
           }
         });
-
+        
       });
       return d;
-
+      
     },
-
+    
     //logout
     logout: function() {
       var d = $.Deferred();
-
+      
       controller.loadingMsg("Logging out...", 0);
+      $('.blockUI.blockMsg').center();
       // Obtain session token.
       auth.getToken().then(function (token) {
         // Call system logout with session token.
@@ -258,28 +259,43 @@ var auth = {
           url : localStorage.appurl+"/api/user/logout.json",
           type : 'post',
           dataType : 'json',
-          headers: {'X-CSRF-Token': token},
+          headers: {
+            'X-CSRF-Token': localStorage.usertoken
+          },
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
-            d.reject();
-            alert(errorThrown);
+            
             //hide and show dialog auth buttons
             $('#logindiv').hide();
             $('#logoutdiv').show();
+            console.log('response error '+XMLHttpRequest.responseText);
+            console.log("logged out error");
+            d.reject();
+            
           },
           success : function(data) {
             $.unblockUI();
-
+            console.log("logged out okay");
+            $(".menulistview").hide();
+            $("#form_fieldtrip_details").hide();
+            $("#form_sitevisists_details").hide();
+            $("#form_add_location").hide();
+            $(".settingsform").hide();
+            $("#addquestionnaire").hide();
+            $(".ui-navbar").hide();
+            
+            $.mobile.changePage("#page_login", "slide", true, false);
+            
             localStorage.token = null;
             localStorage.pass = null;
-
+            
             //clear fieldtrip list
             $("#list_fieldtrips").empty();
-
+            
             //hide or show dialog auth buttons
             $('#logoutdiv').hide();
             $('#logindiv').show();
-
+            
             //clear login credentials
             
             if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){
@@ -290,27 +306,13 @@ var auth = {
               $("#page_login_name").val('');
               $("#page_login_pass").val('');  
             }
-
-            //hide or show panel auth buttons 
-            $('.panel_login').show();
-            $('.panel_logout').hide();
-
-            //show set panel urls button
-            $('.setup_urls').show();
-
-            //hide refresh button
-            $('.refresh-button').hide();
-            
-            //hide user details
-            $('.user_details').html("");
-
-            $.mobile.changePage("#page_login", "slide", true, false);
-
+ 
             d.resolve();
             
           }
         });
-
+        
       });
+      return d;
     }
 } 

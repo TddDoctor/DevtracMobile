@@ -8,7 +8,7 @@ devtrac.indexedDBopen = function(callback) {
 
   var version = 1;
 
-  var request = indexedDB.open("g6", version);
+  var request = indexedDB.open("a8", version);
 
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -23,7 +23,7 @@ devtrac.indexedDB.open = function(callback) {
 
   var version = 1;
 
-  var request = indexedDB.open("g6", version);
+  var request = indexedDB.open("a8", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -77,6 +77,7 @@ devtrac.indexedDB.open = function(callback) {
 
     var sitevisitstore = db.createObjectStore("sitevisit", {keyPath: "nid"});
     sitevisitstore.createIndex('nid', 'nid', { unique: true });
+    sitevisitstore.createIndex('pnid', 'pnid', { unique: true });
 
     var actionitemstore = db.createObjectStore("actionitemsobj", {keyPath: "nid"});
     actionitemstore.createIndex('nid', 'nid', { unique: true });    
@@ -547,6 +548,30 @@ devtrac.indexedDB.getSitevisit = function(db, snid) {
 
   trans.error = function(event) {
     //d.resolve(ftritem);
+    console.log("get site visit error");
+  };
+
+  return d;
+};
+
+//search sitevisits using index of 
+devtrac.indexedDB.getSitevisitBypnid = function(db, pnid) {
+  var d = $.Deferred();
+  var trans = db.transaction(["sitevisit"], "readonly");
+  var store = trans.objectStore("sitevisit");
+
+  var index = store.index("pnid");
+  index.get(pnid).onsuccess = function(event) {
+
+    ftritem = event.target.result;
+  };
+
+  trans.oncomplete = function(event) {
+    d.resolve(ftritem);
+  };
+
+  trans.error = function(event) {
+
     console.log("get site visit error");
   };
 

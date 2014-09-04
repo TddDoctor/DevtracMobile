@@ -26,17 +26,32 @@ var auth = {
           $('.panel_logout').hide();
           
           if(errorThrown == ""){
-            controller.loadingMsg("Selected Url "+localStorage.appurl+" is Unavailable. Make sure you have an internet connection or try another url.", 5000)  
-          }else{
-            controller.loadingMsg("Error: "+errorThrown+" Try another url.", 5000)
+            controller.loadingMsg("Selected Url "+localStorage.appurl+" is Unavailable. Make sure you have an internet connection or try another url.", 5000)
+            controller.loadingMsg("Check that your Internet bundle has not expired.", 9000);
+            $('.blockUI.blockMsg').center();
+          }else if(jqXHR.responseText.indexOf('<') != -1 || jqXHR.responseText.indexOf('/>') != -1) {
+            controller.loadingMsg("Error: "+errorThrown, 3000);
+            $('.blockUI.blockMsg').center();
+            $('.errorHTML').html(jqXHR.responseText);
+            
+          }
+          else{
+            controller.loadingMsg("Error: "+errorThrown+" Try another url.", 5000);
+            $('.blockUI.blockMsg').center();
           }
           
           $.mobile.changePage("#page_login", "slide", true, false);
           d.reject();
         },
         success: function (token) {
-          console.log("token "+ " from "+localStorage.appurl);
-          d.resolve(token);
+          if(token.indexOf(" ") != -1) {
+            token = token.substring(2);
+
+            console.log("token "+ " from "+localStorage.appurl);
+            d.resolve(token);
+          }else{
+            d.resolve(token);
+          }
         }
       });
       
@@ -64,7 +79,8 @@ var auth = {
     loginStatus: function() {
       var d = $.Deferred();
       
-      auth.getToken().then(function(token){
+      auth.getToken().then(function(token) {
+        
         // Call system connect with session token.
         $.ajax({
           url : localStorage.appurl+"/api/system/connect.json",
@@ -74,6 +90,7 @@ var auth = {
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
             
+            console.log('response error '+XMLHttpRequest.responseText);
             //hide and show dialog auth buttons
             $('#logoutdiv').hide();
             $('#logindiv').show();
@@ -85,14 +102,14 @@ var auth = {
             
           },
           success : function(data) {
+            localStorage.sname = data.sessid;
+            localStorage.sid = data.session_name;
             
             var drupal_user = data.user;
             if (drupal_user.uid == 0)
             {
               //user is not logged in
-              $.unblockUI();
-              
-              
+              console.log("status not logged in");
               //hide and show dialog buttons
               $('#logoutdiv').hide();
               $('#logindiv').show();
@@ -105,6 +122,7 @@ var auth = {
             } else
             { 
               //user is logged in
+              console.log("status logged in");
               
               //set username in menu
               $(".username").html("Hi, "+localStorage.username+" !");
@@ -144,14 +162,14 @@ var auth = {
           type : 'post',
           data : 'username=' + encodeURIComponent(name) + '&password=' + encodeURIComponent(pass),
           dataType : 'json',
-          headers: {'X-CSRF-Token': token},
-          beforeSend: function( xhr ) {
-            controller.loadingMsg("Logging In ...", 0);
-            
-          },
+          headers: {
+            'X-CSRF-Token': token
+             
+            },
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
-            alert("Sorry "+errorThrown);	     
+            alert("Sorry "+errorThrown);	
+            console.log('response error '+XMLHttpRequest.responseText);
             //hide and show dialog auth buttons
             $('#logoutdiv').hide();
             $('#logindiv').show();
@@ -159,6 +177,15 @@ var auth = {
             d.reject();
           },
           success : function(data) {
+            console.log("logged successfully");
+            $(".menulistview").show();
+            
+            $("#form_add_location").show();
+            $("#form_fieldtrip_details").show();
+            $("#form_sitevisists_details").show();
+            $("#addquestionnaire").show();
+            $(".settingsform").show();
+            $(".ui-navbar").show();
             
             localStorage.username = name;
             localStorage.pass = pass;
@@ -191,7 +218,7 @@ var auth = {
             // Obtain session token.
             auth.getToken().then(function (token) {
               localStorage.usertoken = token;
-              
+              console.log("logged in and second token is sweet");
               //set username in menu
               $(".username").html("Hi, "+localStorage.username+" !");
               
@@ -207,6 +234,8 @@ var auth = {
               $('.panel_logout').show();
               
               d.resolve();
+            }).fail(function(){
+              console.log("logged in but second token is fucked");
             });
             
           }
@@ -222,6 +251,7 @@ var auth = {
       var d = $.Deferred();
       
       controller.loadingMsg("Logging out...", 0);
+      $('.blockUI.blockMsg').center();
       // Obtain session token.
       auth.getToken().then(function (token) {
         // Call system logout with session token.
@@ -229,19 +259,30 @@ var auth = {
           url : localStorage.appurl+"/api/user/logout.json",
           type : 'post',
           dataType : 'json',
-          headers: {'X-CSRF-Token': token},
+          headers: {
+            'X-CSRF-Token': localStorage.usertoken
+          },
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();
             
             //hide and show dialog auth buttons
             $('#logindiv').hide();
             $('#logoutdiv').show();
-            
+            console.log('response error '+XMLHttpRequest.responseText);
+            console.log("logged out error");
             d.reject();
             
           },
           success : function(data) {
             $.unblockUI();
+            console.log("logged out okay");
+            $(".menulistview").hide();
+            $("#form_fieldtrip_details").hide();
+            $("#form_sitevisists_details").hide();
+            $("#form_add_location").hide();
+            $(".settingsform").hide();
+            $("#addquestionnaire").hide();
+            $(".ui-navbar").hide();
             
             $.mobile.changePage("#page_login", "slide", true, false);
             

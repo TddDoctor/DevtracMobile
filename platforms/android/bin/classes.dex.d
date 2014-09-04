@@ -50,6 +50,7 @@
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/camera/CameraLauncher.class \
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/camera/ExifHelper.class \
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/vibration/Vibration.class \
+/home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/device/Device.class \
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/batterystatus/BatteryListener.class \
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/batterystatus/BatteryListener$1.class \
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/dialogs/Notification$5.class \
@@ -70,6 +71,11 @@
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/dialogs/Notification.class \
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/dialogs/Notification$1$2.class \
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/dialogs/Notification$2$2.class \
+/home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/mediacapture/FileHelper.class \
+/home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/mediacapture/Capture$2.class \
+/home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/mediacapture/Capture$1.class \
+/home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/mediacapture/Capture.class \
+/home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/mediacapture/Capture$3.class \
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/filetransfer/FileTransfer$2.class \
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/filetransfer/FileTransfer$5.class \
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/org/apache/cordova/filetransfer/FileTransfer.class \
@@ -91,4 +97,3 @@
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/com/devtrac/mobile/DevtracMobile.class \
 /home/david/workspace/DevtracMobile/platforms/android/bin/classes/com/devtrac/mobile/R$string.class \
 /home/david/workspace/DevtracMobile/platforms/android/bin/dexedLibs/classes-6bd75b63de0b8f0ce92f893a8eb9855d.jar \
-/home/david/workspace/DevtracMobile/platforms/android/bin/dexedLibs/annotations-d4a3df11df91271d030971cbe2b61472.jar \

@@ -80,3 +80,37 @@
 * CB-6212: [iOS] fix warnings compiled under arm64 64-bit
 * [BlackBerry10] Add rim xml namespaces declaration
 * Add NOTICE file
+
+### 0.3.0 (Jun 05, 2014)
+* CB-2083 documented saveToPhotoAlbum quirk on WP8
+* CB-5895 documented saveToPhotoAlbum quirk on WP8
+* Remove deprecated symbols for iOS < 6
+* documentation translation: cordova-plugin-camera
+* Lisa testing pulling in plugins for plugin: cordova-plugin-camera
+* Lisa testing pulling in plugins for plugin: cordova-plugin-camera
+* Lisa testing pulling in plugins for plugin: cordova-plugin-camera
+* Lisa testing pulling in plugins for plugin: cordova-plugin-camera
+* ubuntu: use application directory for images
+* CB-6795 Add license
+* Little fix in code formatting
+* CB-6613 Use WinJS functionality to get base64-encoded content of image instead of File plugin functionality
+* CB-6612 camera.getPicture now always returns encoded JPEG image
+* Removed invalid note from CB-5398
+* CB-6576 - Returns a specific error message when app has no access to library.
+* CB-6491 add CONTRIBUTING.md
+* CB-6546 android: Fix a couple bugs with allowEdit pull request
+* CB-6546 android: Add support for allowEdit Camera option
+
+### 0.3.1 (Aug 06, 2014)
+* **FFOS** update CameraProxy.js
+* CB-7187 ios: Add explicit dependency on CoreLocation.framework
+* [BlackBerry10] Doc correction - sourceType is supported
+* CB-7071 android: Fix callback firing before CROP intent is sent when allowEdit=true
+* CB-6875 android: Handle exception when SDCard is not mounted
+* ios: Delete postImage (dead code)
+* Prevent NPE on processResiultFromGallery when intent comes null
+* Remove iOS doc reference to non-existing navigator.fileMgr API
+* Docs updated with some default values
+* Removes File plugin dependency from windows8 code.
+* Use WinJS functionality to resize image instead of File plugin functionality
+* CB-6127 Updated translations for docs

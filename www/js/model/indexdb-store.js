@@ -5,8 +5,10 @@ devtrac.indexedDB = {};
 devtrac.indexedDB.db = null;
 
 devtrac.indexedDBopen = function(callback) {
-  var version = 7;
-  var request = indexedDB.open("f1", version);
+
+  var version = 2;
+
+  var request = indexedDB.open("a7", version);
 
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -18,8 +20,10 @@ devtrac.indexedDBopen = function(callback) {
 
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
-  var version = 7;
-  var request = indexedDB.open("f1", version);
+
+  var version = 2;
+
+  var request = indexedDB.open("a7", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -60,6 +64,9 @@ devtrac.indexedDB.open = function(callback) {
     if(db.objectStoreNames.contains("sublocations")){
       db.deleteObjectStore("sublocations");
     }
+    if(db.objectStoreNames.contains("images")){
+      db.deleteObjectStore("images");
+    }
 
     var store = db.createObjectStore("oecdobj", {autoIncrement: true});
 
@@ -70,6 +77,7 @@ devtrac.indexedDB.open = function(callback) {
 
     var sitevisitstore = db.createObjectStore("sitevisit", {keyPath: "nid"});
     sitevisitstore.createIndex('nid', 'nid', { unique: true });
+    sitevisitstore.createIndex('pnid', 'pnid', { unique: true });
 
     var actionitemstore = db.createObjectStore("actionitemsobj", {keyPath: "nid"});
     actionitemstore.createIndex('nid', 'nid', { unique: true });    
@@ -245,8 +253,6 @@ devtrac.indexedDB.addSiteVisitsData = function(db, sObj) {
       d.reject(e);
     };
   }else{
-    console.log("title is "+sObj['title']);
-    console.log("nid is "+sObj['nid']);
 
     if(!(sObj['dbsavetime'] && sObj['editflag'])){
       sObj['dbsavetime'] = timestamp;
@@ -364,15 +370,15 @@ devtrac.indexedDB.addPlacesData = function(db, placeObj) {
   var request;
 
   if(placeObj != undefined) {
-    for (var i in placeObj) {
-      request = store.add(placeObj[i]);
-    }
+    request = store.add(placeObj);
 
     request.onsuccess = function(e) {
+      console.log("places saved");
       d.resolve();
     };
 
     request.onerror = function(e) {
+      console.log("Not saved "+e.target.error.name);
       d.reject(e);
     };
   }else {
@@ -416,7 +422,7 @@ devtrac.indexedDB.getAllTaxonomyItems = function(db, storename, callback) {
 
       childarray = [];
       childarray.push(childobject);
-      
+
       var taxonomyobject = {"hname": category_name, "htid": htid, "children": childarray};
       taxonomies.push(taxonomyobject);
 
@@ -426,7 +432,7 @@ devtrac.indexedDB.getAllTaxonomyItems = function(db, storename, callback) {
       var childname = result.value["dname"];
       var childId = result.value["tid"];
       var childobject = {"cname": childname, "tid": childId};
-      
+
       taxonomies[taxonomies.length - 1]['children'].push(childobject);
     }
 
@@ -497,19 +503,6 @@ devtrac.indexedDB.getAllQuestionItems = function(db, ftritem, callback) {
   cursorRequest.onerror = devtrac.indexedDB.onerror;
 };
 
-//search fieldtrips using index of nid
-devtrac.indexedDB.getFieldtrip = function(db, fnid, callback) {
-  var fieldtrips = [];
-  var trans = db.transaction(["fieldtripobj"], "readonly");
-  var store = trans.objectStore("fieldtripobj");
-
-  var index = store.index("nid");
-  index.get(fnid).onsuccess = function(event) {
-    callback(event.target.result);
-  };
-
-};
-
 //get all sitevisits in database
 devtrac.indexedDB.getAllSitevisits = function(db, callback) {
   var sitevisits = [];
@@ -561,16 +554,48 @@ devtrac.indexedDB.getSitevisit = function(db, snid) {
   return d;
 };
 
+//search sitevisits using index of 
+devtrac.indexedDB.getSitevisitBypnid = function(db, pnid) {
+  var d = $.Deferred();
+  var trans = db.transaction(["sitevisit"], "readonly");
+  var store = trans.objectStore("sitevisit");
+
+  var index = store.index("pnid");
+  index.get(pnid).onsuccess = function(event) {
+
+    ftritem = event.target.result;
+  };
+
+  trans.oncomplete = function(event) {
+    d.resolve(ftritem);
+  };
+
+  trans.error = function(event) {
+
+    console.log("get site visit error");
+  };
+
+  return d;
+};
+
 //search images using index of nid
 devtrac.indexedDB.getImage = function(db, inid, newnid, vd, siteid) {
   var d = $.Deferred();
   var trans = db.transaction(["images"], "readonly");
   var store = trans.objectStore("images");
+  var image = null;
 
   var index = store.index("nid");
   index.get(inid).onsuccess = function(event) {
-    d.resolve(event.target.result, newnid, vd, siteid);
+    image = event.target.result;
+    if(image != undefined){
+      d.resolve(image, newnid, vd, siteid);  
+    }else{
+      d.reject();      
+    }
+
   };
+
   return d;
 };
 
@@ -993,30 +1018,35 @@ devtrac.indexedDB.deleteActionitem = function(db, id) {
   };
 };
 
-//delete all tables in database
-devtrac.indexedDB.deleteAllTables = function(db, objectstore) {
-  var d = $.Deferred();
-  var trans = db.transaction([objectstore], "readwrite");
-  var store = trans.objectStore(objectstore);
+//get and delete all nodes in database
+devtrac.indexedDB.clearDatabase = function(db, counter, callback) {
+  
+  if(counter > controller.objectstores.length - 1) {
+    callback();
+  }else {
+    var trans = db.transaction([controller.objectstores[counter]], "readwrite");
+    var store = trans.objectStore(controller.objectstores[counter]);
 
-  //Get everything in the store;
-  var keyRange = IDBKeyRange.lowerBound(0);
-  var cursorRequest = store.openCursor(keyRange);
+    // Get everything in the store;
+    var keyRange = IDBKeyRange.lowerBound(0);
+    var cursorRequest = store.openCursor(keyRange);
 
-  cursorRequest.onsuccess = function(e) {
-    var result = e.target.result;
-    if(!!result == false) {
-      d.resolve();
-      return;
-    }
+    cursorRequest.onsuccess = function(e) {
+      var result = e.target.result;
+      if(!!result == false) {
+        counter = counter + 1;
+        devtrac.indexedDB.clearDatabase(db, counter, callback);
 
-    store['delete'](result.key);
-    result["continue"]();
-  };
+      }
+      
+      if(result != null) {
+        store['delete'](result.key);
+        result["continue"]();
+      }
+      
+    };
 
-  cursorRequest.onerror = function(e) {
-    d.reject(e);
-  }  
-
-  return d;
+    cursorRequest.onerror = devtrac.indexedDB.onerror;  
+  }
+  
 };

@@ -74,8 +74,18 @@ body .ui-li .ui-li-desc {
   clear: left;
 }
 
-.hide {
-  display: none
+
+#takephoto{
+  margin-left: 85px;
+  
+}
+
+#ordiv{
+  margin-top: 36px;
+}
+
+#orbold{
+  margin-left: 28px;
 }
 
  

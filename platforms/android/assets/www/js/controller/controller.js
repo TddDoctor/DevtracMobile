@@ -1,4 +1,6 @@
-var controller = {    
+var controller = {
+    pictureSource: null, // picture source
+    destinationType: null,
     connectionStatus : true,
     base64Images : [],
     filenames : [],
@@ -16,8 +18,29 @@ var controller = {
     
     objectstores: ["oecdobj", "placetype", "fieldtripobj", "sitevisit", "actionitemsobj", "placesitemsobj", "qtnsitemsobj", "qtionairesitemsobj", "commentsitemsobj","images"],
     
+    //on body load
+    onLoad: function(){
+      document.addEventListener("offline", controller.onOffline, false);
+      document.addEventListener("online", controller.online, false);
+      document.addEventListener("deviceready", controller.onDeviceReady, false);
+      
+    },
+    
     // Application Constructor
     initialize: function () {
+      //faster button clicks
+      window.addEventListener('load', function() {
+        FastClick.attach(document.body);
+      }, false);
+      
+      //center the loading message
+      $.fn.center = function () {
+        this.css("position","absolute");
+        this.css("top", ( $(window).height() - this.height() ) / 2+$(window).scrollTop() + "px");
+        this.css("left", ( $(window).width() - this.width() ) / 2+$(window).scrollLeft() + "px");
+        return this;
+      }
+      
       //initialise section for templates
       var leftMenu = Handlebars.compile($("#leftmenu-tpl").html()); 
       $(".leftmenu").html(leftMenu());
@@ -29,10 +52,8 @@ var controller = {
       $("#header_sitereports").html(header({extra_buttons: '<div data-role="navbar" data-theme="a">'+
         '<ul>'+
         '<li><a data-role="button" data-mini="true" id="addquestionnaire"><i class="fa fa-list-alt fa-lg"></i>&nbsp&nbsp Questionnaire</a></li>'+
-        '<li><a href="#mappage" data-role="button" class="panel_map"'+
-        'onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li>'+
-        '</ul>'+
-        '</div>', id: "sitereport", title: "Site Report"}));
+        '<li><a href="#mappage" data-role="button" class="panel_map" onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li>'+
+        '</ul></div>', id: "sitereport", title: "Site Report"}));
       $("#header_location").html(header({id: "location", title: "Locations"}));
       $("#header_about").html(header({id: "about", title: "About"}));
       $("#header_addlocation").html(header({id: "addlocation", title: "Locations"})); 
@@ -46,28 +67,39 @@ var controller = {
       
       
       //set application url if its not set
-      //if (!localStorage.appurl) {
-      //localStorage.appurl = "http://localhost/dt11";
-      //localStorage.appurl = "http://192.168.38.113/dt11";
-      localStorage.appurl = "http://192.168.38.114/dt11";
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-      //localStorage.appurl = "http://demo.devtrac.org";
-      //localStorage.appurl = "http://10.0.2.2/dt11";
-      //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
-      
-      //}
+      if (!localStorage.appurl) {
+        //localStorage.appurl = "http://localhost/dt11";
+        //localStorage.appurl = "http://192.168.38.113/dt11";
+        //localStorage.appurl = "http://192.168.38.114/dt11";
+        localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+        //localStorage.appurl = "http://demo.devtrac.org";
+        //localStorage.appurl = "http://10.0.2.2/dt11";
+        //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
+
+      }
+
       
       if(controller.connectionStatus) {
-        
         controller.loadingMsg("Please Wait..", 0);
+        $('.blockUI.blockMsg').center();
         auth.loginStatus().then(function () {
+          $(".menulistview").show();
+          
+          $("#form_add_location").show();
+          $("#form_fieldtrip_details").show();
+          $("#form_sitevisists_details").show();
+          
+          $(".settingsform").show();
+          $(".ui-navbar").show();
+          
           console.log("logged in");
+          
           devtracnodes.countFieldtrips().then(function(){
             //load field trip details from the database if its one and the list if there's more.
             controller.loadFieldTripList();
             
           }).fail(function(){
-            console.log("logged out");
+            
             //download all devtrac data for user.
             controller.fetchAllData().then(function(){
               
@@ -76,14 +108,25 @@ var controller = {
             }).fail(function(error){
               auth.logout();
               controller.loadingMsg(error,5000);
+              $('.blockUI.blockMsg').center();
             });
             
           });
           
           
         }).fail(function () {
+          $(".menulistview").hide();
+          $("#form_fieldtrip_details").hide();
+          $("#form_sitevisists_details").hide();
+          $("#form_add_location").hide();
+          $(".settingsform").hide();
+          $(".ui-navbar").hide();
+          $("#addquestionnaire").hide();
           
-          if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){
+          controller.resetForm($('#form_fieldtrip_details'));
+          $.unblockUI();
+          
+          if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null) {
             $("#page_login_name").val(window.localStorage.getItem("usernam"));
             $("#page_login_pass").val(window.localStorage.getItem("passw"));  
           }
@@ -95,11 +138,13 @@ var controller = {
         
         if(window.localStorage.getItem("username") != null && window.localStorage.getItem("pass") != null){
           controller.loadingMsg("You are offline, cannot upload data. Now using offline data", 6000);
+          $('.blockUI.blockMsg').center();
           //load field trip details from the database if its one and the list if there's more.
           controller.loadFieldTripList();
           
         }else {
           controller.loadingMsg("Please connect to the internet to login and download your devtrac data.", 2000);
+          $('.blockUI.blockMsg').center();
           //hide logout button and show login button when offline
           $('#logoutdiv').hide();
           $('#logindiv').show();
@@ -114,23 +159,38 @@ var controller = {
       var d = $.Deferred();   
       var notes = [];
       
-      $('#refreshme').initBubble();
       devtrac.indexedDB.open(function (db) {
         devtracnodes.getFieldtrips(db).then(function () {
           
           controller.loadingMsg("Fieldtrips Saved", 0);
-
           notes.push('fieldtrips');
+
+          $('.blockUI.blockMsg').center();
           devtracnodes.getSiteVisits(db, function(response) {
             
             controller.loadingMsg("Sitevisits Saved", 0);
+            $('.blockUI.blockMsg').center();
             notes.push('sitevisits');
             devtracnodes.getPlaces(db);
             
-            controller.recurseNodes(db, 0, notes, controller.nodes, function(notes){
-              owlhandler.notes(notes);
-              d.resolve();
-            });
+            for(var x = 0; x < controller.nodes.length; x++) {
+              controller.nodes[x](db).then(function(response) {
+                controller.loadingMsg(response, 1500);
+                $('.blockUI.blockMsg').center();
+                notes.push(response);
+              }).fail(function(e) {
+                controller.loadingMsg(e, 1500);
+                $('.blockUI.blockMsg').center();
+                notes.push(e);
+              });  
+              
+              if(x == controller.nodes.length - 1){
+                owlhandler.notes(notes);
+                d.resolve();
+              }
+              
+            }
+
             
           });
           
@@ -170,11 +230,15 @@ var controller = {
     
     //Bind any events that are required on startup
     bindEvents: function () {
-      $(".seturlselect").chosen({width: "100%"}); 
       
+      //$(".seturlselect").chosen({width: "100%"}); 
       $(".menulistview").listview().listview('refresh');
       
-      document.addEventListener("deviceready", controller.onDeviceReady, false);
+      if($(".seturlselect option:selected").val() == "custom") {
+        $(".myurl").show();  
+      }else{
+        $(".myurl").hide();
+      }
       
       //start gps
       $( "#page_add_location" ).bind("pagebeforeshow", function( event ) {
@@ -201,6 +265,7 @@ var controller = {
             
           } else {
             controller.loadingMsg("Geolocation is not supported by this browser", 1000);
+            $('.blockUI.blockMsg').center();
           }
           
         }
@@ -227,13 +292,169 @@ var controller = {
         controller.onSavesitevisit();
       });
       
-      //apply jquerymobile styles b4 this page is displayed
+      //apply tinymce b4 this page is displayed
+      $("#page_sitevisit_add").bind('pagebeforeshow', function(){
+        tinymce.init({
+          
+          selector: "textarea#sitevisit_add_public_summary, textarea#sitevisit_add_report",
+          plugins: [
+                    "advlist autolink autosave link lists charmap hr anchor",
+                    "visualblocks visualchars code fullscreen nonbreaking",
+                    "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+                    ],
+                    
+                    toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+                    toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+                    
+                    menubar: false,
+                    toolbar_items_size: 'small',          
+                    setup : function(ed) {
+                      
+                      ed.on('click', function(e) {
+                        console.log('Editor was clicked');
+                      });
+                    }
+        });
+      });
+      
+      //apply tinymce b4 this page is displayed
+      $("#page_sitevisit_edits").bind('pagebeforeshow', function(event, data) {
+        tinymce.execCommand('mceSetContent', false, localStorage.sitevisit_summary);
+        
+        tinymce.init({
+          selector: "textarea#sitevisit_summary",
+          plugins: [
+                    "advlist autolink autosave link lists charmap hr anchor",
+                    "visualblocks visualchars code fullscreen nonbreaking",
+                    "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+                    ],
+                    
+                    toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+                    toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+                    
+                    menubar: false,
+                    toolbar_items_size: 'small',
+                    setup: function(ed){
+                      ed.on("init",
+                            function(ed) {
+                              tinyMCE.get('sitevisit_summary').setContent(localStorage.sitevisit_summary);
+                              tinyMCE.execCommand('mceRepaint');
+
+                            }
+                      );
+                  }
+        });
+        
+      });
+      
+      //apply tinymce b4 this page is displayed
+      $("#page_add_actionitems").bind('pagebeforeshow', function() {
+        tinymce.init({
+          
+          selector: "textarea#actionitem_followuptask",
+          plugins: [
+                    "advlist autolink autosave link lists charmap hr anchor",
+                    "visualblocks visualchars code fullscreen nonbreaking",
+                    "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+                    ],
+                    
+                    toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+                    toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+                    
+                    menubar: false,
+                    toolbar_items_size: 'small'
+        });
+      });
+      
+      //apply tinymce b4 this page is displayed
+      $("#page_actionitemdetails").bind('pagebeforeshow', function() {
+        tinymce.init({
+          
+          selector: "textarea#actionitem_comment",
+          plugins: [
+                    "advlist autolink autosave link lists charmap hr anchor",
+                    "visualblocks visualchars code fullscreen nonbreaking",
+                    "contextmenu directionality template textcolor paste fullpage textcolor colorpicker"
+                    ],
+                    
+                    toolbar1: "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | subscript superscript",
+                    toolbar2: "bullist numlist | outdent indent | link code | forecolor backcolor",
+                    
+                    menubar: false,
+                    toolbar_items_size: 'small'
+        });
+      });
+      
       $("#page_fieldtrip_details").bind('pagebeforeshow', function(){
         $("#page_fieldtrip_details").trigger("create");
       });
       
-      //Hide menu button on login before the page is displayed
-      $("#page_login").bind('pagebeforeshow', function(){
+      //show the connected url in the drop down select - login page
+      $("#page_login").bind('pagebeforeshow', function() {
+        var el = $('#loginselect');
+        
+        var url = localStorage.appurl;
+        
+        if(url.indexOf("test") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('test').selectmenu('refresh');
+          
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }else if(url.indexOf("cloud") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('cloud').selectmenu('refresh');
+          
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }else if(url.indexOf("manual") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('manual').selectmenu('refresh');
+          
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }else if(url.indexOf("dt11") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('local').selectmenu('refresh');
+          
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }
+        
+        $("#barsbutton_login").hide();
+      });
+      
+      //show the connected url in the drop down select - settings page
+      $("#page_add_settings").bind('pagebeforeshow', function() {
+        var el = $('#settingselect');
+        
+        var url = localStorage.appurl;
+        
+        if(url.indexOf("test") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('test').selectmenu('refresh');
+          
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }else if(url.indexOf("cloud") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('cloud').selectmenu('refresh');
+          
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }else if(url.indexOf("manual") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('manual').selectmenu('refresh');
+          
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }else if(url.indexOf("dt11") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('local').selectmenu('refresh');
+          
+          // jQM refresh
+          //el.selectmenu("refresh", true);
+        }
         
         $("#barsbutton_login").hide();
       });
@@ -310,6 +531,7 @@ var controller = {
                 
                 if(controller.connectionStatus){
                   controller.loadingMsg("Downloading Data ...", 0);
+                  $('.blockUI.blockMsg').center();
                   //get all bubbles and delete them to create room for new ones.
                   for (var notify in $('#refreshme').getNotifications()) {
                     $(this).deleteBubble($('#refreshme').getNotifications()[notify]);
@@ -323,6 +545,7 @@ var controller = {
                         auth.logout();
                         if(error.indexOf("field") != -1){
                           controller.loadingMsg(error,5000);  
+                          $('.blockUI.blockMsg').center();
                         }
                         
                       });
@@ -333,9 +556,11 @@ var controller = {
                   $(".notification-bubble").html(0);          
                   
                 }else{
-                  controller.loadingMsg("Please Connect to Internet ...", 1000);
+                  controller.loadingMsg("Please Connect to Internet ...", 2000);
+                  $('.blockUI.blockMsg').center();
                 }
-              }
+              },
+              id: "redownload",
             },
             'Cancel' : {
               click : function() {
@@ -382,8 +607,6 @@ var controller = {
             required: true
           },actionitem_followuptask:{
             required: true
-          },actionitem_report:{
-            required: true
           }
         }
       });
@@ -399,24 +622,33 @@ var controller = {
             required: true
           },
           gpslat:{
-            number: true,
+            number: true
           },
           gpslon:{
-            number: true,
+            number: true
+          },
+          locationphone:{
+            digits: true
+          },
+          locationemail:{
+            email: true
+          },
+          locationwebsite:{
+            url: true
           }
         }
       });
       
-      //site report type validation
+/*      //site report type validation
       var site_report_form = $("#form_sitereporttype");
-      location_form.validate({
+      site_report_form.validate({
         rules: {
           sitevisit_add_type: {
             required: true,
           }
       
         }
-      });
+      });*/
       
       //site visit validation
       var sitevisit_form = $("#form_sitevisit_add");
@@ -425,12 +657,8 @@ var controller = {
           sitevisit_add_title: {
             required: true
           },
-          sitevisit_add_type: {
-            required: true
-          },
           sitevisit_add_date:{
-            required: true,
-            date: true
+            required: true
           },
           sitevisit_add_public_summary:{
             required: true
@@ -438,6 +666,34 @@ var controller = {
           sitevisit_add_report:{
             required: true
           }
+        }
+      });
+      
+      //site visit validation
+      var sitevisit_form_edit = $("#form_sitevisit_edits");
+      sitevisit_form_edit.validate({
+        rules: {
+          sitevisit_title: {
+            required: true
+          },
+          
+          sitevisit_date:{
+            required: true,
+            date: true
+          },
+          sitevisit_summary:{
+            required: true
+          }
+        }
+      });
+      
+      $(".seturlselect").live( "change", function(event, ui) {
+        if($(this).val() == "custom") {
+          console.log("custom");
+          $(".myurl").show();
+        }else{
+          console.log("not custom");
+          $(".myurl").hide();
         }
       });
       
@@ -500,9 +756,10 @@ var controller = {
             
             $("#sitevisit_date").val(sitevisitObject['field_ftritem_date_visited']['und'][0]['value']);
             
-            $("#sitevisit_summary").val(sitevisitObject['field_ftritem_public_summary']['und'][0]['value']);
-            
-            $("#page_sitevisit_edits").trigger('create');
+            $("#sitevisit_summary").html(sitevisitObject['field_ftritem_public_summary']['und'][0]['value']);
+            localStorage.sitevisit_summary = sitevisitObject['field_ftritem_public_summary']['und'][0]['value'];
+
+            $.mobile.changePage("#page_sitevisit_edits", {transition: "slide"});  
           });
         });
         
@@ -519,7 +776,7 @@ var controller = {
             var fieldset = $("<fieldset ></fieldset>");
             
             var titlelabel = $("<label for='sitevisit_title' >Title</label>");
-            var titletextffield = $("<input type='text' value='" + fieldtripObject['title'] + "' id='fieldtrip_title_edit'>");
+            var titletextffield = $("<input type='text' value='" + fieldtripObject['title'] + "' id='fieldtrip_title_edit' required/>");
             
             var savesitevisitedits = $('<input type="button" data-inline="true" data-theme="b" id="save_fieldtrip_edits" onclick="controller.onFieldtripsave();" value="Save" />');
             
@@ -537,26 +794,36 @@ var controller = {
         
       });
       
+      //capture photo
+      $(".takephoto").bind("click", function (event, ui) {
+        controller.capturePhoto();
+      });
+      
       //save url dialog
       $('.save_url').bind("click", function (event, ui) {
-        
+        $(".urllogging").html("clicked the save");
         var url = null;
         if($(".myurl").val().length > 0) {
+          $(".clickedurl").html($(".myurl").val());
           
           devtrac.indexedDB.open(function (db) {
             devtrac.indexedDB.clearDatabase(db, 0, function() {
               localStorage.appurl = $(".myurl").val();
               controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+              $('.blockUI.blockMsg').center();
             });
           });
           
-        }else
-        {
-          url = $('a.chosen-single span').html();
+        }else if($('.seturlselect option:selected"').val() == "custom" && $(".myurl").val().length == 0) {
+          controller.loadingMsg("Please Save a URL", 1500);
+          $('.blockUI.blockMsg').center();
           
-          if(url == null){
-            url = $('.seturlselect').val();
-          }
+        }else 
+        {
+          
+          url = $('.seturlselect option:selected"').val();
+          
+          $(".clickedurl").html($('.seturlselect option:selected"').val());
           
           switch (url) {
             case "local":
@@ -564,6 +831,7 @@ var controller = {
                 devtrac.indexedDB.clearDatabase(db, 0, function() {
                   localStorage.appurl = "http://192.168.38.114/dt11";
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                  $('.blockUI.blockMsg').center();
                 });
               });
               
@@ -575,6 +843,7 @@ var controller = {
                 devtrac.indexedDB.clearDatabase(db, 0, function() {
                   localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                  $('.blockUI.blockMsg').center();
                 });
               });
               
@@ -586,6 +855,7 @@ var controller = {
                 devtrac.indexedDB.clearDatabase(db, 0, function() {
                   localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                  $('.blockUI.blockMsg').center();
                 });
               });
               
@@ -596,6 +866,7 @@ var controller = {
                 devtrac.indexedDB.clearDatabase(db, 0, function() {
                   localStorage.appurl = "http://devtrac.ug";
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                  $('.blockUI.blockMsg').center();
                 });
               });
               
@@ -603,6 +874,7 @@ var controller = {
             case "Choose Url ...":
               
               controller.loadingMsg("Please select one url", 2000);
+              $('.blockUI.blockMsg').center();
               break;
               
             case "test":
@@ -611,6 +883,7 @@ var controller = {
                 devtrac.indexedDB.clearDatabase(db, 0, function() {
                   localStorage.appurl = "http://test.devtrac.org";
                   controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                  $('.blockUI.blockMsg').center();
                 });
               });
               
@@ -633,7 +906,7 @@ var controller = {
             localStorage.appurl2 = localStorage.appurl;
             localStorage.appurl = $(".myurl").val();
             controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-            
+            $('.blockUI.blockMsg').center();
             controller.updateDB().then(function(){
               
             }).fail(function(){
@@ -641,6 +914,7 @@ var controller = {
             });
           }).fail(function(){
             controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+            $('.blockUI.blockMsg').center();
           });
           
         }else
@@ -655,17 +929,17 @@ var controller = {
             case "local":
               
               controller.clearDBdialog().then(function() {
-                localStorage.appurl2 = localStorage.appurl;
-                localStorage.appurl = "http://192.168.38.114/dt11";
-                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-                
-                controller.updateDB().then(function(){
+                var url = "http://192.168.38.114/dt11";
+                controller.loadingMsg("Saved Url "+url, 2000);
+                $('.blockUI.blockMsg').center();
+                controller.updateDB(url).then(function(){
                   
                 }).fail(function(){
                   
                 });
               }).fail(function(){
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
               });
               break;
               
@@ -673,70 +947,75 @@ var controller = {
             case "cloud":
               
               controller.clearDBdialog().then(function() {
-                localStorage.appurl2 = localStorage.appurl;
-                localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
+                var url = "http://jenkinsge.mountbatten.net/devtraccloud";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
-                
-                controller.updateDB().then(function(){
+                $('.blockUI.blockMsg').center();
+                controller.updateDB(url).then(function(){
                 }).fail(function(){
                   
                 });
               }).fail(function(){
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
               });
               break;
               
             case "manual":
               
               controller.clearDBdialog().then(function(){
-                localStorage.appurl2 = localStorage.appurl;
-                localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 
-                controller.updateDB().then(function(){
+                var url = "http://jenkinsge.mountbatten.net/devtracmanual";
+                controller.loadingMsg("Saved Url "+url, 2000);
+                $('.blockUI.blockMsg').center();
+                controller.updateDB(url).then(function(){
                   
                 }).fail(function(){
                   
                 });
               }).fail(function(){
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
               });
               break;
             case "DevtracUganda":
               
               controller.clearDBdialog().then(function(){
-                localStorage.appurl2 = localStorage.appurl;
-                localStorage.appurl = "http://devtrac.ug";
-                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 
-                controller.updateDB().then(function(){
+                var url = "http://devtrac.ug";
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
+                controller.updateDB(url).then(function(){
                   
                 }).fail(function(){
                   
                 });
               }).fail(function(){
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
               });
               break;
             case "Choose Url ...":
               
               controller.loadingMsg("Please select one url", 2000);
+              $('.blockUI.blockMsg').center();
               break;
               
             case "test":
               
               controller.clearDBdialog().then(function() {
-                localStorage.appurl2 = localStorage.appurl;
-                localStorage.appurl = "http://test.devtrac.org";
-                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 
-                controller.updateDB().then(function(){
+                var url = "http://test.devtrac.org";
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
+                
+                controller.updateDB(url).then(function(){
                   
                 }).fail(function(){
                   
                 });
               }).fail(function(){
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
               });
               break;
               
@@ -776,13 +1055,16 @@ var controller = {
       
       //handle login click event
       $('#page_login_submit').bind("click", function (event, ui) {
+        $(".loginlogs").html("clicked sign in");
         if ($("#page_login_name").valid() && $("#page_login_pass").valid()) {
+          controller.loadingMsg("Logging In ...", 0);
+          $('.blockUI.blockMsg').center();
           
           if(controller.connectionStatus) {
             
             devtrac.indexedDB.open(function (db) {
               auth.login($('#page_login_name').val(), $('#page_login_pass').val(), db).then(function () {
-                
+                console.log("success logged in");
                 if($("#checkbox-mini-0").is(":checked")){
                   window.localStorage.setItem("usernam", $("#page_login_name").val());
                   window.localStorage.setItem("passw", $("#page_login_pass").val());
@@ -806,11 +1088,13 @@ var controller = {
                   }).fail(function(error) {
                     auth.logout();
                     controller.loadingMsg(error,5000);
+                    $('.blockUI.blockMsg').center();
                   });
                   
                 });
                 
               }).fail(function (errorThrown) {
+                console.log("fail not logged in");
                 $.unblockUI();
                 
               });
@@ -819,6 +1103,7 @@ var controller = {
             
           }else{
             controller.loadingMsg("Please Connect to Internet ...", 1000);
+            $('.blockUI.blockMsg').center();
           }
           
         }
@@ -833,6 +1118,7 @@ var controller = {
           
         }else{
           controller.loadingMsg("Please Connect to Internet ...", 1000);
+          $('.blockUI.blockMsg').center();
         }
         
       });
@@ -863,11 +1149,67 @@ var controller = {
     
     // onError Callback receives a PositionError object
     onError: function(error) {
-      var element_gps = $("#gpserror").html("");
-      console.log("gps error "+error.message);
+      $("#gpserror").html("");
+      console.log('code: '    + error.code    + '\n' +
+          'message: ' + error.message + '\n');
       var element_gps = $("#gpserror");
       element_gps.html('code: '    + error.code    + '\n' +
           'message: ' + error.message + '\n');
+      
+      if(error.code == 1 || error.code == "1") {//PERMISSION_DENIED
+        controller.loadingMsg("User denied the request for Geolocation.", 3000);
+        $('.blockUI.blockMsg').center();
+      }else if(error.code == 2 || error.code == "2") {//POSITION_UNAVAILABLE
+        controller.loadingMsg("Please Check GPS is Switched ON.", 3000);
+        $('.blockUI.blockMsg').center();
+      }else if(error.code == 3 || error.code == "3") {//TIMEOUT
+        //controller.loadingMsg("The request to get user location timed out.", 1000);
+        // $('.blockUI.blockMsg').center();
+      }
+    },
+    
+    //camera functions
+    
+    onPhotoDataSuccess: function(imageData) {
+      var currentdate = new Date(); 
+      var datetime = currentdate.getDate()
+      + (currentdate.getMonth()+1)
+      + currentdate.getFullYear() + "_"  
+      + currentdate.getHours()
+      + currentdate.getMinutes()
+      + currentdate.getSeconds();
+      
+      var imagename = "img_"+datetime+".jpeg";
+      // Get image handle
+      
+      if(localStorage.ftritemtype == "210") 
+      {
+        controller.filenames.push(imagename);
+        controller.base64Images.push(imageData);
+        $("#uploadPreview").append('<div>'+imagename+'</div>');
+        
+      }else
+      {
+        controller.fnames.push(imagename);
+        controller.b64Images.push(imageData);
+        
+        $("#imagePreview").append('<div>'+imagename+'</div>');
+      }
+    },
+    
+    // A button will call this function
+    //
+    capturePhoto: function() {
+      // Take picture using device camera and retrieve image as base64-encoded string
+      navigator.camera.getPicture(controller.onPhotoDataSuccess, controller.onFail, { quality: 30,
+        destinationType: controller.destinationType.DATA_URL });
+    },
+    
+    // Called if something bad happens.
+    //
+    onFail: function(message) {
+      console.log("camera error "+message);
+      
     },
     
     //clear the watch that was started earlier
@@ -899,12 +1241,16 @@ var controller = {
     },
     
     //clear database and fetch new data
-    updateDB: function() {
+    updateDB: function(url) {
       var d = $.Deferred();
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.clearDatabase(db, 0, function() {
-          localStorage.appurl = localStorage.appurl2;
-          auth.logout();
+          
+          auth.logout().then(function(){
+            localStorage.appurl = url;  
+          }).fail(function(){
+            
+          });
           
         });
       });
@@ -923,6 +1269,7 @@ var controller = {
         buttons : {
           'OK' : {
             theme : "a",
+            id: "changeurl",
             click : function() {
               
               d.resolve();
@@ -957,18 +1304,22 @@ var controller = {
       switch(error.code) {
         case error.PERMISSION_DENIED:
           controller.loadingMsg("User denied the request for Geolocation.", 1000);
+          $('.blockUI.blockMsg').center();
           $("#gpserror").html("User denied the request for Geolocation");
           break;
         case error.POSITION_UNAVAILABLE:
           controller.loadingMsg("Location information is unavailable.", 1000);
+          $('.blockUI.blockMsg').center();
           $("#gpserror").html("Location information is unavailable");
           break;
         case error.TIMEOUT:
           controller.loadingMsg("The request to get user location timed out.", 1000);
+          $('.blockUI.blockMsg').center();
           $("#gpserror").html("The request to get user location timed out");
           break;
         case error.UNKNOWN_ERROR:
           controller.loadingMsg("An unknown error occurred.", 1000);
+          $('.blockUI.blockMsg').center();
           $("#gpserror").html("An unknown error occurred");
           break;
       }
@@ -1052,6 +1403,7 @@ var controller = {
     onOffline: function() {
       controller.connectionStatus = false;
       controller.loadingMsg("You are offline. Connect to Upload and Download your Data", 2000);
+      $('.blockUI.blockMsg').center();
     },
     
     //cordova online event
@@ -1134,7 +1486,7 @@ var controller = {
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.addSavedQuestions(db, questionnaire).then(function() {
             controller.loadingMsg("Saved", 2000);
-            
+            $('.blockUI.blockMsg').center();
             $(':input','.qtions')
             .not(':button, :submit, :reset, :hidden')
             .val('')
@@ -1148,12 +1500,12 @@ var controller = {
           }).fail(function() {
             //todo: check if we can answer numerous questions for one site visit
             controller.loadingMsg("Already Saved", 2000);
-            
+            $('.blockUI.blockMsg').center();
           });      
         });
       }else {
         controller.loadingMsg("Please Answer Atleast Once", 2000);
-        
+        $('.blockUI.blockMsg').center();
       }
     },
     
@@ -1431,7 +1783,6 @@ var controller = {
     
     //handle submit of site report type
     submitSitereporttype: function() {
-      if ($("#form_sitereporttype").valid()) {
         localStorage.ftritemtype = $("#sitevisit_add_type").val();
         
         localStorage.ftritemdistrict = $("#location_district").val();
@@ -1455,6 +1806,9 @@ var controller = {
           
           controller.buildSelect("oecdobj", []);
           
+          $('#sitevisit_add_report').html("Please provide a full report");
+          $('#sitevisit_add_public_summary').html("Please Provide a small summary for the public");
+          
         }
         else{
           
@@ -1462,10 +1816,7 @@ var controller = {
           
         }
         controller.resetForm($('#form_sitereporttype'));
-        
-      }
-      
-      
+
     },
     
     //handle site visit click
@@ -1653,43 +2004,58 @@ var controller = {
     
     //save site visit edits
     onSitevisitedit: function () {
-      //save site visit edits
-      var updates = {};
-      $('#form_sitevisit_edits *').filter(':input').each(function () {
-        var key = $(this).attr('id').substring($(this).attr('id').indexOf('_') + 1);
-        if (key.indexOf('_') == -1) {
-          updates[key] = $(this).val();
-        }
-        
-      });
+      tinyMCE.triggerSave();
       
-      updates['editflag'] = 1;
-      var snid = localStorage.snid;
-      if(localStorage.user == "true"){
-        snid = parseInt(snid);
-      }else{
-        snid = snid.toString();
-      }
+      var editsummary = $("#sitevisit_summary").val();
+      var editsummaryvalue = editsummary.substring(editsummary.lastIndexOf("<body>")+6, editsummary.lastIndexOf("</body>")).trim();
       
-      devtrac.indexedDB.open(function (db) {
-        //console.log("siite visit is "+localStorage.snid);
+      if($("#form_sitevisit_edits").valid() && editsummaryvalue.length > 0) {
         
-        devtrac.indexedDB.editSitevisit(db, snid, updates).then(function () {
-          
-          $("#sitevisists_details_title").html($("#sitevisit_title").val());
-          
-          if(localStorage.user == "true"){
-            $("#user"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+        //save site visit edits
+        var updates = {};
+        $('#form_sitevisit_edits *').filter(':input').not(':button').each(function () {
+          var key = $(this).attr('id').substring($(this).attr('id').indexOf('_') + 1);
+          if (this.localName == "textarea") {
+            var summary = $(this)[0].value;
+            var clean_summary = summary.substring(summary.lastIndexOf('<body>')+6, summary.lastIndexOf('</body>')).trim();
+            updates["summary"] = clean_summary;
           }else{
-            $("#snid"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+            updates[key] = $(this).val();
           }
           
-          $("#sitevisists_details_date").html($("#sitevisit_date").val());
-          $("#sitevisists_details_summary").html($("#sitevisit_summary").val());
-          
-          $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
         });
-      });
+        
+        updates['editflag'] = 1;
+        var snid = localStorage.snid;
+        if(localStorage.user == "true"){
+          snid = parseInt(snid);
+        }else{
+          snid = snid.toString();
+        }
+        
+        devtrac.indexedDB.open(function (db) {
+          //console.log("siite visit is "+localStorage.snid);
+          
+          devtrac.indexedDB.editSitevisit(db, snid, updates).then(function () {
+            
+            $("#sitevisists_details_title").html($("#sitevisit_title").val());
+            
+            if(localStorage.user == "true"){
+              $("#user"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+            }else{
+              $("#snid"+localStorage.snid).children(".heada1").html($("#sitevisit_title").val());
+            }
+            
+            $("#sitevisists_details_date").html($("#sitevisit_date").val());
+            $("#sitevisists_details_summary").html(editsummaryvalue);
+            
+            $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
+          });
+        });
+      }else {
+        controller.loadingMsg("Please enter an Edit Summary", 2000)
+        $('.blockUI.blockMsg').center();
+      }
       
     },
     
@@ -1717,7 +2083,7 @@ var controller = {
         
         devtrac.indexedDB.editPlace(db, pnid, updates).then(function () {
           controller.loadingMsg('Saved ' + updates['title'], 2000);
-          
+          $('.blockUI.blockMsg').center();
           $.mobile.changePage("#page_sitevisits_details", "slide", true, false);
         });
       });
@@ -1726,7 +2092,12 @@ var controller = {
     
     //save action item
     onSaveactionitem: function () {
-      if ($("#form_add_actionitems").valid()) {
+      tinyMCE.triggerSave();
+      
+      var summarytextarea = $("#actionitem_followuptask").val();
+      var summaryvalue = summarytextarea.substring(summarytextarea.lastIndexOf("<body>")+6, summarytextarea.lastIndexOf("</body>")).trim();
+      
+      if ($("#form_add_actionitems").valid() && summaryvalue.length > 0) {
         //save added action items
         var updates = {};
         
@@ -1777,7 +2148,7 @@ var controller = {
         updates['status'] = 1;
         updates['title'] = $("#actionitem_title").val();
         updates['field_actionitem_due_date']['und'][0]['value']['date'] = $("#actionitem_date").val();
-        updates['field_actionitem_followuptask']['und'][0]['value'] = $("#actionitem_followuptask").val();
+        updates['field_actionitem_followuptask']['und'][0]['value'] = summaryvalue;
         updates['field_actionitem_status']['und'][0]['value'] = $("#actionitem_status").val();
         updates['field_actionitem_severity']['und'][0]['value'] = $("#actionitem_priority").val();
         updates['field_actionitem_responsible']['und'][0]['target_id'] = localStorage.realname+" ("+localStorage.uid+")";
@@ -1834,6 +2205,9 @@ var controller = {
           });
           
         });    
+      }else {
+        controller.loadingMsg("Please fill in a followuptask", 2000);
+        $('.blockUI.blockMsg').center();
       }
     },
     
@@ -1842,29 +2216,38 @@ var controller = {
       var updates = {};
       
       updates['title'] = $('#fieldtrip_title_edit').val();
-      devtrac.indexedDB.open(function (db) {
-        devtrac.indexedDB.getFieldtrip(db, localStorage.fnid, function(trip) {
-          if(trip['title'] == updates['title']){
-            
-            controller.loadingMsg("Nothing new was added !", 3000);
-          }else {
-            
-            updates['editflag'] = 1;
-            
-            
-            devtrac.indexedDB.editFieldtrip(db, localStorage.fnid, updates).then(function() {
+      var txt = updates['title'];
+      
+      if(txt.length > 0) {
+        devtrac.indexedDB.open(function (db) {
+          devtrac.indexedDB.getFieldtrip(db, localStorage.fnid, function(trip) {
+            if(trip['title'] == updates['title']){
               
-              $("#fieldtrip_count").html("1");
-              $('#fieldtrip_details_title').html(updates['title']);
+              controller.loadingMsg("Nothing new was added !", 3000);
+              $('.blockUI.blockMsg').center();
+            }else {
               
-              controller.loadingMsg("Saved your Edits", 3000);
-            });      
-            
-            
-          }
-          $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
+              updates['editflag'] = 1;
+              
+              
+              devtrac.indexedDB.editFieldtrip(db, localStorage.fnid, updates).then(function() {
+                
+                $("#fieldtrip_count").html("1");
+                $('#fieldtrip_details_title').html(updates['title']);
+                
+                controller.loadingMsg("Saved your Edits", 3000);
+                $('.blockUI.blockMsg').center();
+              });      
+              
+              
+            }
+            $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
+          });
         });
-      });
+      }else{
+        controller.loadingMsg("Please Enter a Fieldtrip Title", 2000);
+        $('.blockUI.blockMsg').center();
+      }
       
     },
     
@@ -2013,17 +2396,17 @@ var controller = {
         updates['field_place_responsible_phone'] = {};
         updates['field_place_responsible_phone']['und'] = [];
         updates['field_place_responsible_phone']['und'][0] = {};
-        updates['field_place_responsible_phone']['und'][0]['value'] = $('#location_phone').val();
+        updates['field_place_responsible_phone']['und'][0]['value'] = $('#locationphone').val();
         
         updates['field_place_responsible_email'] = {};
         updates['field_place_responsible_email']['und'] = [];
         updates['field_place_responsible_email']['und'][0] = {};
-        updates['field_place_responsible_email']['und'][0]['email'] = $('#location_email').val();
+        updates['field_place_responsible_email']['und'][0]['email'] = $('#locationemail').val();
         
         updates['field_place_responsible_website'] = {};
         updates['field_place_responsible_website']['und'] = [];
         updates['field_place_responsible_website']['und'][0] = {};
-        updates['field_place_responsible_website']['und'][0]['url'] = $('#location_website').val();
+        updates['field_place_responsible_website']['und'][0]['url'] = $('#locationwebsite').val();
         
         updates['field_actionitem_status'] = {};
         updates['field_actionitem_status']['und'] = [];
@@ -2033,7 +2416,7 @@ var controller = {
         updates['taxonomy_vocabulary_1'] = {};
         updates['taxonomy_vocabulary_1']['und'] = [];
         updates['taxonomy_vocabulary_1']['und'][0] = {};
-        updates['taxonomy_vocabulary_1']['und'][0]['tid'] = "58";//$('#select_placetype').val();
+        updates['taxonomy_vocabulary_1']['und'][0]['tid'] = $('#select_placetype').val();
         
         //get district information
         updates['taxonomy_vocabulary_6'] = {};
@@ -2102,6 +2485,7 @@ var controller = {
       updates['type'] = 'ftritem';
       updates['submit'] = 0;
       updates['uid'] = localStorage.uid;
+      updates['pnid'] = pnid;
       
       //get site visit type
       updates['taxonomy_vocabulary_7'] = {};
@@ -2174,8 +2558,15 @@ var controller = {
     
     //save sitevisit
     onSavesitevisit: function () {
+      tinyMCE.triggerSave();
       
-      if ($("#form_sitevisit_add").valid()) {
+      var summarytextarea = $("#sitevisit_add_public_summary").val();
+      var summaryvalue = summarytextarea.substring(summarytextarea.lastIndexOf("<body>")+6, summarytextarea.lastIndexOf("</body>")).trim();
+      
+      var reporttextarea = $("#sitevisit_add_report").val();
+      var reporttextarea = reporttextarea.substring(reporttextarea.lastIndexOf("<body>")+6, reporttextarea.lastIndexOf("</body>")).trim();
+      
+      if ($("#form_sitevisit_add").valid() && summaryvalue.length > 0 && reporttextarea.length > 0) {
         //save added site visits
         
         var updates = {};
@@ -2204,15 +2595,17 @@ var controller = {
         updates['field_ftritem_date_visited']['und'][0] = {};
         updates['field_ftritem_date_visited']['und'][0]['value'] = $('#sitevisit_add_date').val();
         
+        var summary = tinyMCE.get('sitevisit_add_public_summary').getContent();
         updates['field_ftritem_public_summary'] = {};
         updates['field_ftritem_public_summary']['und'] = [];
         updates['field_ftritem_public_summary']['und'][0] = {};
-        updates['field_ftritem_public_summary']['und'][0]['value'] = $('#sitevisit_add_public_summary').val();
+        updates['field_ftritem_public_summary']['und'][0]['value'] = summaryvalue;
         
+        var narative = tinyMCE.get('sitevisit_add_report').getContent();
         updates['field_ftritem_narrative'] = {};
         updates['field_ftritem_narrative']['und'] = [];
         updates['field_ftritem_narrative']['und'][0] = {};
-        updates['field_ftritem_narrative']['und'][0]['value'] =  $('#sitevisit_add_report').val();
+        updates['field_ftritem_narrative']['und'][0]['value'] =  narative;
         
         updates['field_ftritem_field_trip'] = {};
         updates['field_ftritem_field_trip']['und'] = [];
@@ -2261,12 +2654,19 @@ var controller = {
           });
           
         });  
+      }else {
+        controller.loadingMsg("Please enter all Fields", 2000)
+        $('.blockUI.blockMsg').center();
       }
     },
     
     //save comment
     onSavecomment: function() {
-      if ($("#actionitem_comment").valid()) {
+      tinyMCE.triggerSave();
+      var commenttextarea = $("#actionitem_comment").val();
+      var commentvalue = commenttextarea.substring(commenttextarea.lastIndexOf("<body>")+6, commenttextarea.lastIndexOf("</body>")).trim();
+      
+      if ($("#actionitem_comment").valid() && commentvalue.length > 0) {
         var anid = "";
         
         if(localStorage.actionuser){
@@ -2283,7 +2683,7 @@ var controller = {
         comment['comment_body'] = {};
         comment['comment_body']['und']  = [];
         comment['comment_body']['und'][0] = {};
-        comment['comment_body']['und'][0]['value'] = $('#actionitem_comment').val();
+        comment['comment_body']['und'][0]['value'] = commentvalue;
         comment['comment_body']['und'][0]['format'] = 1;   
         comment['language'] = 'und';
         comment['nid'] = localStorage.anid;
@@ -2320,12 +2720,19 @@ var controller = {
             list_comment.listview('refresh');
             
             controller.loadingMsg("Saved", 1000);
-            
+            $('.blockUI.blockMsg').center();
             $('#actionitem_comment').val("");
+            $('#commentcollapse').collapsible('collapse');
             
           }); 	
         });	
-      }    
+        
+        tinymce.execCommand('mceSetContent', false, "");
+        
+      }else{
+        controller.loadingMsg("Please fill in a comment", 2000);
+        $('.blockUI.blockMsg').center();
+      } 
     },
     
     //add hidden element: there's a better way to do this
@@ -2340,10 +2747,24 @@ var controller = {
     
     // device ready event handler
     onDeviceReady: function () {
-      document.addEventListener("offline", controller.onOffline, false);
-      document.addEventListener("online", controller.online, false);
+      controller.checkOnline().then(function(){
+        controller.connectionStatus = true;
+      }).fail(function(){
+        controller.connectionStatus = false;
+      });
+      
       document.addEventListener("menubutton", controller.doMenu, false);
       
+      controller.pictureSource= navigator.camera.PictureSourceType;
+      controller.destinationType=navigator.camera.DestinationType;
+      
+      if(navigator.network.connection.type == Connection.NONE) {
+        controller.loadingMsg("Sorry, you are offline", 2000);
+        $('.blockUI.blockMsg').center();
+        controller.connectionStatus = false;
+      } else {
+        controller.connectionStatus = true;
+      }
     },
     
     // onOnline event handler
@@ -2504,9 +2925,6 @@ var controller = {
         
         css: { 
           width: '300px', 
-          top : ($(window).height()) / 2 + 'px',
-          left : ($(window).width() - 225) / 2 + 'px',
-          right: '10px', 
           border: 'none', 
           padding: '5px', 
           backgroundColor: '#000', 

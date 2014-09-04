@@ -2011,6 +2011,7 @@ var controller = {
         });
       }else {
         controller.loadingMsg("Please enter an Edit Summary", 2000)
+        $('.blockUI.blockMsg').center();
       }
       
     },
@@ -2162,7 +2163,8 @@ var controller = {
           
         });    
       }else {
-        controller.loadingMsg("Please fill in a followuptask", 2000)
+        controller.loadingMsg("Please fill in a followuptask", 2000);
+        $('.blockUI.blockMsg').center();
       }
     },
     
@@ -2611,6 +2613,7 @@ var controller = {
         });  
       }else {
         controller.loadingMsg("Please enter all Fields", 2000)
+        $('.blockUI.blockMsg').center();
       }
     },
     
@@ -2685,6 +2688,7 @@ var controller = {
         
       }else{
         controller.loadingMsg("Please fill in a comment", 2000);
+        $('.blockUI.blockMsg').center();
       } 
     },
     

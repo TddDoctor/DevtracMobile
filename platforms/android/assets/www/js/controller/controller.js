@@ -491,10 +491,7 @@ var controller = {
                 if(controller.connectionStatus){
                   controller.loadingMsg("Downloading Data ...", 0);
                   $('.blockUI.blockMsg').center();
-                  //get all bubbles and delete them to create room for new ones.
-                  for (var notify in $('#refreshme').getNotifications()) {
-                    $(this).deleteBubble($('#refreshme').getNotifications()[notify]);
-                  }
+
                   devtrac.indexedDB.open(function (db) {
                     devtrac.indexedDB.clearDatabase(db, 0, function() {
                       
@@ -510,9 +507,7 @@ var controller = {
                       });
                       
                     });
-                  });
-                  
-                  $(".notification-bubble").html(0);          
+                  });      
                   
                 }else{
                   controller.loadingMsg("Please Connect to Internet ...", 2000);

@@ -1604,7 +1604,7 @@ var devtracnodes = {
             
             for(var item in data){
               devtrac.indexedDB.addPlacesData(db, data[item]).then(function(){
-                devtracnodes.notify("Places Saved");
+
                 controller.loadingMsg("Places Saved",1000);
                 $('.blockUI.blockMsg').center();
               }).fail(function(e) {

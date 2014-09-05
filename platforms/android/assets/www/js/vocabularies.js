@@ -8,20 +8,11 @@ var vocabularies = {
         type : 'get',
         dataType : 'json',
         error : function(XMLHttpRequest, textStatus, errorThrown) { 
-          //create bubble notification
-          devtracnodes.notify("Oecds. "+errorThrown);
+
           d.reject(errorThrown);
         },
         success : function(data) {
           console.log("We have the oecds");
-
-          if(data.length <= 0) {
-            //create bubble notification
-            devtracnodes.notify("Oecds Data Unavailable.");
-          }else{
-            //create bubble notification
-            devtracnodes.notify("Oecds data downloaded.");
-          }
           
           devtrac.indexedDB.open(function (dbs) {
             devtrac.indexedDB.addTaxonomyData(dbs, "oecdobj", data).then(function() {
@@ -49,14 +40,13 @@ var vocabularies = {
         type : 'get',
         dataType : 'json',
         error : function(XMLHttpRequest, textStatus, errorThrown) {
-          //create bubble notification
-          devtracnodes.notify("Placetypes. "+errorThrown);
+
           d.reject(errorThrown);
         },
         success : function(data) {
         //create bubble notification
           if(data.length <= 0) {
-            devtracnodes.notify("Placetypes Data Unavailable.");
+
             d.reject("No Placetypes Found");
           }else{
             

@@ -1,8 +1,6 @@
 $(document).ready(function() {
   owlhandler.initialise();
   
-  //owlhandler.notes();
-  
 });
 
 var owlhandler = {
@@ -30,7 +28,7 @@ var owlhandler = {
     
     notes: function(notesy) {
       $("body").obNotificationCenter({
-        trigger: "click",
+        trigger: "mousedown",
         selectors: "#notify_fieldtrip",
         content: function(){
           var data = "";
@@ -48,12 +46,14 @@ var owlhandler = {
         beforeCloseItem: function (item) {
           item.empty();
 
-        },
-        beforeLinkClicked: function (item) {
-          console.log("clicked");
+          if($(".obNotifScrollable").children().length == 1) {
+            $("#notify_fieldtrip").hide();
+          }
+            
         }
         
       });
+      $("#notify_fieldtrip").show();
     },
     
     populateOwl: function(snid) {

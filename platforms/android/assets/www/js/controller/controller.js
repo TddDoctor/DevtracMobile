@@ -29,9 +29,9 @@ var controller = {
     // Application Constructor
     initialize: function () {
       //faster button clicks
-/*      window.addEventListener('load', function() {
+      window.addEventListener('load', function() {
         FastClick.attach(document.body);
-      }, false);*/
+      }, false);
       
       //center the loading message
       $.fn.center = function () {
@@ -65,6 +65,8 @@ var controller = {
       
       $(window).bind('orientationchange pageshow pagechange resize', mapctlr.resizeMapIfVisible);
       
+      //start with hidden notifications button
+      $("#notify_fieldtrip").hide();
       
       //set application url if its not set
       if (!localStorage.appurl) {
@@ -83,6 +85,7 @@ var controller = {
         controller.loadingMsg("Please Wait..", 0);
         $('.blockUI.blockMsg').center();
         auth.loginStatus().then(function () {
+          
           $(".menulistview").show();
           
           $("#form_add_location").show();
@@ -182,6 +185,7 @@ var controller = {
                 if(counter >= controller.nodes.length - 1){
                   console.log("creating notes");
                   owlhandler.notes(notes);
+                  
                   d.resolve();
                 }
               }).fail(function(e) {
@@ -189,11 +193,12 @@ var controller = {
                 controller.loadingMsg(e, 1500);
                 $('.blockUI.blockMsg').center();
                 notes.push(e);
-                if(counter >= controller.nodes.length - 1){
+                
                   console.log("creating notes");
                   owlhandler.notes(notes);
+
                   d.resolve();
-                }
+                
               });  
                
             }
@@ -253,15 +258,6 @@ var controller = {
         
       });
  
-     $("#notify_fieldtrip").on('click', function() {
-        if($("#content").children().length == 0) {
-          controller.loadingMsg("No Notifications Now", 1000);
-          $('.blockUI.blockMsg').center();
-        }
-        
-      });
- 
-      
       //stop gps
       $("#cancel_addlocation").on('click', function(){
         
@@ -1463,7 +1459,7 @@ var controller = {
       }
     },
     
-    //load field trip list from db
+    //load field trip details from the database if its one and show list if there's more.
     loadFieldTripList: function () {
       devtrac.indexedDB.open(function (db) {
         
@@ -1524,60 +1520,66 @@ var controller = {
             sitevisitList.empty();
             
             localStorage.fnid = fObject['nid'];
-            var startdate = fObject['field_fieldtrip_start_end_date']['und'][0]['value'];
-            var enddate = fObject['field_fieldtrip_start_end_date']['und'][0]['value2'];
+            if(fObject['field_fieldtrip_start_end_date'] != undefined && fObject['field_fieldtrip_start_end_date'] != undefined) {
             
-            var startdatestring = JSON.stringify(startdate);
-            var enddatestring = JSON.stringify(enddate);
+              var startdate = fObject['field_fieldtrip_start_end_date']['und'][0]['value'];
+              var enddate = fObject['field_fieldtrip_start_end_date']['und'][0]['value2'];
+              
+              var startdatestring = JSON.stringify(startdate);
+              var enddatestring = JSON.stringify(enddate);
+              
+              var startdateonly = startdatestring.substring(1, startdatestring.indexOf('T'))
+              var enddateonly = enddatestring.substring(1, startdatestring.indexOf('T'))
+              
+              var startdatearray = startdateonly.split("-");
+              var enddatearray = enddateonly.split("-");
+              
+              var formatedstartdate = startdatearray[2] + "/" + startdatearray[1] + "/" + startdatearray[0];
+              var formatedenddate = enddatearray[2] + "/" + enddatearray[1] + "/" + enddatearray[0];
+              
+              localStorage.fieldtripstartdate = startdatearray[0] + "/" + startdatearray[1] + "/" + startdatearray[2]; 
+              
+              var startday = parseInt(startdatearray[2]);
+              var startmonth = parseInt(startdatearray[1])-1;
+              var startyear = parseInt(startdatearray[0]);
+              
+              var endday = parseInt(enddatearray[2]);
+              var endmonth = parseInt(enddatearray[1])-1;
+              var endyear = parseInt(enddatearray[0]);            
+              
+              localStorage.fstartday = parseInt(startday);
+              localStorage.fstartmonth = parseInt(startmonth);
+              localStorage.fstartyear = parseInt(startyear);
+              
+              localStorage.fendday = parseInt(endday);
+              localStorage.fendmonth = parseInt(endmonth);
+              localStorage.fendyear = parseInt(endyear);
+              
+              $( "#actionitem_date" ).datepicker( "destroy" );
+              $( "#sitevisit_date" ).datepicker( "destroy" );
+              
+              $("#actionitem_date").datepicker({ 
+                dateFormat: "yy/mm/dd", 
+                minDate: new Date(startyear, startmonth, startday), 
+                maxDate: new Date(endyear, endmonth, endday) 
+              });
+              
+              $("#sitevisit_date").datepicker({ 
+                dateFormat: "yy/mm/dd", 
+                minDate: new Date(startyear, startmonth, startday), 
+                maxDate: new Date(endyear, endmonth, endday) 
+              });
+              
+              $("#fieldtrip_details_start").html('').append(formatedstartdate);
+              $("#fieldtrip_details_end").html('').append(formatedenddate);
+            } else {
+              auth.logout();
+            }
             
-            var startdateonly = startdatestring.substring(1, startdatestring.indexOf('T'))
-            var enddateonly = enddatestring.substring(1, startdatestring.indexOf('T'))
-            
-            var startdatearray = startdateonly.split("-");
-            var enddatearray = enddateonly.split("-");
-            
-            var formatedstartdate = startdatearray[2] + "/" + startdatearray[1] + "/" + startdatearray[0];
-            var formatedenddate = enddatearray[2] + "/" + enddatearray[1] + "/" + enddatearray[0];
-            
-            localStorage.fieldtripstartdate = startdatearray[0] + "/" + startdatearray[1] + "/" + startdatearray[2]; 
-            
-            var startday = parseInt(startdatearray[2]);
-            var startmonth = parseInt(startdatearray[1])-1;
-            var startyear = parseInt(startdatearray[0]);
-            
-            var endday = parseInt(enddatearray[2]);
-            var endmonth = parseInt(enddatearray[1])-1;
-            var endyear = parseInt(enddatearray[0]);            
-            
-            localStorage.fstartday = parseInt(startday);
-            localStorage.fstartmonth = parseInt(startmonth);
-            localStorage.fstartyear = parseInt(startyear);
-            
-            localStorage.fendday = parseInt(endday);
-            localStorage.fendmonth = parseInt(endmonth);
-            localStorage.fendyear = parseInt(endyear);
-            
-            $( "#actionitem_date" ).datepicker( "destroy" );
-            $( "#sitevisit_date" ).datepicker( "destroy" );
-            
-            $("#actionitem_date").datepicker({ 
-              dateFormat: "yy/mm/dd", 
-              minDate: new Date(startyear, startmonth, startday), 
-              maxDate: new Date(endyear, endmonth, endday) 
-            });
-            
-            $("#sitevisit_date").datepicker({ 
-              dateFormat: "yy/mm/dd", 
-              minDate: new Date(startyear, startmonth, startday), 
-              maxDate: new Date(endyear, endmonth, endday) 
-            });
             
             $("#fieldtrip_details_title").html('').append(fObject['title']);
             $("#fieldtrip_details_status").html('').append(fObject['field_fieldtrip_status']['und'][0]['value']);
-            $("#fieldtrip_details_start").html('').append(formatedstartdate);
-            $("#fieldtrip_details_end").html('').append(formatedenddate);
-            
-            
+                        
             var list = $("<li></li>");
             var anch = $("<a href='#page_fieldtrip_details' id='fnid" + fObject['nid'] + "' onclick='controller.onFieldtripClick(this)'></a>");
             var h2 = $("<h1 class='heada1'>" + fObject['title'] + "</h1>");
@@ -1633,7 +1635,7 @@ var controller = {
             $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
             $.unblockUI();
           } else {
-            //load field trip details from the database if its one and the list if there's more.
+            
             $.unblockUI();
           }
         });

@@ -6,9 +6,9 @@ devtrac.indexedDB.db = null;
 
 devtrac.indexedDBopen = function(callback) {
 
-  var version = 2;
+  var version = 1;
 
-  var request = indexedDB.open("a7", version);
+  var request = indexedDB.open("a8", version);
 
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -21,9 +21,9 @@ devtrac.indexedDBopen = function(callback) {
 //creating an object store
 devtrac.indexedDB.open = function(callback) {
 
-  var version = 2;
+  var version = 1;
 
-  var request = indexedDB.open("a7", version);
+  var request = indexedDB.open("a8", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -286,12 +286,12 @@ devtrac.indexedDB.addImages = function(db, iObj) {
   var request = store.add(iObj);
 
   request.onsuccess = function(e) {
-    devtracnodes.notify("Images Saved");
+    
     d.resolve();
   };
 
   request.onerror = function(e) {
-    devtracnodes.notify("Images Not Saved");
+    
     d.resolve(e);
   };
 
@@ -307,14 +307,11 @@ devtrac.indexedDB.addActionItemsData = function(db, aObj) {
   request = store.add(aObj);
 
   request.onsuccess = function(e) {
-    devtracnodes.notify("Action Items Saved");
+    
     d.resolve();
   };
 
   request.onerror = function(e) {
-    if(e.target.error.message != "Key already exists in the object store." && e.target.error.message != undefined) {
-      devtracnodes.notify("Action Items Error: "+e.target.error.message);
-    }
 
     d.resolve(e);
   };

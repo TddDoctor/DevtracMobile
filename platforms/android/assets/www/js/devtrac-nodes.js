@@ -195,11 +195,6 @@ var devtracnodes = {
       return d;
     },
     
-    updateSynAllPageCounters: function(){
-      
-      
-    },
-    
     getLocations: function() {
       var d = $.Deferred();
       var user_locations = [];

@@ -14,7 +14,7 @@ var controller = {
     
     watchID : null,
     watchid : null,
-    nodes : [devtracnodes.getActionItems, devtracnodes.getQuestions, vocabularies.getOecdVocabularies, vocabularies.getPlacetypeVocabularies],
+    nodes : [vocabularies.getOecdVocabularies, vocabularies.getPlacetypeVocabularies],
     
     objectstores: ["oecdobj", "placetype", "fieldtripobj", "sitevisit", "actionitemsobj", "placesitemsobj", "qtnsitemsobj", "qtionairesitemsobj", "commentsitemsobj","images"],
     
@@ -98,7 +98,7 @@ var controller = {
           console.log("logged in");
           
           devtracnodes.countFieldtrips().then(function(){
-            devtracnodes.countOecds.then(function() {
+            devtracnodes.countOecds().then(function() {
 
               //load field trip details from the database if its one and the list if there's more.
               controller.loadFieldTripList();                    
@@ -119,7 +119,7 @@ var controller = {
             //download all devtrac data for user.
             controller.fetchAllData().then(function(){
               
-              devtracnodes.countOecds.then(function() {
+              devtracnodes.countOecds().then(function() {
 
                 //load field trip details from the database if its one and the list if there's more.
                 controller.loadFieldTripList();                    
@@ -201,21 +201,26 @@ var controller = {
             $('.blockUI.blockMsg').center();
             notes.push('Sitevisits');
             devtracnodes.getPlaces(db);
+            devtracnodes.getActionItems(db);
+            devtracnodes.getQuestions(db);
+            
             var counter = 0;
             for(var x = 0; x < controller.nodes.length; x++) {
               controller.nodes[x](db).then(function(response) {
+                console.log("fetch success "+response);
                 counter = counter + 1;
                 controller.loadingMsg(response, 1500);
                 $('.blockUI.blockMsg').center();
                 notes.push(response);
-                if(counter >= controller.nodes.length - 1){
+                if(counter > controller.nodes.length - 1){
                   console.log("creating notes");
                   owlhandler.notes(notes);
                   
                   d.resolve();
                 }
+                
               }).fail(function(e) {
-                if(e.indexOf("No Oecds Found") != -1 || e.indexOf("No Placetypes Found") != -1) {
+
                   controller.loadingMsg(e, 2000);
                   $('.blockUI.blockMsg').center();
                   
@@ -224,19 +229,6 @@ var controller = {
                     
                   }, 2500);
 
-                }else {
-                  counter = counter + 1;
-                  controller.loadingMsg(e, 1500);
-                  $('.blockUI.blockMsg').center();
-                  notes.push(e);
-                  if(counter >= controller.nodes.length - 1) {
-                    console.log("creating notes");
-                    owlhandler.notes(notes);
-
-                    d.resolve();
-                  }
-  
-                }
               });  
                
             }
@@ -530,7 +522,7 @@ var controller = {
                     devtrac.indexedDB.clearDatabase(db, 0, function() {
                       
                       controller.fetchAllData().then(function(){
-                        devtracnodes.countOecds.then(function() {
+                        devtracnodes.countOecds().then(function() {
 
                           //load field trip details from the database if its one and the list if there's more.
                           controller.loadFieldTripList();                    
@@ -1078,7 +1070,7 @@ var controller = {
                 
                 
                 devtracnodes.countFieldtrips().then(function(){
-                  devtracnodes.countOecds.then(function() {
+                  devtracnodes.countOecds().then(function() {
 
                     //load field trip details from the database if its one and the list if there's more.
                     controller.loadFieldTripList();                    
@@ -1097,13 +1089,14 @@ var controller = {
                 }).fail(function() {
                   //download all devtrac data for user.
                   controller.fetchAllData().then(function(){
-                    
-                    detracnodes.countOecds.then(function() {
+                    console.log("Downloaded all data .. checking oecds");
+                    devtracnodes.countOecds().then(function() {
 
+                      console.log("found oecds");
                       //load field trip details from the database if its one and the list if there's more.
                       controller.loadFieldTripList();                    
                     }).fail(function() {
-                      
+                      console.log("didnt find oecds");
                       controller.loadingMsg("OECD Codes were not found", 2000);
                       $('.blockUI.blockMsg').center();
                       
@@ -1539,6 +1532,7 @@ var controller = {
     
     //load field trip details from the database if its one and show list if there's more.
     loadFieldTripList: function () {
+      console.log("inside fieldtrip list");
       devtrac.indexedDB.open(function (db) {
         
         devtrac.indexedDB.getAllFieldtripItems(db, function (data) {
@@ -1546,6 +1540,7 @@ var controller = {
           fieldtripList.empty();
           
           if (data.length > 1) {
+            console.log("many fieldtrips");
             //set home screen to be the list of fieldtrips
             $(".settings_panel_home").attr("href","#home_page");
             
@@ -1579,6 +1574,7 @@ var controller = {
             $.mobile.changePage("#home_page", "slide", true, false);
             $.unblockUI();
           } else if (data.length == 1) {
+            console.log("one fieldtrip");
             //set home screen to be fieldtrip details
             $(".settings_panel_home").attr("href","#page_fieldtrip_details");
             

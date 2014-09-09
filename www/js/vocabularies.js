@@ -8,24 +8,15 @@ var vocabularies = {
         type : 'get',
         dataType : 'json',
         error : function(XMLHttpRequest, textStatus, errorThrown) { 
-          //create bubble notification
-          devtracnodes.notify("Oecds. "+errorThrown);
+
           d.reject(errorThrown);
         },
         success : function(data) {
           console.log("We have the oecds");
-
-          if(data.length <= 0) {
-            //create bubble notification
-            devtracnodes.notify("Oecds Data Unavailable.");
-          }else{
-            //create bubble notification
-            devtracnodes.notify("Oecds data downloaded.");
-          }
           
           devtrac.indexedDB.open(function (dbs) {
             devtrac.indexedDB.addTaxonomyData(dbs, "oecdobj", data).then(function() {
-              d.resolve("Oecds Saved");
+              d.resolve("Oecds");
             }).fail(function(err) {
               d.resolve("Oecds Not Saved");
 
@@ -49,20 +40,19 @@ var vocabularies = {
         type : 'get',
         dataType : 'json',
         error : function(XMLHttpRequest, textStatus, errorThrown) {
-          //create bubble notification
-          devtracnodes.notify("Placetypes. "+errorThrown);
+
           d.reject(errorThrown);
         },
         success : function(data) {
         //create bubble notification
           if(data.length <= 0) {
-            devtracnodes.notify("Placetypes Data Unavailable.");
+
             d.reject("No Placetypes Found");
           }else{
             
             devtrac.indexedDB.open(function (dbs) {
               devtrac.indexedDB.addTaxonomyData(dbs, "placetype", data).then(function() {
-                d.resolve("Placetypes Saved");
+                d.resolve("Placetypes");
               }).fail(function(err) {
                 d.resolve("Placetypes Not Saved");
               });

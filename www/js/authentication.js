@@ -260,7 +260,7 @@ var auth = {
           type : 'post',
           dataType : 'json',
           headers: {
-            'X-CSRF-Token': localStorage.usertoken
+            'X-CSRF-Token': token
           },
           error : function(XMLHttpRequest, textStatus, errorThrown) {
             $.unblockUI();

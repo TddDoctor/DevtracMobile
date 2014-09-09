@@ -1448,15 +1448,12 @@ var devtracnodes = {
           //'Cookie': localStorage.sname +"="+localStorage.sid
         },
         error : function(XMLHttpRequest, textStatus, errorThrown) { 
-          //creating bubble notification
-          devtracnodes.notify("Fieldtrips. "+errorThrown);
           console.log('fieldtrips error '+XMLHttpRequest.responseText);
           d.reject(errorThrown);
         },
         success : function(data) {
           //create bubble notification
           if(data.length <= 0) {
-            devtracnodes.notify("Fieldtrips Data Unavailable");
             $.unblockUI();
             
             d.reject("No Fieldtrips Found");
@@ -1464,7 +1461,6 @@ var devtracnodes = {
           }
           else {
             devtrac.indexedDB.addFieldtripsData(db, data).then(function() {
-              //devtracnodes.notify("Fieldtrips Saved");
               
               d.resolve();
             }).fail(function() {
@@ -1497,14 +1493,12 @@ var devtracnodes = {
               error : function(XMLHttpRequest, textStatus, errorThrown) { 
                 //create bubble notification
                 console.log('sitevisits error '+XMLHttpRequest.responseText);
-                devtracnodes.notify("Sitevisits. "+errorThrown);
                 callback("Error "+errorThrown);
                 
               },
               success : function(data) {
                 //create bubble notification
                 if(data.length <= 0) {
-                  devtracnodes.notify("Sitevisits Data Unavailable");
                   callback();
                 }else{
                   
@@ -1536,19 +1530,18 @@ var devtracnodes = {
             type : 'get',
             dataType : 'json',
             error : function(XMLHttpRequest, textStatus, errorThrown) { 
-              //create bubble notification
-              devtracnodes.notify("Action items. "+errorThrown);
+
               console.log('actionitems error '+XMLHttpRequest.responseText);
               d.reject(errorThrown);
             },
             success : function(data) {
               //create bubble notification
               if(data.length <= 0) {
-                devtracnodes.notify("Action items Unavailable");
+
               }else{
                 data[0]['submit'] = 0;
                 devtracnodes.saveActionItems(db, data, 0).then(function(){
-                  d.resolve("Action Items Saved");
+                  d.resolve("Action Items");
                 });
               }
             }
@@ -1599,8 +1592,6 @@ var devtracnodes = {
         type : 'get',
         dataType : 'json',
         error : function(XMLHttpRequest, textStatus, errorThrown) { 
-          //create bubble notification
-          devtracnodes.notify("Places. "+errorThrown);
           
           $.unblockUI();
         },
@@ -1608,17 +1599,17 @@ var devtracnodes = {
           
           //create bubble notification
           if(data.length <= 0) {
-            devtracnodes.notify("Places Data Unavailable");
+
           }else {
             
             for(var item in data){
               devtrac.indexedDB.addPlacesData(db, data[item]).then(function(){
-                devtracnodes.notify("Places Saved");
+
                 controller.loadingMsg("Places Saved",1000);
                 $('.blockUI.blockMsg').center();
               }).fail(function(e) {
                 if(e.target.error.message != "Key already exists in the object store." && e.target.error.message != undefined) {
-                  devtracnodes.notify("Places Error: "+e.target.error.message);
+
                 }
                 
               });
@@ -1655,20 +1646,18 @@ var devtracnodes = {
         type : 'get',
         dataType : 'json',
         error : function(XMLHttpRequest, textStatus, errorThrown) { 
-          //create bubble notification
-          devtracnodes.notify("Questions. "+errorThrown);
           
           d.reject(errorThrown);
         },
         success : function(data) {
           //create bubble notification
           if(data.length <= 0) {
-            devtracnodes.notify("Questions Data Unavailable");
+
           }else {
             
             devtrac.indexedDB.addQuestionsData(db, data).then(function(){
-              //devtracnodes.notify("Questions Saved");
-              d.resolve("Questions Saved");
+
+              d.resolve("Questions");
             }).fail(function(e) {
               
               d.resolve();
@@ -1679,13 +1668,5 @@ var devtracnodes = {
       });
       return d;
       
-    },
-    
-    notify: function(msg){
-      $('#refreshme').addBubble(
-          {
-            message: msg
-          }
-      );
     }
 } 

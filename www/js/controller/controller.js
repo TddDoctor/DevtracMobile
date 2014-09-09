@@ -45,17 +45,15 @@ var controller = {
       var leftMenu = Handlebars.compile($("#leftmenu-tpl").html()); 
       $(".leftmenu").html(leftMenu());
       var header = Handlebars.compile($("#header-tpl").html());
-      $("#fieldtrip_details_header").html(header({id: "fieldtrip", title: "Fieldtrip Details"}));
+      $("#fieldtrip_details_header").html(header({notes: '<a class="ui-btn-right" data-role="button" data-iconpos="notext" id="notify_fieldtrip"><i class="fa fa-info fa-lg"></i></a>', id: 'fieldtrip', title: 'Fieldtrip Details'}));
       $("#header_login").html(header({id: "login", title: "Devtrac Mobile"}));
       $("#header_home").html(header({id: "home", title: "Home"}));
       $("#header_sync").html(header({id: "sync", title: "Sync Nodes"}));
       $("#header_sitereports").html(header({extra_buttons: '<div data-role="navbar" data-theme="a">'+
         '<ul>'+
         '<li><a data-role="button" data-mini="true" id="addquestionnaire"><i class="fa fa-list-alt fa-lg"></i>&nbsp&nbsp Questionnaire</a></li>'+
-        '<li><a href="#mappage" data-role="button" class="panel_map"'+
-        'onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li>'+
-        '</ul>'+
-        '</div>', id: "sitereport", title: "Site Report"}));
+        '<li><a href="#mappage" data-role="button" class="panel_map" onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li>'+
+        '</ul></div>', id: "sitereport", title: "Site Report"}));
       $("#header_location").html(header({id: "location", title: "Locations"}));
       $("#header_about").html(header({id: "about", title: "About"}));
       $("#header_addlocation").html(header({id: "addlocation", title: "Locations"})); 
@@ -67,6 +65,8 @@ var controller = {
       
       $(window).bind('orientationchange pageshow pagechange resize', mapctlr.resizeMapIfVisible);
       
+      //start with hidden notifications button
+      $("#notify_fieldtrip").hide();
       
       //set application url if its not set
       if (!localStorage.appurl) {
@@ -77,15 +77,15 @@ var controller = {
         //localStorage.appurl = "http://demo.devtrac.org";
         //localStorage.appurl = "http://10.0.2.2/dt11";
         //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
-        // console.log("url not set "+localStorage.appurl);
-        // }else{
-        //console.log("app url set "+localStorage.appurl);
+
       }
+
       
       if(controller.connectionStatus) {
         controller.loadingMsg("Please Wait..", 0);
         $('.blockUI.blockMsg').center();
         auth.loginStatus().then(function () {
+          
           $(".menulistview").show();
           
           $("#form_add_location").show();
@@ -127,10 +127,9 @@ var controller = {
           $("#addquestionnaire").hide();
           
           controller.resetForm($('#form_fieldtrip_details'));
-          
-          console.log("logged out");
           $.unblockUI();
-          if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null){
+          
+          if(window.localStorage.getItem("usernam") != null && window.localStorage.getItem("passw") != null) {
             $("#page_login_name").val(window.localStorage.getItem("usernam"));
             $("#page_login_pass").val(window.localStorage.getItem("passw"));  
           }
@@ -161,32 +160,49 @@ var controller = {
     
     fetchAllData: function () {
       var d = $.Deferred();   
+      var notes = [];
       
       devtrac.indexedDB.open(function (db) {
         devtracnodes.getFieldtrips(db).then(function () {
           
           controller.loadingMsg("Fieldtrips Saved", 0);
+          notes.push('Fieldtrips');
+
           $('.blockUI.blockMsg').center();
           devtracnodes.getSiteVisits(db, function(response) {
             
             controller.loadingMsg("Sitevisits Saved", 0);
             $('.blockUI.blockMsg').center();
+            notes.push('Sitevisits');
             devtracnodes.getPlaces(db);
-            
+            var counter = 0;
             for(var x = 0; x < controller.nodes.length; x++) {
               controller.nodes[x](db).then(function(response) {
+                counter = counter + 1;
                 controller.loadingMsg(response, 1500);
                 $('.blockUI.blockMsg').center();
+                notes.push(response);
+                if(counter >= controller.nodes.length - 1){
+                  console.log("creating notes");
+                  owlhandler.notes(notes);
+                  
+                  d.resolve();
+                }
               }).fail(function(e) {
+                counter = counter + 1;
                 controller.loadingMsg(e, 1500);
                 $('.blockUI.blockMsg').center();
+                notes.push(e);
+                
+                  console.log("creating notes");
+                  owlhandler.notes(notes);
+
+                  d.resolve();
+                
               });  
-              
-              if(x == controller.nodes.length - 1){
-                d.resolve();
-              }
-              
+               
             }
+
             
           });
           
@@ -241,7 +257,7 @@ var controller = {
         }
         
       });
-      
+ 
       //stop gps
       $("#cancel_addlocation").on('click', function(){
         
@@ -361,26 +377,18 @@ var controller = {
           // Select the relevant option, de-select any others
           el.val('test').selectmenu('refresh');
           
-          // jQM refresh
-          //el.selectmenu("refresh", true);
         }else if(url.indexOf("cloud") != -1) {
           // Select the relevant option, de-select any others
           el.val('cloud').selectmenu('refresh');
-          
-          // jQM refresh
-          //el.selectmenu("refresh", true);
+
         }else if(url.indexOf("manual") != -1) {
           // Select the relevant option, de-select any others
           el.val('manual').selectmenu('refresh');
-          
-          // jQM refresh
-          //el.selectmenu("refresh", true);
+
         }else if(url.indexOf("dt11") != -1) {
           // Select the relevant option, de-select any others
           el.val('local').selectmenu('refresh');
-          
-          // jQM refresh
-          //el.selectmenu("refresh", true);
+
         }
         
         $("#barsbutton_login").hide();
@@ -396,26 +404,18 @@ var controller = {
           // Select the relevant option, de-select any others
           el.val('test').selectmenu('refresh');
           
-          // jQM refresh
-          //el.selectmenu("refresh", true);
         }else if(url.indexOf("cloud") != -1) {
           // Select the relevant option, de-select any others
           el.val('cloud').selectmenu('refresh');
           
-          // jQM refresh
-          //el.selectmenu("refresh", true);
         }else if(url.indexOf("manual") != -1) {
           // Select the relevant option, de-select any others
           el.val('manual').selectmenu('refresh');
-          
-          // jQM refresh
-          //el.selectmenu("refresh", true);
+
         }else if(url.indexOf("dt11") != -1) {
           // Select the relevant option, de-select any others
           el.val('local').selectmenu('refresh');
-          
-          // jQM refresh
-          //el.selectmenu("refresh", true);
+
         }
         
         $("#barsbutton_login").hide();
@@ -471,13 +471,6 @@ var controller = {
         
       }); 
       
-      //hide the notification button if there are no notifcations and its been clicked.
-      $('#notify-anchor').bind('click', function () {
-        if ($(".notification-bubble").html() <= 0) {
-          $("#notify-nav").hide();
-        }
-      });
-      
       //redownload the devtrac data
       $('.refresh-button').bind('click', function () {
         
@@ -494,10 +487,7 @@ var controller = {
                 if(controller.connectionStatus){
                   controller.loadingMsg("Downloading Data ...", 0);
                   $('.blockUI.blockMsg').center();
-                  //get all bubbles and delete them to create room for new ones.
-                  for (var notify in $('#refreshme').getNotifications()) {
-                    $(this).deleteBubble($('#refreshme').getNotifications()[notify]);
-                  }
+
                   devtrac.indexedDB.open(function (db) {
                     devtrac.indexedDB.clearDatabase(db, 0, function() {
                       
@@ -513,9 +503,7 @@ var controller = {
                       });
                       
                     });
-                  });
-                  
-                  $(".notification-bubble").html(0);          
+                  });      
                   
                 }else{
                   controller.loadingMsg("Please Connect to Internet ...", 2000);
@@ -601,7 +589,7 @@ var controller = {
         }
       });
       
-      //site report type validation
+/*      //site report type validation
       var site_report_form = $("#form_sitereporttype");
       site_report_form.validate({
         rules: {
@@ -610,7 +598,7 @@ var controller = {
           }
       
         }
-      });
+      });*/
       
       //site visit validation
       var sitevisit_form = $("#form_sitevisit_add");
@@ -619,12 +607,8 @@ var controller = {
           sitevisit_add_title: {
             required: true
           },
-          sitevisit_add_type: {
-            required: true
-          },
           sitevisit_add_date:{
-            required: true,
-            date: true
+            required: true
           },
           sitevisit_add_public_summary:{
             required: true
@@ -1475,7 +1459,7 @@ var controller = {
       }
     },
     
-    //load field trip list from db
+    //load field trip details from the database if its one and show list if there's more.
     loadFieldTripList: function () {
       devtrac.indexedDB.open(function (db) {
         
@@ -1536,60 +1520,66 @@ var controller = {
             sitevisitList.empty();
             
             localStorage.fnid = fObject['nid'];
-            var startdate = fObject['field_fieldtrip_start_end_date']['und'][0]['value'];
-            var enddate = fObject['field_fieldtrip_start_end_date']['und'][0]['value2'];
+            if(fObject['field_fieldtrip_start_end_date'] != undefined && fObject['field_fieldtrip_start_end_date'] != undefined) {
             
-            var startdatestring = JSON.stringify(startdate);
-            var enddatestring = JSON.stringify(enddate);
+              var startdate = fObject['field_fieldtrip_start_end_date']['und'][0]['value'];
+              var enddate = fObject['field_fieldtrip_start_end_date']['und'][0]['value2'];
+              
+              var startdatestring = JSON.stringify(startdate);
+              var enddatestring = JSON.stringify(enddate);
+              
+              var startdateonly = startdatestring.substring(1, startdatestring.indexOf('T'))
+              var enddateonly = enddatestring.substring(1, startdatestring.indexOf('T'))
+              
+              var startdatearray = startdateonly.split("-");
+              var enddatearray = enddateonly.split("-");
+              
+              var formatedstartdate = startdatearray[2] + "/" + startdatearray[1] + "/" + startdatearray[0];
+              var formatedenddate = enddatearray[2] + "/" + enddatearray[1] + "/" + enddatearray[0];
+              
+              localStorage.fieldtripstartdate = startdatearray[0] + "/" + startdatearray[1] + "/" + startdatearray[2]; 
+              
+              var startday = parseInt(startdatearray[2]);
+              var startmonth = parseInt(startdatearray[1])-1;
+              var startyear = parseInt(startdatearray[0]);
+              
+              var endday = parseInt(enddatearray[2]);
+              var endmonth = parseInt(enddatearray[1])-1;
+              var endyear = parseInt(enddatearray[0]);            
+              
+              localStorage.fstartday = parseInt(startday);
+              localStorage.fstartmonth = parseInt(startmonth);
+              localStorage.fstartyear = parseInt(startyear);
+              
+              localStorage.fendday = parseInt(endday);
+              localStorage.fendmonth = parseInt(endmonth);
+              localStorage.fendyear = parseInt(endyear);
+              
+              $( "#actionitem_date" ).datepicker( "destroy" );
+              $( "#sitevisit_date" ).datepicker( "destroy" );
+              
+              $("#actionitem_date").datepicker({ 
+                dateFormat: "yy/mm/dd", 
+                minDate: new Date(startyear, startmonth, startday), 
+                maxDate: new Date(endyear, endmonth, endday) 
+              });
+              
+              $("#sitevisit_date").datepicker({ 
+                dateFormat: "yy/mm/dd", 
+                minDate: new Date(startyear, startmonth, startday), 
+                maxDate: new Date(endyear, endmonth, endday) 
+              });
+              
+              $("#fieldtrip_details_start").html('').append(formatedstartdate);
+              $("#fieldtrip_details_end").html('').append(formatedenddate);
+            } else {
+              auth.logout();
+            }
             
-            var startdateonly = startdatestring.substring(1, startdatestring.indexOf('T'))
-            var enddateonly = enddatestring.substring(1, startdatestring.indexOf('T'))
-            
-            var startdatearray = startdateonly.split("-");
-            var enddatearray = enddateonly.split("-");
-            
-            var formatedstartdate = startdatearray[2] + "/" + startdatearray[1] + "/" + startdatearray[0];
-            var formatedenddate = enddatearray[2] + "/" + enddatearray[1] + "/" + enddatearray[0];
-            
-            localStorage.fieldtripstartdate = startdatearray[0] + "/" + startdatearray[1] + "/" + startdatearray[2]; 
-            
-            var startday = parseInt(startdatearray[2]);
-            var startmonth = parseInt(startdatearray[1])-1;
-            var startyear = parseInt(startdatearray[0]);
-            
-            var endday = parseInt(enddatearray[2]);
-            var endmonth = parseInt(enddatearray[1])-1;
-            var endyear = parseInt(enddatearray[0]);            
-            
-            localStorage.fstartday = parseInt(startday);
-            localStorage.fstartmonth = parseInt(startmonth);
-            localStorage.fstartyear = parseInt(startyear);
-            
-            localStorage.fendday = parseInt(endday);
-            localStorage.fendmonth = parseInt(endmonth);
-            localStorage.fendyear = parseInt(endyear);
-            
-            $( "#actionitem_date" ).datepicker( "destroy" );
-            $( "#sitevisit_date" ).datepicker( "destroy" );
-            
-            $("#actionitem_date").datepicker({ 
-              dateFormat: "yy/mm/dd", 
-              minDate: new Date(startyear, startmonth, startday), 
-              maxDate: new Date(endyear, endmonth, endday) 
-            });
-            
-            $("#sitevisit_date").datepicker({ 
-              dateFormat: "yy/mm/dd", 
-              minDate: new Date(startyear, startmonth, startday), 
-              maxDate: new Date(endyear, endmonth, endday) 
-            });
             
             $("#fieldtrip_details_title").html('').append(fObject['title']);
             $("#fieldtrip_details_status").html('').append(fObject['field_fieldtrip_status']['und'][0]['value']);
-            $("#fieldtrip_details_start").html('').append(formatedstartdate);
-            $("#fieldtrip_details_end").html('').append(formatedenddate);
-            
-            
+                        
             var list = $("<li></li>");
             var anch = $("<a href='#page_fieldtrip_details' id='fnid" + fObject['nid'] + "' onclick='controller.onFieldtripClick(this)'></a>");
             var h2 = $("<h1 class='heada1'>" + fObject['title'] + "</h1>");
@@ -1645,7 +1635,7 @@ var controller = {
             $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
             $.unblockUI();
           } else {
-            //load field trip details from the database if its one and the list if there's more.
+            
             $.unblockUI();
           }
         });
@@ -1749,7 +1739,6 @@ var controller = {
     
     //handle submit of site report type
     submitSitereporttype: function() {
-      if ($("#form_sitereporttype").valid()) {
         localStorage.ftritemtype = $("#sitevisit_add_type").val();
         
         localStorage.ftritemdistrict = $("#location_district").val();
@@ -1773,7 +1762,7 @@ var controller = {
           
           controller.buildSelect("oecdobj", []);
           
-          $('#sitevisit_add_report').html("Please Provide a small summary for the public");
+          $('#sitevisit_add_report').html("Please provide a full report");
           $('#sitevisit_add_public_summary').html("Please Provide a small summary for the public");
           
         }
@@ -1783,10 +1772,7 @@ var controller = {
           
         }
         controller.resetForm($('#form_sitereporttype'));
-        
-      }
-      
-      
+
     },
     
     //handle site visit click
@@ -2024,6 +2010,7 @@ var controller = {
         });
       }else {
         controller.loadingMsg("Please enter an Edit Summary", 2000)
+        $('.blockUI.blockMsg').center();
       }
       
     },
@@ -2175,7 +2162,8 @@ var controller = {
           
         });    
       }else {
-        controller.loadingMsg("Please fill in a followuptask", 2000)
+        controller.loadingMsg("Please fill in a followuptask", 2000);
+        $('.blockUI.blockMsg').center();
       }
     },
     
@@ -2623,7 +2611,8 @@ var controller = {
           
         });  
       }else {
-        controller.loadingMsg("Please enter Summary and Report", 2000)
+        controller.loadingMsg("Please enter all Fields", 2000)
+        $('.blockUI.blockMsg').center();
       }
     },
     
@@ -2698,6 +2687,7 @@ var controller = {
         
       }else{
         controller.loadingMsg("Please fill in a comment", 2000);
+        $('.blockUI.blockMsg').center();
       } 
     },
     

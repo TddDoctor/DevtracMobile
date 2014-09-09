@@ -189,16 +189,28 @@ var controller = {
                   d.resolve();
                 }
               }).fail(function(e) {
-                counter = counter + 1;
-                controller.loadingMsg(e, 1500);
-                $('.blockUI.blockMsg').center();
-                notes.push(e);
-                
-                  console.log("creating notes");
-                  owlhandler.notes(notes);
+                if(e.indexOf("No Oecds Found") != -1 || e.indexOf("No Placetypes Found") != -1) {
+                  controller.loadingMsg(e, 2000);
+                  $('.blockUI.blockMsg').center();
+                  
+                  setTimeout(function(){
+                    auth.logout();
+                    
+                  }, 2500);
 
-                  d.resolve();
-                
+                }else {
+                  counter = counter + 1;
+                  controller.loadingMsg(e, 1500);
+                  $('.blockUI.blockMsg').center();
+                  notes.push(e);
+                  if(counter >= controller.nodes.length - 1) {
+                    console.log("creating notes");
+                    owlhandler.notes(notes);
+
+                    d.resolve();
+                  }
+  
+                }
               });  
                
             }
@@ -1508,20 +1520,21 @@ var controller = {
             var count = 0;
             var fObject = data[0];
             
-            if(fObject['editflag'] == 1) {
-              count = count + 1;
-            }
+            if(fObject['field_fieldtrip_start_end_date']['und'] != undefined && fObject['field_fieldtrip_start_end_date']['und'] != undefined) {
             
-            //localStorage.pnid = fObject['field_fieldtrip_places']['und'][0]['target_id'];
-            localStorage.ftitle = fObject['title'];
-            localStorage.fnid = fObject['nid'];
-            
-            var sitevisitList = $('#list_sitevisits');
-            sitevisitList.empty();
-            
-            localStorage.fnid = fObject['nid'];
-            if(fObject['field_fieldtrip_start_end_date'] != undefined && fObject['field_fieldtrip_start_end_date'] != undefined) {
-            
+              if(fObject['editflag'] == 1) {
+                count = count + 1;
+              }
+              
+              //localStorage.pnid = fObject['field_fieldtrip_places']['und'][0]['target_id'];
+              localStorage.ftitle = fObject['title'];
+              localStorage.fnid = fObject['nid'];
+              
+              var sitevisitList = $('#list_sitevisits');
+              sitevisitList.empty();
+              
+              localStorage.fnid = fObject['nid'];
+              
               var startdate = fObject['field_fieldtrip_start_end_date']['und'][0]['value'];
               var enddate = fObject['field_fieldtrip_start_end_date']['und'][0]['value2'];
               
@@ -1572,68 +1585,76 @@ var controller = {
               
               $("#fieldtrip_details_start").html('').append(formatedstartdate);
               $("#fieldtrip_details_end").html('').append(formatedenddate);
-            } else {
-              auth.logout();
-            }
             
-            
-            $("#fieldtrip_details_title").html('').append(fObject['title']);
-            $("#fieldtrip_details_status").html('').append(fObject['field_fieldtrip_status']['und'][0]['value']);
+              $("#fieldtrip_details_title").html('').append(fObject['title']);
+              $("#fieldtrip_details_status").html('').append(fObject['field_fieldtrip_status']['und'][0]['value']);
+                          
+              var list = $("<li></li>");
+              var anch = $("<a href='#page_fieldtrip_details' id='fnid" + fObject['nid'] + "' onclick='controller.onFieldtripClick(this)'></a>");
+              var h2 = $("<h1 class='heada1'>" + fObject['title'] + "</h1>");
+              var para = $("<p class='para1'>Start Date: " + formatedstartdate + "</p>");
+              
+              anch.append(h2);
+              anch.append(para);
+              list.append(anch);
+              fieldtripList.append(list);
+              
+              fieldtripList.listview().listview('refresh');
+              
+              var sitevisitcount = 0;
+              devtrac.indexedDB.open(function (db) {
+                devtrac.indexedDB.getAllSitevisits(db, function (sitevisit) {
+                  for (var i in sitevisit) {
+                    if(sitevisit[i]['field_ftritem_field_trip'] != undefined){
+                      if (sitevisit[i]['field_ftritem_field_trip']['und'][0]['target_id'] == fObject['nid']) {
+                        if((sitevisit[i]['user-added'] == true && sitevisit[i]['submit'] == 0) || sitevisit[i]['editflag'] == 1) {
+                          sitevisitcount = sitevisitcount + 1;
+                        }
                         
-            var list = $("<li></li>");
-            var anch = $("<a href='#page_fieldtrip_details' id='fnid" + fObject['nid'] + "' onclick='controller.onFieldtripClick(this)'></a>");
-            var h2 = $("<h1 class='heada1'>" + fObject['title'] + "</h1>");
-            var para = $("<p class='para1'>Start Date: " + formatedstartdate + "</p>");
-            
-            anch.append(h2);
-            anch.append(para);
-            list.append(anch);
-            fieldtripList.append(list);
-            
-            fieldtripList.listview().listview('refresh');
-            
-            var sitevisitcount = 0;
-            devtrac.indexedDB.open(function (db) {
-              devtrac.indexedDB.getAllSitevisits(db, function (sitevisit) {
-                for (var i in sitevisit) {
-                  if(sitevisit[i]['field_ftritem_field_trip'] != undefined){
-                    if (sitevisit[i]['field_ftritem_field_trip']['und'][0]['target_id'] == fObject['nid']) {
-                      if((sitevisit[i]['user-added'] == true && sitevisit[i]['submit'] == 0) || sitevisit[i]['editflag'] == 1) {
-                        sitevisitcount = sitevisitcount + 1;
-                      }
-                      
-                      var sitevisits = sitevisit[i];
-                      var li = $("<li></li>");
-                      var a = null;
-                      if(sitevisit[i]['user-added']) {
-                        a = $("<a href='#page_sitevisits_details' id='user" + sitevisits['nid'] + "' onclick='controller.onSitevisitClick(this)'></a>");  
-                      }else{
-                        a = $("<a href='#page_sitevisits_details' id='snid" + sitevisits['nid'] + "' onclick='controller.onSitevisitClick(this)'></a>");
-                      }
-                      
-                      var h1 = $("<h1 class='heada1'>" + sitevisits['title'] + "</h1>");
-                      var p = $("<p class='para1'>Narrative: " + sitevisits['field_ftritem_narrative']['und'][0]['value'] + "</p>");
-                      
-                      a.append(h1);
-                      a.append(p);
-                      li.append(a);
-                      sitevisitList.append(li);
-                      
-                    }    
+                        var sitevisits = sitevisit[i];
+                        var li = $("<li></li>");
+                        var a = null;
+                        if(sitevisit[i]['user-added']) {
+                          a = $("<a href='#page_sitevisits_details' id='user" + sitevisits['nid'] + "' onclick='controller.onSitevisitClick(this)'></a>");  
+                        }else{
+                          a = $("<a href='#page_sitevisits_details' id='snid" + sitevisits['nid'] + "' onclick='controller.onSitevisitClick(this)'></a>");
+                        }
+                        
+                        var h1 = $("<h1 class='heada1'>" + sitevisits['title'] + "</h1>");
+                        var p = $("<p class='para1'>Narrative: " + sitevisits['field_ftritem_narrative']['und'][0]['value'] + "</p>");
+                        
+                        a.append(h1);
+                        a.append(p);
+                        li.append(a);
+                        sitevisitList.append(li);
+                        
+                      }    
+                    }
+                    
                   }
                   
-                }
-                
-                $("#fieldtrip_count").html(count);
-                $("#sitevisit_count").html(sitevisitcount);
-                sitevisitList.listview().listview('refresh');
-                
+                  $("#fieldtrip_count").html(count);
+                  $("#sitevisit_count").html(sitevisitcount);
+                  sitevisitList.listview().listview('refresh');
+                  
+                  
+                });
                 
               });
               
-            });
-            $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
-            $.unblockUI();
+              $.mobile.changePage("#page_fieldtrip_details", "slide", true, false);
+              $.unblockUI();
+            } else {
+              controller.loadingMsg("Please add dates to Fieldtrip from Devtrac", 2000);
+              $('.blockUI.blockMsg').center();
+              
+              setTimeout(function(){
+                auth.logout();
+                
+              }, 2000);
+            
+            }
+            
           } else {
             
             $.unblockUI();

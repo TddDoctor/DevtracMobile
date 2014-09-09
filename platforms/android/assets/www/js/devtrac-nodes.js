@@ -324,6 +324,28 @@ var devtracnodes = {
       return d;
     },
     
+    countOecds: function() {
+      var d = $.Deferred();
+      
+      devtrac.indexedDB.open(function (db) {
+        devtrac.indexedDB.countTaxonomyItems(db, "oecdobj",function(tripsy) {
+          
+          if(tripsy.length > 0) {
+            console.log("found oecds");
+            d.resolve();  
+          }else
+          {
+            console.log("not found oecds");
+            d.reject();
+          }
+          
+        });  
+
+      });
+      
+      return d;
+    },
+    
     checkActionitems: function() {
       var d = $.Deferred();
       var actionitems = [];

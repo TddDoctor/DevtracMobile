@@ -98,16 +98,42 @@ var controller = {
           console.log("logged in");
           
           devtracnodes.countFieldtrips().then(function(){
-            //load field trip details from the database if its one and the list if there's more.
-            controller.loadFieldTripList();
+            devtracnodes.countOecds.then(function() {
+
+              //load field trip details from the database if its one and the list if there's more.
+              controller.loadFieldTripList();                    
+            }).fail(function() {
+              
+              controller.loadingMsg("OECD Codes were not found", 2000);
+              $('.blockUI.blockMsg').center();
+              
+              setTimeout(function() {
+                auth.logout();
+                
+              }, 2000);
+              
+            });
             
           }).fail(function(){
             
             //download all devtrac data for user.
             controller.fetchAllData().then(function(){
               
-              //load field trip details from the database if its one and the list if there's more.
-              controller.loadFieldTripList();
+              devtracnodes.countOecds.then(function() {
+
+                //load field trip details from the database if its one and the list if there's more.
+                controller.loadFieldTripList();                    
+              }).fail(function() {
+                
+                controller.loadingMsg("OECD Codes were not found", 2000);
+                $('.blockUI.blockMsg').center();
+                
+                setTimeout(function() {
+                  auth.logout();
+                  
+                }, 2000);
+                
+              });
             }).fail(function(error){
               auth.logout();
               controller.loadingMsg(error,5000);
@@ -504,7 +530,21 @@ var controller = {
                     devtrac.indexedDB.clearDatabase(db, 0, function() {
                       
                       controller.fetchAllData().then(function(){
-                        controller.loadFieldTripList();          
+                        devtracnodes.countOecds.then(function() {
+
+                          //load field trip details from the database if its one and the list if there's more.
+                          controller.loadFieldTripList();                    
+                        }).fail(function() {
+                          
+                          controller.loadingMsg("OECD Codes were not found", 2000);
+                          $('.blockUI.blockMsg').center();
+                          
+                          setTimeout(function() {
+                            auth.logout();
+                            
+                          }, 2000);
+                          
+                        });          
                       }).fail(function(error){
                         auth.logout();
                         if(error.indexOf("field") != -1){
@@ -1038,15 +1078,41 @@ var controller = {
                 
                 
                 devtracnodes.countFieldtrips().then(function(){
-                  //load field trip details from the database if its one and the list if there's more.
-                  controller.loadFieldTripList();
+                  devtracnodes.countOecds.then(function() {
+
+                    //load field trip details from the database if its one and the list if there's more.
+                    controller.loadFieldTripList();                    
+                  }).fail(function() {
+                    
+                    controller.loadingMsg("OECD Codes were not found", 2000);
+                    $('.blockUI.blockMsg').center();
+                    
+                    setTimeout(function() {
+                      auth.logout();
+                      
+                    }, 2000);
+                    
+                  });
                   
                 }).fail(function() {
                   //download all devtrac data for user.
                   controller.fetchAllData().then(function(){
                     
-                    //load field trip details from the database if its one and the list if there's more.
-                    controller.loadFieldTripList();
+                    detracnodes.countOecds.then(function() {
+
+                      //load field trip details from the database if its one and the list if there's more.
+                      controller.loadFieldTripList();                    
+                    }).fail(function() {
+                      
+                      controller.loadingMsg("OECD Codes were not found", 2000);
+                      $('.blockUI.blockMsg').center();
+                      
+                      setTimeout(function() {
+                        auth.logout();
+                        
+                      }, 2000);
+                      
+                    });
                   }).fail(function(error) {
                     auth.logout();
                     controller.loadingMsg(error,5000);

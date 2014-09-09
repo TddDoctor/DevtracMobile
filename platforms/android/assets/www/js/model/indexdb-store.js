@@ -384,6 +384,33 @@ devtrac.indexedDB.addPlacesData = function(db, placeObj) {
   return d;
 };
 
+
+//count taxonomies
+devtrac.indexedDB.countTaxonomyItems = function(db, storename, callback) {
+  
+  var trans = db.transaction([storename], "readonly");
+  var store = trans.objectStore(storename);
+  var taxonomies = [];
+  
+  // Get everything in the store;
+  var keyRange = IDBKeyRange.lowerBound(0);
+  var cursorRequest = store.openCursor(keyRange);
+  
+  cursorRequest.onsuccess = function(e) {
+    var result = e.target.result;
+    if(!!result == false) {
+      callback(taxonomies);
+      return;
+    }
+
+    taxonomies.push(result.value);
+    result["continue"]();
+  };
+
+  cursorRequest.onerror = devtrac.indexedDB.onerror;
+
+};
+
 //query taxonomy data from datastore
 devtrac.indexedDB.getAllTaxonomyItems = function(db, storename, callback) {
   var trans = db.transaction([storename], "readonly");

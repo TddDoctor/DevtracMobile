@@ -50,10 +50,8 @@ var controller = {
       $("#header_home").html(header({id: "home", title: "Home"}));
       $("#header_sync").html(header({id: "sync", title: "Sync Nodes"}));
       $("#header_sitereports").html(header({extra_buttons: '<div data-role="navbar" data-theme="a">'+
-        '<ul>'+
-        '<li><a data-role="button" data-mini="true" id="addquestionnaire"><i class="fa fa-list-alt fa-lg"></i>&nbsp&nbsp Questionnaire</a></li>'+
-        '<li><a href="#mappage" data-role="button" class="panel_map" onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li>'+
-        '</ul></div>', id: "sitereport", title: "Site Report"}));
+        '<ul><li><a data-role="button" data-mini="true" id="addquestionnaire"><i class="fa fa-list-alt fa-lg"></i>&nbsp&nbsp Questionnaire</a></li>'+
+        '<li><a href="#mappage" data-role="button" class="panel_map" onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li></ul></div>', id: "sitereport", title: "Site Report"}));
       $("#header_location").html(header({id: "location", title: "Locations"}));
       $("#header_about").html(header({id: "about", title: "About"}));
       $("#header_addlocation").html(header({id: "addlocation", title: "Locations"})); 

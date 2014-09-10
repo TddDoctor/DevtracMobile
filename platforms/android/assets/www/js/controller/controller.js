@@ -50,8 +50,7 @@ var controller = {
       $("#header_home").html(header({id: "home", title: "Home"}));
       $("#header_sync").html(header({id: "sync", title: "Sync Nodes"}));
       $("#header_sitereports").html(header({extra_buttons: '<div data-role="navbar" data-theme="a">'+
-        '<ul><li><a data-role="button" data-mini="true" id="addquestionnaire"><i class="fa fa-list-alt fa-lg"></i>&nbsp&nbsp Questionnaire</a></li>'+
-        '<li><a href="#mappage" data-role="button" class="panel_map" onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li></ul></div>', id: "sitereport", title: "Site Report"}));
+        '<ul><li><a data-role="button" data-mini="true" id="addquestionnaire"><i class="fa fa-list-alt fa-lg"></i>&nbsp&nbsp Questionnaire</a></li><li><a href="#mappage" data-role="button" class="panel_map" onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li></ul></div>', id: "sitereport", title: "Site Report"}));
       $("#header_location").html(header({id: "location", title: "Locations"}));
       $("#header_about").html(header({id: "about", title: "About"}));
       $("#header_addlocation").html(header({id: "addlocation", title: "Locations"})); 
@@ -256,12 +255,21 @@ var controller = {
       
       //start gps
       $( "#page_add_location" ).bind("pagebeforeshow", function( event ) {
-        console.log("inside page add location");        
+        var el = $('#select_placetype');
+        var select_text = $("#select_placetype option:selected").text();
+        
+        if(select_text.indexOf("--") != -1) {
+          var correct_val = $("#select_placetype option:selected").next().val();
+          $("#select_placetype option:selected").removeAttr('selected');
+          
+          el.val(correct_val).selectmenu('refresh');
+          
+        }
+          
         $("#location_item_save").button('disable');  
         $("#location_item_save").button('refresh');  
         
         if(controller.checkCordova() != undefined) {
-          console.log("can use cordova");
           
           if(controller.watchID == null){
             console.log("watch id is null");
@@ -269,8 +277,6 @@ var controller = {
             controller.watchID = navigator.geolocation.watchPosition(controller.onSuccess, controller.onError, options);
             console.log("watch id is "+controller.watchID);
             
-          }else{
-            console.log("watch id is not null");
           }
           
         }else{
@@ -681,10 +687,10 @@ var controller = {
       
       $(".seturlselect").live( "change", function(event, ui) {
         if($(this).val() == "custom") {
-          console.log("custom");
+
           $(".myurl").show();
         }else{
-          console.log("not custom");
+
           $(".myurl").hide();
         }
       });
@@ -734,7 +740,7 @@ var controller = {
       
       //handle edit sitevisit click event
       $("#editsitevisit").bind("click", function (event) {
-        
+        controller.buildSelect("placetype", []);
         var snid = localStorage.snid;
         if(localStorage.user == "true"){
           snid = parseInt(snid);
@@ -745,7 +751,7 @@ var controller = {
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getSitevisit(db, snid).then(function (sitevisitObject) {
             $("#sitevisit_title").val(sitevisitObject['title']);
-            
+            //['taxonomy_vocabulary_1']['und'][0]['tid'];
             $("#sitevisit_date").val(sitevisitObject['field_ftritem_date_visited']['und'][0]['value']);
             
             $("#sitevisit_summary").html(sitevisitObject['field_ftritem_public_summary']['und'][0]['value']);
@@ -1821,7 +1827,7 @@ var controller = {
     //handle submit of site report type
     submitSitereporttype: function() {
         localStorage.ftritemtype = $("#sitevisit_add_type").val();
-        
+        console.log("voca 7 is "+$("#sitevisit_add_type").val());
         localStorage.ftritemdistrict = $("#location_district").val();
         
         if(localStorage.ftritemtype == "210") {
@@ -2454,6 +2460,7 @@ var controller = {
         updates['taxonomy_vocabulary_1']['und'] = [];
         updates['taxonomy_vocabulary_1']['und'][0] = {};
         updates['taxonomy_vocabulary_1']['und'][0]['tid'] = $('#select_placetype').val();
+        console.log("Saving location "+$('#select_placetype').val());
         
         //get district information
         updates['taxonomy_vocabulary_6'] = {};
@@ -2528,7 +2535,7 @@ var controller = {
       updates['taxonomy_vocabulary_7'] = {};
       updates['taxonomy_vocabulary_7']['und'] = [];
       updates['taxonomy_vocabulary_7']['und'][0] = {};
-      updates['taxonomy_vocabulary_7']['und'][0]['tid'] = localStorage.ftritemtype;
+      updates['taxonomy_vocabulary_7']['und'][0]['tid'] = '19'; //localStorage.ftritemtype;
       
       updates['field_ftritem_place'] = {};
       updates['field_ftritem_place']['und'] = [];
@@ -2878,14 +2885,19 @@ var controller = {
       
       var selectGroup = $(select);
       if (vocabularyname.indexOf("place") != -1) {
+        if($.mobile.activePage.attr('id') == "page_site_report_type") {
+          //create placetypes codes optgroup
+          $('#location_placetypes').empty().append(selectGroup).trigger('create');
+          $('#sitevisists_details_subjects').empty().append(selectGroup).trigger('create');
+          $.mobile.changePage("#page_add_location", "slide", true, false);          
+        }else {
+          $('#placetypes').empty().append(selectGroup).trigger('create');
+        }
         
-        //create placetypes codes optgroup
-        $('#location_placetypes').empty().append(selectGroup).trigger('create');
-        $('#sitevisists_details_subjects').empty().append(selectGroup).trigger('create');
-        $.mobile.changePage("#page_add_location", "slide", true, false);
+
       } 
       else {
-        
+
         //create oecd codes optgroup
         $('#select_oecds').empty().append(selectGroup).trigger('create');
         $.mobile.changePage("#page_sitevisit_add", "slide", true, false);

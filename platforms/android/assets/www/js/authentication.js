@@ -186,6 +186,7 @@ var auth = {
             $("#addquestionnaire").show();
             $(".settingsform").show();
             $(".ui-navbar").show();
+            $("#syncForm").show();
             
             localStorage.username = name;
             localStorage.pass = pass;
@@ -283,6 +284,7 @@ var auth = {
             $(".settingsform").hide();
             $("#addquestionnaire").hide();
             $(".ui-navbar").hide();
+            $("#syncForm").hide();
             
             $.mobile.changePage("#page_login", "slide", true, false);
             

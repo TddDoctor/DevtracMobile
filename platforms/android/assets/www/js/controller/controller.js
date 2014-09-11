@@ -88,9 +88,11 @@ var controller = {
           $("#form_add_location").show();
           $("#form_fieldtrip_details").show();
           $("#form_sitevisists_details").show();
-          
+          $("#addquestionnaire").show();
           $(".settingsform").show();
           $(".ui-navbar").show();
+          
+          $("#syncForm").show();
           
           console.log("logged in");
           
@@ -148,6 +150,8 @@ var controller = {
           $(".settingsform").hide();
           $(".ui-navbar").hide();
           $("#addquestionnaire").hide();
+          
+          $("#syncForm").hide();
           
           controller.resetForm($('#form_fieldtrip_details'));
           $.unblockUI();

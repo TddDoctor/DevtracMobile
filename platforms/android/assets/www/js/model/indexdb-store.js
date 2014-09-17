@@ -4,11 +4,11 @@ devtrac.indexedDB = {};
 //open database
 devtrac.indexedDB.db = null;
 
-devtrac.indexedDBopen = function(callback) {
+devtrac.indexedDB.open = function(callback) {
 
   var version = 1;
 
-  var request = indexedDB.open("a8", version);
+  var request = indexedDB.open("b4", version);
 
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -23,7 +23,7 @@ devtrac.indexedDB.open = function(callback) {
 
   var version = 1;
 
-  var request = indexedDB.open("a8", version);
+  var request = indexedDB.open("b4", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -66,7 +66,7 @@ devtrac.indexedDB.open = function(callback) {
     }
     if(db.objectStoreNames.contains("images")){
       db.deleteObjectStore("images");
-    }
+    }  
 
     var store = db.createObjectStore("oecdobj", {autoIncrement: true});
 
@@ -871,7 +871,7 @@ devtrac.indexedDB.editActionitem = function(db, anid, updates) {
     };
     requestUpdate.onsuccess = function(event) {
       // Success - the data is updated!
-      store['delete'](anid);
+      //store['delete'](anid);
       console.log("Action item update success");
       d.resolve();
     };

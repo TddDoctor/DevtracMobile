@@ -74,9 +74,9 @@ var controller = {
         //localStorage.appurl = "http://demo.devtrac.org";
         //localStorage.appurl = "http://10.0.2.2/dt11";
         //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
-
+        
       }
-
+      
       
       if(controller.connectionStatus) {
         controller.loadingMsg("Please Wait..", 0);
@@ -98,7 +98,7 @@ var controller = {
           
           devtracnodes.countFieldtrips().then(function(){
             devtracnodes.countOecds().then(function() {
-
+              
               //load field trip details from the database if its one and the list if there's more.
               controller.loadFieldTripList();                    
             }).fail(function() {
@@ -119,7 +119,7 @@ var controller = {
             controller.fetchAllData().then(function(){
               
               devtracnodes.countOecds().then(function() {
-
+                
                 //load field trip details from the database if its one and the list if there's more.
                 controller.loadFieldTripList();                    
               }).fail(function() {
@@ -193,35 +193,40 @@ var controller = {
         devtracnodes.getFieldtrips(db).then(function () {
           
           controller.loadingMsg("Fieldtrips Saved", 0);
-          notes.push('Fieldtrips');
-
           $('.blockUI.blockMsg').center();
-          devtracnodes.getSiteVisits(db, function(response) {
+          notes.push('Fieldtrips');
+          
+          devtracnodes.getSitereporttypes(db).then(function () {
+            controller.loadingMsg("Site Report Types Saved", 0);
+            $('.blockUI.blockMsg').center();  
+            notes.push('Site Report Types');
             
-            controller.loadingMsg("Sitevisits Saved", 0);
-            $('.blockUI.blockMsg').center();
-            notes.push('Sitevisits');
-            devtracnodes.getPlaces(db);
-            devtracnodes.getActionItems(db);
-            devtracnodes.getQuestions(db);
-            
-            var counter = 0;
-            for(var x = 0; x < controller.nodes.length; x++) {
-              controller.nodes[x](db).then(function(response) {
-                console.log("fetch success "+response);
-                counter = counter + 1;
-                controller.loadingMsg(response, 1500);
-                $('.blockUI.blockMsg').center();
-                notes.push(response);
-                if(counter > controller.nodes.length - 1){
-                  console.log("creating notes");
-                  owlhandler.notes(notes);
+            devtracnodes.getSiteVisits(db, function(response) {
+              
+              controller.loadingMsg("Sitevisits Saved", 0);
+              $('.blockUI.blockMsg').center();
+              notes.push('Sitevisits');
+              devtracnodes.getPlaces(db);
+              devtracnodes.getActionItems(db);
+              devtracnodes.getQuestions(db);
+              
+              var counter = 0;
+              for(var x = 0; x < controller.nodes.length; x++) {
+                controller.nodes[x](db).then(function(response) {
+                  console.log("fetch success "+response);
+                  counter = counter + 1;
+                  controller.loadingMsg(response, 1500);
+                  $('.blockUI.blockMsg').center();
+                  notes.push(response);
+                  if(counter > controller.nodes.length - 1){
+                    console.log("creating notes");
+                    owlhandler.notes(notes);
+                    
+                    d.resolve();
+                  }
                   
-                  d.resolve();
-                }
-                
-              }).fail(function(e) {
-
+                }).fail(function(e) {
+                  
                   controller.loadingMsg(e, 2000);
                   $('.blockUI.blockMsg').center();
                   
@@ -229,12 +234,16 @@ var controller = {
                     auth.logout();
                     
                   }, 2500);
-
-              });  
-               
-            }
-
+                  
+                });  
+                
+              }
+              
+              
+            });
             
+          }).fail(function(error){
+            d.reject(error);
           });
           
         }).fail(function(error){
@@ -269,7 +278,7 @@ var controller = {
           el.val(correct_val).selectmenu('refresh');
           
         }
-          
+        
         $("#location_item_save").button('disable');  
         $("#location_item_save").button('refresh');  
         
@@ -295,7 +304,7 @@ var controller = {
         }
         
       });
- 
+      
       //stop gps
       $("#cancel_addlocation").on('click', function(){
         
@@ -352,13 +361,13 @@ var controller = {
                     toolbar_items_size: 'small',
                     setup: function(ed){
                       ed.on("init",
-                            function(ed) {
-                              tinyMCE.get('sitevisit_summary').setContent(localStorage.sitevisit_summary);
-                              tinyMCE.execCommand('mceRepaint');
-
-                            }
+                          function(ed) {
+                        tinyMCE.get('sitevisit_summary').setContent(localStorage.sitevisit_summary);
+                        tinyMCE.execCommand('mceRepaint');
+                        
+                      }
                       );
-                  }
+                    }
         });
         
       });
@@ -418,15 +427,15 @@ var controller = {
         }else if(url.indexOf("cloud") != -1) {
           // Select the relevant option, de-select any others
           el.val('cloud').selectmenu('refresh');
-
+          
         }else if(url.indexOf("manual") != -1) {
           // Select the relevant option, de-select any others
           el.val('manual').selectmenu('refresh');
-
+          
         }else if(url.indexOf("dt11") != -1) {
           // Select the relevant option, de-select any others
           el.val('local').selectmenu('refresh');
-
+          
         }
         
         $("#barsbutton_login").hide();
@@ -449,11 +458,11 @@ var controller = {
         }else if(url.indexOf("manual") != -1) {
           // Select the relevant option, de-select any others
           el.val('manual').selectmenu('refresh');
-
+          
         }else if(url.indexOf("dt11") != -1) {
           // Select the relevant option, de-select any others
           el.val('local').selectmenu('refresh');
-
+          
         }
         
         $("#barsbutton_login").hide();
@@ -525,13 +534,13 @@ var controller = {
                 if(controller.connectionStatus){
                   controller.loadingMsg("Downloading Data ...", 0);
                   $('.blockUI.blockMsg').center();
-
+                  
                   devtrac.indexedDB.open(function (db) {
                     devtrac.indexedDB.clearDatabase(db, 0, function() {
                       
                       controller.fetchAllData().then(function(){
                         devtracnodes.countOecds().then(function() {
-
+                          
                           //load field trip details from the database if its one and the list if there's more.
                           controller.loadFieldTripList();                    
                         }).fail(function() {
@@ -641,7 +650,7 @@ var controller = {
         }
       });
       
-/*      //site report type validation
+      /*      //site report type validation
       var site_report_form = $("#form_sitereporttype");
       site_report_form.validate({
         rules: {
@@ -691,10 +700,10 @@ var controller = {
       
       $(".seturlselect").live( "change", function(event, ui) {
         if($(this).val() == "custom") {
-
+          
           $(".myurl").show();
         }else{
-
+          
           $(".myurl").hide();
         }
       });
@@ -760,7 +769,7 @@ var controller = {
             
             $("#sitevisit_summary").html(sitevisitObject['field_ftritem_public_summary']['und'][0]['value']);
             localStorage.sitevisit_summary = sitevisitObject['field_ftritem_public_summary']['und'][0]['value'];
-
+            
             $.mobile.changePage("#page_sitevisit_edits", {transition: "slide"});  
           });
         });
@@ -1079,18 +1088,34 @@ var controller = {
                 
                 devtracnodes.countFieldtrips().then(function(){
                   devtracnodes.countOecds().then(function() {
-
+                    
                     //load field trip details from the database if its one and the list if there's more.
                     controller.loadFieldTripList();                    
                   }).fail(function() {
-                    
-                    controller.loadingMsg("OECD Codes were not found", 2000);
-                    $('.blockUI.blockMsg').center();
-                    
-                    setTimeout(function() {
+                    //download all devtrac data for user.
+                    controller.fetchAllData().then(function(){
+                      console.log("Downloaded all data .. checking oecds");
+                      devtracnodes.countOecds().then(function() {
+                        
+                        console.log("found oecds");
+                        //load field trip details from the database if its one and the list if there's more.
+                        controller.loadFieldTripList();                    
+                      }).fail(function() {
+                        console.log("didnt find oecds");
+                        controller.loadingMsg("OECD Codes were not found", 2000);
+                        $('.blockUI.blockMsg').center();
+                        
+                        setTimeout(function() {
+                          auth.logout();
+                          
+                        }, 2000);
+                        
+                      });
+                    }).fail(function(error) {
                       auth.logout();
-                      
-                    }, 2000);
+                      controller.loadingMsg(error,5000);
+                      $('.blockUI.blockMsg').center();
+                    });
                     
                   });
                   
@@ -1099,7 +1124,7 @@ var controller = {
                   controller.fetchAllData().then(function(){
                     console.log("Downloaded all data .. checking oecds");
                     devtracnodes.countOecds().then(function() {
-
+                      
                       console.log("found oecds");
                       //load field trip details from the database if its one and the list if there's more.
                       controller.loadFieldTripList();                    
@@ -1591,7 +1616,7 @@ var controller = {
             var fObject = data[0];
             
             if(fObject['field_fieldtrip_start_end_date']['und'] != undefined && fObject['field_fieldtrip_start_end_date']['und'] != undefined) {
-            
+              
               if(fObject['editflag'] == 1) {
                 count = count + 1;
               }
@@ -1655,10 +1680,10 @@ var controller = {
               
               $("#fieldtrip_details_start").html('').append(formatedstartdate);
               $("#fieldtrip_details_end").html('').append(formatedenddate);
-            
+              
               $("#fieldtrip_details_title").html('').append(fObject['title']);
               $("#fieldtrip_details_status").html('').append(fObject['field_fieldtrip_status']['und'][0]['value']);
-                          
+              
               var list = $("<li></li>");
               var anch = $("<a href='#page_fieldtrip_details' id='fnid" + fObject['nid'] + "' onclick='controller.onFieldtripClick(this)'></a>");
               var h2 = $("<h1 class='heada1'>" + fObject['title'] + "</h1>");
@@ -1722,7 +1747,7 @@ var controller = {
                 auth.logout();
                 
               }, 2000);
-            
+              
             }
             
           } else {
@@ -1830,40 +1855,40 @@ var controller = {
     
     //handle submit of site report type
     submitSitereporttype: function() {
-        localStorage.ftritemtype = $("#sitevisit_add_type").val();
-        console.log("voca 7 is "+$("#sitevisit_add_type").val());
-        localStorage.ftritemdistrict = $("#location_district").val();
+      localStorage.ftritemtype = $("#sitevisit_add_type").val();
+      console.log("voca 7 is "+$("#sitevisit_add_type").val());
+      localStorage.ftritemdistrict = $("#location_district").val();
+      
+      if(localStorage.ftritemtype == "210") {
         
-        if(localStorage.ftritemtype == "210") {
-          
-          $( "#sitevisit_add_date" ).datepicker( "destroy" );
-          var startday = parseInt(localStorage.fstartday);
-          var startmonth = parseInt(localStorage.fstartmonth);
-          var startyear = parseInt(localStorage.fstartyear);
-          
-          var endday = parseInt(localStorage.fendday);
-          var endmonth = parseInt(localStorage.fendmonth);
-          var endyear = parseInt(localStorage.fendyear);
-          
-          $("#sitevisit_add_date").datepicker({ 
-            dateFormat: "yy/mm/dd", 
-            minDate: new Date(startyear, startmonth, startday), 
-            maxDate: new Date(endyear, endmonth, endday) 
-          });
-          
-          controller.buildSelect("oecdobj", []);
-          
-          $('#sitevisit_add_report').html("Please provide a full report");
-          $('#sitevisit_add_public_summary').html("Please Provide a small summary for the public");
-          
-        }
-        else{
-          
-          controller.buildSelect("placetype", []);
-          
-        }
-        controller.resetForm($('#form_sitereporttype'));
-
+        $( "#sitevisit_add_date" ).datepicker( "destroy" );
+        var startday = parseInt(localStorage.fstartday);
+        var startmonth = parseInt(localStorage.fstartmonth);
+        var startyear = parseInt(localStorage.fstartyear);
+        
+        var endday = parseInt(localStorage.fendday);
+        var endmonth = parseInt(localStorage.fendmonth);
+        var endyear = parseInt(localStorage.fendyear);
+        
+        $("#sitevisit_add_date").datepicker({ 
+          dateFormat: "yy/mm/dd", 
+          minDate: new Date(startyear, startmonth, startday), 
+          maxDate: new Date(endyear, endmonth, endday) 
+        });
+        
+        controller.buildSelect("oecdobj", []);
+        
+        $('#sitevisit_add_report').html("Please provide a full report");
+        $('#sitevisit_add_public_summary').html("Please Provide a small summary for the public");
+        
+      }
+      else{
+        
+        controller.buildSelect("placetype", []);
+        
+      }
+      controller.resetForm($('#form_sitereporttype'));
+      
     },
     
     //handle site visit click
@@ -2566,12 +2591,10 @@ var controller = {
       updates['field_ftritem_field_trip']['und'][0] = {};
       updates['field_ftritem_field_trip']['und'][0]['target_id'] = localStorage.fnid;
       
-      if($('#sitevisit_add_type').val() == "210") {
-        updates['field_ftritem_lat_long'] = {};
-        updates['field_ftritem_lat_long']['und'] = [];
-        updates['field_ftritem_lat_long']['und'][0] = {};
-        updates['field_ftritem_lat_long']['und'][0]['geom'] = "POINT ("+localStorage.latlon+")";
-      }
+      updates['field_ftritem_lat_long'] = {};
+      updates['field_ftritem_lat_long']['und'] = [];
+      updates['field_ftritem_lat_long']['und'][0] = {};
+      updates['field_ftritem_lat_long']['und'][0]['geom'] = "POINT ("+localStorage.latlon+")";
       
       devtrac.indexedDB.open(function (db) {
         devtrac.indexedDB.getAllSitevisits(db, function (sitevisits) {
@@ -2898,10 +2921,10 @@ var controller = {
           $('#placetypes').empty().append(selectGroup).trigger('create');
         }
         
-
+        
       } 
       else {
-
+        
         //create oecd codes optgroup
         $('#select_oecds').empty().append(selectGroup).trigger('create');
         $.mobile.changePage("#page_sitevisit_add", "slide", true, false);

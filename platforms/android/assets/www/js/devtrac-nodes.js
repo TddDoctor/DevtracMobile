@@ -3,7 +3,7 @@ var devtracnodes = {
     updateNode: function(nid, node, siteid) {
       var d = $.Deferred();
       var updates = {};
-      
+      console.log("updates for node "+node);
       $.ajax({
         url: localStorage.appurl+"/api/node/" + encodeURIComponent(nid) + ".json",
         type: 'put',
@@ -340,7 +340,7 @@ var devtracnodes = {
           }
           
         });  
-
+        
       });
       
       return d;
@@ -450,7 +450,7 @@ var devtracnodes = {
               
               oldpnids.splice(0, 1);
               devtracnodes.postLocationHelper(newlocationids, newlocationnames, oldids, postStrings, titlearray, oldpnids, callback);
-              devtrac.indexedDB.deletePlace(db, parseInt(pid));
+              //devtrac.indexedDB.deletePlace(db, parseInt(pid));
               
             });
             
@@ -529,14 +529,19 @@ var devtracnodes = {
     //create node
     postImageFile: function(images, index, nid) {
       var d = $.Deferred();
+
+      var parsedImage = images['base64s'][index].substring(images['base64s'][index].indexOf(",")+1);
+      
       
       var filedata = {
-          "file":{
-            "file": images['base64s'][index],
+          "file": {
+            "file": parsedImage,
             "filename": images['names'][index],
-            "filepath":"public://media/images/"+localStorage.uid +"/"+nid+"/"+images['names'][index],
+            "filepath":"public://"+images['names'][index],
           }
       };
+      
+      console.log("image is "+parsedImage);
       
       $.ajax({
         url: localStorage.appurl+"/api/file.json",
@@ -601,7 +606,7 @@ var devtracnodes = {
                             $("#sitevisit_count").html(0);
                           }
                           
-                          devtrac.indexedDB.deleteSitevisit(db, activeid);
+                          //devtrac.indexedDB.deleteSitevisit(db, activeid);
                           
                           controller.refreshSitevisits();
                           sitevisits.splice(0, 1);
@@ -639,7 +644,7 @@ var devtracnodes = {
                     $("#sitevisit_count").html(0);
                   }
                   
-                  devtrac.indexedDB.deleteSitevisit(db, sitevisits[0]['nid']);
+                  //devtrac.indexedDB.deleteSitevisit(db, sitevisits[0]['nid']);
                   
                   controller.refreshSitevisits();
                   sitevisits.splice(0, 1);
@@ -1009,7 +1014,7 @@ var devtracnodes = {
     postSitevisitHelper: function(sitevisits, names, newnids, ftritemdetails, callback) {
       if(sitevisits.length > 0){
         devtracnodes.getSitevisitString(sitevisits[0], names[0], newnids[0]).then(function(jsonstring, p, q, r, mark) {
-          
+          console.log("sitevisit string is "+jsonstring);
           devtracnodes.postNode(jsonstring, mark, sitevisits.length, r).then(function(updates, stat, snid) {
             
             devtrac.indexedDB.open(function (db) {
@@ -1506,7 +1511,7 @@ var devtracnodes = {
               headers: {
                 'X-CSRF-Token': localStorage.usertoken,
                 'Cookie': localStorage.sname +"="+localStorage.sid
-                },
+              },
               error : function(XMLHttpRequest, textStatus, errorThrown) { 
                 //create bubble notification
                 console.log('sitevisits error '+XMLHttpRequest.responseText);
@@ -1536,6 +1541,38 @@ var devtracnodes = {
       });
     },
     
+    //Returns devtrac site report type json list 
+    getSitereporttypes: function(db) {
+      var d = $.Deferred();
+      
+      $.ajax({
+        url : localStorage.appurl+"/api/views/api_vocabularies.json?display_id=sitereporttypes",
+        type : 'get',
+        error : function(XMLHttpRequest, textStatus, errorThrown) { 
+          
+          console.log('Sitereporttypes error '+XMLHttpRequest.responseText);
+          d.reject(errorThrown);
+        },
+        success : function(data) {
+          //create bubble notification
+          if(data.length <= 0) {
+            console.log("No types returned from server");
+            d.reject("No types returned from server");
+          }else{
+            console.log("returned types "+data[0]['term id']+" and name "+data[0]['name']);
+            
+            localStorage.humaninterest = data[0]['term id'];
+            localStorage.roadside = data[1]['term id'];
+            localStorage.sitevisit = data[2]['term id'];
+            
+          }
+        }
+      });
+      
+      return d;
+      
+    },
+    
     //Returns devtrac action items json list 
     getActionItems: function(db) {
       var d = $.Deferred();
@@ -1547,14 +1584,14 @@ var devtracnodes = {
             type : 'get',
             dataType : 'json',
             error : function(XMLHttpRequest, textStatus, errorThrown) { 
-
+              
               console.log('actionitems error '+XMLHttpRequest.responseText);
               d.reject(errorThrown);
             },
             success : function(data) {
               //create bubble notification
               if(data.length <= 0) {
-
+                
               }else{
                 data[0]['submit'] = 0;
                 devtracnodes.saveActionItems(db, data, 0).then(function(){
@@ -1602,6 +1639,24 @@ var devtracnodes = {
       
     },
     
+/*    saveSitetypes: function(db, data, callback) {
+      console.log("inside save site types "+data.length);
+      console.log("One site type is "+data[0]);
+      var arrlength = data.length;
+      
+      if(arrlength > 0 && data[0] != undefined && data[0] != null) {
+        devtrac.indexedDB.addSitereporttypes(db, data[0]).then(function(){
+          data.shift();
+          devtracnodes.saveSitetypes(db, data, callback);  
+        });
+        
+      }
+      else {
+        callback();
+      }
+      
+    },*/
+    
     //Returns devtrac places json list 
     downloadPlaces: function(db, snid) {
       $.ajax({
@@ -1616,17 +1671,17 @@ var devtracnodes = {
           
           //create bubble notification
           if(data.length <= 0) {
-
+            
           }else {
             
             for(var item in data){
               devtrac.indexedDB.addPlacesData(db, data[item]).then(function(){
-
+                
                 controller.loadingMsg("Places Saved",1000);
                 $('.blockUI.blockMsg').center();
               }).fail(function(e) {
                 if(e.target.error.message != "Key already exists in the object store." && e.target.error.message != undefined) {
-
+                  
                 }
                 
               });
@@ -1669,11 +1724,11 @@ var devtracnodes = {
         success : function(data) {
           //create bubble notification
           if(data.length <= 0) {
-
+            
           }else {
             
             devtrac.indexedDB.addQuestionsData(db, data).then(function(){
-
+              
               d.resolve("Questions");
             }).fail(function(e) {
               

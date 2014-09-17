@@ -1,25 +1,26 @@
-//Phonegap code to read the username and password from the sd card
-function readPass(fileSystem) {
+//Phonegap code to read the site report types from the sd card
+function readTypes(fileSystem) {
 
-  fileSystem.root.getFile("passwords.txt", null, readPassFileEntry, failreadPass);
+  fileSystem.root.getFile("reporttypes.txt", null, readTypesFileEntry, failreadTypes);
 }
-function readPassFileEntry(fileEntry) {
+function readTypesFileEntry(fileEntry) {
 
-  fileEntry.file(readPassFile, failreadPass);
+  fileEntry.file(readTypesFile, failreadTypes);
 }
-function readPassFile(file) {
+function readTypesFile(file) {
 
-  readPassAsText(file);
+  readTypesAsText(file);
 }
-function readPassAsText(file) {
+function readTypesAsText(file) {
 
   var reader = new FileReader();
   reader.onload = function(evt) {
-
     var text = evt.target.result;
     var words = text.split(',');
-    localStorage.usr = words[0];
-    localStorage.psw = words[1];
+    
+    localStorage.humaninterest = words[0];
+    localStorage.roadside = words[1];
+    localStorage.sitevisit = words[2];
     
   };
   reader.readAsText(file);
@@ -29,24 +30,26 @@ function failreadPass(evt) {
 }//username and password read ends here
 
 
-//Phonegap code to save the username and password to sd card
-function savePasswords(fileSystem) {
+//Phonegap code to save the site report types to sd card
+function saveTypes(fileSystem) {
 
-  fileSystem.root.getFile("passwords.txt", {
+  fileSystem.root.getFile("reporttypes.txt", {
     create : true,
     exclusive : false
-  }, savePassFileEntry, failsavePass);
+  }, saveTypesFileEntry, failsaveTypes);
 }
-function savePassFileEntry(fileEntry) {
+function saveTypesFileEntry(fileEntry) {
 
-  fileEntry.createWriter(savePassFileWriter, failsavePass);
+  fileEntry.createWriter(saveTypesFileWriter, failsaveTypes);
 }
-function savePassFileWriter(writer) {
+function saveTypesFileWriter(writer) {
 
   writer.onwriteend = function(evt) {
 
-    localStorage.usr = $("#username").val();
-    localStorage.psw = $("#pass").val();
+    localStorage.humaninterest = data[0]['term id'];
+    localStorage.roadside = data[1]['term id'];
+    localStorage.sitevisit = data[2]['term id'];
+    
   };
   var auth = $("#username").val() + "," + $("#pass").val();
   writer.write(auth);

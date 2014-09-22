@@ -157,8 +157,10 @@ var devtracnodes = {
           localStorage.currentanid = actionitems[x]['nid'];
           
           devtracnodes.getActionItemString(actionitems[x], sitevisits).then(function(jsonstring, anid) {
-            
+            console.log("Action item string is "+jsonstring);
             devtracnodes.postNode(jsonstring, x, actionitems.length, anid).then(function(updates, status, anid) {
+              console.log("actionitem post success "+anid);
+              updates['fresh_nid'] = updates['nid'];
               devtrac.indexedDB.open(function (db) {
                 /*todo*/   
                 devtrac.indexedDB.editActionitem(db, parseInt(anid), updates).then(function() {
@@ -178,6 +180,7 @@ var devtracnodes = {
               });
               
             }).fail(function(e) {
+              console.log("actionitem post error "+e);
               if(e == "Unauthorized: CSRF validation failed" || e == "Unauthorized") {
                 auth.getToken().then(function(token) {
                   localStorage.usertoken = token;
@@ -233,7 +236,7 @@ var devtracnodes = {
           
           for(var ftritem in ftritems) {
             
-            if((ftritems[ftritem]['submit'] == 0 && ftritems[ftritem]['user-added'] == true && ftritems[ftritem]['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") || ftritems[ftritem]['editflag'] == 1) {              
+            if((ftritems[ftritem]['submit'] == 0 && ftritems[ftritem]['user-added'] == true && ftritems[ftritem]['taxonomy_vocabulary_7']['und'][0]['tid'] == localStorage.roadside) || ftritems[ftritem]['editflag'] == 1) {              
               sitevisits.push(ftritems[ftritem]);
             }
             
@@ -440,6 +443,7 @@ var devtracnodes = {
           titlearray.splice(0, 1);
           postStrings.splice(0, 1);
           
+          updates['fresh_nid'] = updates['nid'];
           
           devtrac.indexedDB.open(function (db) {
             /*todo*/
@@ -573,7 +577,7 @@ var devtracnodes = {
       var date_visited = "";
       if(sitevisits.length > 0) {
         
-        if(sitevisits[0]['user-added'] == true && sitevisits[0]['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") {
+        if(sitevisits[0]['user-added'] == true && sitevisits[0]['taxonomy_vocabulary_7']['und'][0]['tid'] == localStorage.roadside) {
           devtracnodes.getSitevisitString(sitevisits[0]).then(function(jsonstring, active_sitereport, date, siteid) {
             devtracnodes.postNode(jsonstring, active_sitereport, date, siteid).then(function(updates, x, y, z, active_ftritem, datevisited) {
               devtrac.indexedDB.getImage(db, parseInt(active_ftritem['nid']), updates['nid'], datevisited, y).then(function(image, nid, vdate, sid) {
@@ -592,6 +596,7 @@ var devtracnodes = {
                     devtracnodes.updateNodeHelper(ftrid, y, fds, fdn, ftrdate, updateId, function(updates, ftritemid, activeid) {
                       
                       newsitevisits[ftritemid] = sitevisits[0]['title'];
+                      updates['fresh_nid'] = ftritemid;
                       
                       if(ftritemid != "error") {
                         /*todo: */  
@@ -1391,25 +1396,77 @@ var devtracnodes = {
     //return action item string
     getActionItemString: function(aObj, ftritems) {
       var d = $.Deferred();
+      var flags = [];
       
       var nodestring = '';
       for(var a in aObj) {
         if(typeof aObj[a] == 'object') {
           switch(a) {
             case 'field_actionitem_severity': 
+              
               nodestring = nodestring + 'node['+a+'][und][value]='+aObj[a]['und'][0]['value']+'&';
               break;
-            case 'field_actionitem_resp_place': 
-              nodestring = nodestring + 'node['+a+'][und][0][target_id]='+aObj[a]['und'][0]['target_id']+'&';
+            case 'field_actionitem_resp_place':
+
+              if(aObj['has_location'] == true) {
+                var pid = aObj[a]['und'][0]['target_id'];
+                console.log("place id is "+pid);
+                
+                devtrac.indexedDB.open(function (db) {
+                devtrac.indexedDB.getPlace(db, pid, function(place) {
+                  
+                  if(place['fresh_nid'] == undefined){
+                    nodestring = nodestring + 'node[field_actionitem_resp_place][und][0][target_id]='+place['title']+"("+place['nid']+")"+'&';  
+                  }
+                  else{
+                    nodestring = nodestring + 'node[field_actionitem_resp_place][und][0][target_id]='+place['title']+"("+place['fresh_nid']+")"+'&';
+                  }
+                  flags.push("place");
+                  
+                  if(flags.length == 3) {
+                    var nodestringlen = nodestring.length;
+                    var newnodestring = nodestring.substring(0, nodestringlen - 1);
+                    d.resolve(newnodestring, aObj['nid']);  
+                  }
+                  
+                });
+                
+                }); 
+              }else {
+                flags.push("NoPlace");
+              }
+              
               break;
             case 'field_actionitem_ftreportitem':
-              nodestring = nodestring + 'node['+a+'][und][0][target_id]='+aObj[a]['und'][0]['target_id']+'&';
+              
+              var sid = aObj[a]['und'][0]['target_id'];
+              
+              devtrac.indexedDB.open(function (db) {
+              devtrac.indexedDB.getSitevisit(db, sid).then(function(sitevisit) {
+                if(sitevisit['fresh_nid'] == undefined){
+                  nodestring = nodestring + 'node[field_actionitem_ftreportitem][und][0][target_id]='+sitevisit['title']+"("+sitevisit['nid']+")"+'&';  
+                }
+                else{
+                  nodestring = nodestring + 'node[field_actionitem_ftreportitem][und][0][target_id]='+sitevisit['title']+"("+sitevisit['fresh_nid']+")"+'&';
+                }
+                flags.push("ftritem");
+                
+                if(flags.length == 3) {
+                  var nodestringlen = nodestring.length;
+                  var newnodestring = nodestring.substring(0, nodestringlen - 1);
+                  d.resolve(newnodestring, aObj['nid']);  
+                }
+              });
+              
+              });
+              
               break;
             case 'field_actionitem_followuptask':
+              flags.push("followup");
               nodestring = nodestring + 'node['+a+'][und][0][value]='+aObj[a]['und'][0]['value']+'&';
               break;
             case 'taxonomy_vocabulary_6':
-              nodestring = nodestring + 'node['+a+'][und][tid]='+aObj[a]['und'][0]['tid']+'&';
+              //nodestring = nodestring + 'node['+a+'][und][tid]='+aObj[a]['und'][0]['tid']+'&';
               break;
             case 'taxonomy_vocabulary_8':
               nodestring = nodestring + 'node['+a+'][und][tid]='+aObj[a]['und'][0]['tid']+'&';
@@ -1441,18 +1498,16 @@ var devtracnodes = {
               break
           }
         }
-        else{
-          if(a != 'user-added' && a != 'nid') {
+        else 
+        {
+          if(a != 'user-added' && a != 'nid' && a != 'fresh_nid' && a != 'has_location') {
             nodestring = nodestring + 'node['+a+']='+aObj[a]+"&";  
           }
           
         }
+        
       }
-      var nodestringlen = nodestring.length;
-      var newnodestring = nodestring.substring(0, nodestringlen - 1);
-      
-      d.resolve(newnodestring, aObj['nid']);
-      
+
       return d;
       
     },
@@ -1559,11 +1614,21 @@ var devtracnodes = {
             console.log("No types returned from server");
             d.reject("No types returned from server");
           }else{
-            console.log("returned types "+data[0]['term id']+" and name "+data[0]['name']);
+
+            for(var k = 0; k < data.length; k++){
+              if(data[k]['name'].indexOf("uman") != -1){
+                localStorage.humaninterest = data[k]['term id'];
+              }else if(data[k]['name'].indexOf("oa") != -1){
+                localStorage.roadside = data[k]['term id'];
+              }else if(data[k]['name'].indexOf("ite") != -1){
+                localStorage.sitevisit = data[k]['term id'];    
+              }
+              if(k == data.length -1){
+                d.resolve();  
+              }
+            }
             
-            localStorage.humaninterest = data[0]['term id'];
-            localStorage.roadside = data[1]['term id'];
-            localStorage.sitevisit = data[2]['term id'];
+            
             
           }
         }
@@ -1664,10 +1729,11 @@ var devtracnodes = {
         type : 'get',
         dataType : 'json',
         error : function(XMLHttpRequest, textStatus, errorThrown) { 
-          
+          //console.log("Error location "+errorThrown);
           $.unblockUI();
         },
         success : function(data) {
+          //console.log("Downloaded location "+data[0]['title']);
           
           //create bubble notification
           if(data.length <= 0) {
@@ -1679,11 +1745,6 @@ var devtracnodes = {
                 
                 controller.loadingMsg("Places Saved",1000);
                 $('.blockUI.blockMsg').center();
-              }).fail(function(e) {
-                if(e.target.error.message != "Key already exists in the object store." && e.target.error.message != undefined) {
-                  
-                }
-                
               });
             }
             
@@ -1697,11 +1758,10 @@ var devtracnodes = {
     getPlaces: function(db) {
       devtrac.indexedDB.getAllSitevisits(db, function(snid){
         if(snid.length > 0) {
-          var marker = snid[0];
           for(var k in snid) {
-            if(marker['nid'] == snid[k]['nid']) {
-              devtracnodes.downloadPlaces(db, snid[k]['nid']);
-            }else if(marker['field_ftritem_field_trip']['und'][0]['target_id'] != snid[k]['field_ftritem_field_trip']['und'][0]['target_id']){
+            if(snid[k]['fresh_nid'] != undefined) {
+              devtracnodes.downloadPlaces(db, snid[k]['fresh_nid']);
+            }else {
               devtracnodes.downloadPlaces(db, snid[k]['nid']);
             }
           }

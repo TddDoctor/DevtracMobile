@@ -8,7 +8,7 @@ devtrac.indexedDB.open = function(callback) {
 
   var version = 1;
 
-  var request = indexedDB.open("b4", version);
+  var request = indexedDB.open("b5", version);
 
   request.onsuccess = function(e) {
     devtrac.indexedDB.db = e.target.result;
@@ -23,7 +23,7 @@ devtrac.indexedDB.open = function(callback) {
 
   var version = 1;
 
-  var request = indexedDB.open("b4", version);
+  var request = indexedDB.open("b5", version);
 
   // We can only create Object stores in a versionchange transaction.
   request.onupgradeneeded = function(e) {
@@ -861,6 +861,7 @@ devtrac.indexedDB.editActionitem = function(db, anid, updates) {
     // Get the old value that we want to update
     var data = request.result;
     data.submit = updates['submit'];
+    data['fresh_nid'] = updates['nid'];
 
     // Put this updated object back into the database.
     var requestUpdate = store.put(data);
@@ -904,8 +905,8 @@ devtrac.indexedDB.editPlace = function(db, pnid, updates) {
         data['title'] = updates['title']; 
       }else if(key == "submit"){
         data['submit'] = updates['submit']; 
-      }else if(key == "nid"){
-        data['new_nid'] = updates['nid']; 
+      }else if(key == "fresh_nid"){
+        data['fresh_nid'] = updates['nid']; 
       }
     }
 
@@ -956,6 +957,9 @@ devtrac.indexedDB.editSitevisit = function(db, snid, updates) {
       }
       if(key == "editflag"){
         data['editflag'] = updates['editflag'];
+      }
+      if(key == "fresh_nid"){
+        data['fresh_nid'] = updates['fresh_nid'];
       }
     }
 

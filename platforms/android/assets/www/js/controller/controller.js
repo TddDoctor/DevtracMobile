@@ -49,8 +49,8 @@ var controller = {
       $("#header_login").html(header({id: "login", title: "Devtrac Mobile"}));
       $("#header_home").html(header({id: "home", title: "Home"}));
       $("#header_sync").html(header({id: "sync", title: "Sync Nodes"}));
-      $("#header_sitereports").html(header({extra_buttons: '<div data-role="navbar" data-theme="a">'+
-        '<ul><li><a data-role="button" data-mini="true" id="addquestionnaire"><i class="fa fa-list-alt fa-lg"></i>&nbsp&nbsp Questionnaire</a></li><li><a href="#mappage" data-role="button" class="panel_map" onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li></ul></div>', id: "sitereport", title: "Site Report"}));
+      $("#header_sitereports").html(header({extra_buttons: '<div id="sitenav" data-role="navbar" data-theme="a">'+
+        '<ul><li><a id="addquestionnaire"><i class="fa fa-list-alt fa-lg"></i>&nbsp&nbsp Questionnaire</a></li><li><a href="#mappage" class="panel_map" onclick="var state=false; var mapit = true; mapctlr.initMap(null, null, state, mapit);"><i class="fa fa-map-marker fa-lg"></i>&nbsp&nbsp Map</a></li></ul></div>', id: "sitereport", title: "Site Report"}));
       $("#header_location").html(header({id: "location", title: "Locations"}));
       $("#header_about").html(header({id: "about", title: "About"}));
       $("#header_addlocation").html(header({id: "addlocation", title: "Locations"})); 
@@ -70,8 +70,8 @@ var controller = {
         //localStorage.appurl = "http://localhost/dt11";
         //localStorage.appurl = "http://192.168.38.113/dt11";
         //localStorage.appurl = "http://192.168.38.114/dt11";
-        localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
-        //localStorage.appurl = "http://demo.devtrac.org";
+        //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtracmanual";
+        localStorage.appurl = "http://demo.devtrac.org";
         //localStorage.appurl = "http://10.0.2.2/dt11";
         //localStorage.appurl = "http://jenkinsge.mountbatten.net/devtraccloud";
         
@@ -197,6 +197,9 @@ var controller = {
           notes.push('Fieldtrips');
           
           devtracnodes.getSitereporttypes(db).then(function () {
+            //save report types in a file
+            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, saveTypes, failsaveTypes);
+            
             controller.loadingMsg("Site Report Types Saved", 0);
             $('.blockUI.blockMsg').center();  
             notes.push('Site Report Types');
@@ -242,7 +245,7 @@ var controller = {
               
             });
             
-          }).fail(function(error){
+          }).fail(function(error) {
             d.reject(error);
           });
           
@@ -315,6 +318,23 @@ var controller = {
       //save sitevisit
       $("#sitevisit_add_save").bind('click', function(){
         controller.onSavesitevisit();
+      });
+      
+      
+      //add site visit
+      $("#page_site_report_type").bind('pagebeforeshow', function(){
+         console.log("before adding "+localStorage.humaninterest + "," + localStorage.roadside+ "," +localStorage.sitevisit);
+        var addftritem = $("#sitevisit_add_type"); 
+        
+        addftritem.find('option')
+        .remove()
+        .end();
+        
+        addftritem.append('<option value="'+localStorage.humaninterest+'">Human Interest Story</option>');
+        addftritem.append('<option value="'+localStorage.roadside+'">Roadside Observation</option>');
+        addftritem.append('<option value="'+localStorage.sitevisit+'">Site visit</option>');
+        
+        addftritem.val("Human Interest Story").selectmenu('refresh');
       });
       
       //apply tinymce b4 this page is displayed
@@ -414,6 +434,11 @@ var controller = {
         $("#page_fieldtrip_details").trigger("create");
       });
       
+      $("#page_sitevisits_details").bind('pageinit', function(){
+        $("#sitenav").trigger('create');    
+        $("#sitenav").navbar();
+      });
+      
       //show the connected url in the drop down select - login page
       $("#page_login").bind('pagebeforeshow', function() {
         var el = $('#loginselect');
@@ -435,6 +460,10 @@ var controller = {
         }else if(url.indexOf("dt11") != -1) {
           // Select the relevant option, de-select any others
           el.val('local').selectmenu('refresh');
+          
+        }else if(url.indexOf("emo") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('demo').selectmenu('refresh');
           
         }
         
@@ -462,6 +491,10 @@ var controller = {
         }else if(url.indexOf("dt11") != -1) {
           // Select the relevant option, de-select any others
           el.val('local').selectmenu('refresh');
+          
+        }else if(url.indexOf("emo") != -1) {
+          // Select the relevant option, de-select any others
+          el.val('demo').selectmenu('refresh');
           
         }
         
@@ -717,6 +750,8 @@ var controller = {
           'id': "action_snid"
         }).val(snid).prependTo(form);
         
+        controller.buildSelect("oecdobj", []);
+        
       });
       
       //listen for change of lat on save location page
@@ -900,6 +935,18 @@ var controller = {
               
               break;
               
+            case "demo":
+              
+              devtrac.indexedDB.open(function (db) {
+                devtrac.indexedDB.clearDatabase(db, 0, function() {
+                  localStorage.appurl = "http://demo.devtrac.org";
+                  controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                  $('.blockUI.blockMsg').center();
+                });
+              });
+              
+              break;
+              
             default:
               break;
           }
@@ -1016,6 +1063,25 @@ var controller = {
               controller.clearDBdialog().then(function() {
                 
                 var url = "http://test.devtrac.org";
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
+                
+                controller.updateDB(url).then(function(){
+                  
+                }).fail(function(){
+                  
+                });
+              }).fail(function(){
+                controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
+                $('.blockUI.blockMsg').center();
+              });
+              break;
+              
+            case "demo":
+              
+              controller.clearDBdialog().then(function() {
+                
+                var url = "http://demo.devtrac.org";
                 controller.loadingMsg("Saved Url "+localStorage.appurl, 2000);
                 $('.blockUI.blockMsg').center();
                 
@@ -1235,8 +1301,8 @@ var controller = {
       
       var imagename = "img_"+datetime+".jpeg";
       // Get image handle
-      
-      if(localStorage.ftritemtype == "210") 
+      var reporttype = localStorage.ftritemtype;
+      if(reporttype.indexOf('oa') != -1) 
       {
         controller.filenames.push(imagename);
         controller.base64Images.push(imageData);
@@ -1855,11 +1921,15 @@ var controller = {
     
     //handle submit of site report type
     submitSitereporttype: function() {
-      localStorage.ftritemtype = $("#sitevisit_add_type").val();
-      console.log("voca 7 is "+$("#sitevisit_add_type").val());
-      localStorage.ftritemdistrict = $("#location_district").val();
+
+      localStorage.ftritem = $("#sitevisit_add_type :selected").text();
+      localStorage.ftritemtype = $("#sitevisit_add_type :selected").val();
+      console.log("report id is "+localStorage.ftritemtype);
       
-      if(localStorage.ftritemtype == "210") {
+      var reportcategory = localStorage.ftritem;
+      var reporttype = localStorage.ftritem;
+      
+      if(reporttype.indexOf("oa") != "-1") {
         
         $( "#sitevisit_add_date" ).datepicker( "destroy" );
         var startday = parseInt(localStorage.fstartday);
@@ -1893,6 +1963,9 @@ var controller = {
     
     //handle site visit click
     onSitevisitClick: function (anchor) {
+      //read report types from a file
+      window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, readTypes, failreadTypes);
+      
       var state = false;
       var anchor_id = $(anchor).attr('id');
       var index = 0;
@@ -1922,9 +1995,12 @@ var controller = {
       devtrac.indexedDB.open(function (db) {
         var pnid = 0;
         devtrac.indexedDB.getSitevisit(db, snid).then(function (fObject) {
+          localStorage.currentsnid = fObject['nid'];
           
           if(fObject['field_ftritem_place'] != undefined && fObject['field_ftritem_place']['und'] != undefined) {
             localStorage.pnid = fObject['field_ftritem_place']['und'][0]['target_id'];
+            console.log("this ftritem has a place "+fObject['field_ftritem_place']['und'][0]['target_id']);
+            
             if(fObject['user-added'] == true) {
               
               pnid = parseInt(localStorage.pnid);
@@ -1962,16 +2038,25 @@ var controller = {
           $('#sitevisists_details_location').show();
           $('#sitevisists_details_location').prev("label").show();
           switch (fObject['taxonomy_vocabulary_7']['und'][0]['tid']) {
-            case "209":
+
+            case localStorage.sitevisit:
               $("#sitevisists_details_type").html("Site Visit");
+              localStorage.reportType = "site";
+              console.log("its a site visit "+localStorage.sitevisit);
               break;
-            case "210":
+            case localStorage.roadside:
               $("#sitevisists_details_type").html("Roadside Observation");
               $('#sitevisists_details_location').hide();
               $('#sitevisists_details_location').prev("label").hide();
+              
+              localStorage.reportType = "roadside";
+              console.log("its a roadside "+localStorage.roadside);
               break;
-            case "211":
+            case localStorage.humaninterest:
               $("#sitevisists_details_type").html("Human Interest Story");
+              
+              localStorage.reportType = "human";
+              console.log("its a human interest "+localStorage.humaninterest);
               break;
             default:
               break
@@ -1979,40 +2064,44 @@ var controller = {
           
           $("#sitevisists_details_title").html(fObject['title']);
           $("#sitevisists_details_summary").html(fObject['field_ftritem_public_summary']['und'][0]['value']);
-          
-          //get location name
-          devtrac.indexedDB.getPlace(db, pnid, function (place) {
-            
-            if (place != undefined) {
-              localStorage.ptitle = place['title'];
-              
-              $("#sitevisists_details_location").html(place['title']);
-              localStorage.respplaceid = place['nid'];
-              localStorage.respplacetitle = place['title'];
-              localStorage.point = place['field_place_lat_long']['und'][0]['geom'];
-              
-              mapctlr.initMap(place['field_place_lat_long']['und'][0]['lat'], place['field_place_lat_long']['und'][0]['lon'], state);
-              mapctlr.resizeMapIfVisible(); 
-            }else {
-              if(fObject['user-added'] == true && fObject['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") {
-                $("#sitevisists_details_location").html(fObject['ftritem_place']);
-                mapctlr.initMap(fObject['field_ftritem_lat_long']['und'][0]['lat'], fObject['field_ftritem_lat_long']['und'][0]['lon'], state);
-                mapctlr.resizeMapIfVisible();
+
+          //determine type of site visit before looking up it location
+          //(road side visits donot have locations)
+          var ftritemType = localStorage.reportType;
+          if(ftritemType.indexOf("oa") == -1) {
+
+            //get location details
+            devtrac.indexedDB.getPlace(db, pnid, function (place) {
+              if (place != undefined) {
+                localStorage.ptitle = place['title'];
                 
-              }else if(fObject['user-added'] != true && fObject['taxonomy_vocabulary_7']['und'][0]['tid'] == "210") {
-                $("#sitevisists_details_location").html("Roadside place name unavailble");
-                mapctlr.initMap(fObject['field_ftritem_lat_long']['und'][0]['lat'], fObject['field_ftritem_lat_long']['und'][0]['lon'], state);
-                mapctlr.resizeMapIfVisible();
+                $("#sitevisists_details_location").html(place['title']);
+                localStorage.respplacetitle = place['title'];
+                localStorage.point = place['field_place_lat_long']['und'][0]['geom'];
                 
-              }else{
-                $("#sitevisists_details_location").html("Place Unavailable.");
-                mapctlr.initMap(0.28316, 32.45168, state);
-                mapctlr.resizeMapIfVisible();  
+                mapctlr.initMap(place['field_place_lat_long']['und'][0]['lat'], place['field_place_lat_long']['und'][0]['lon'], state);
+                mapctlr.resizeMapIfVisible(); 
+              }else {
+                if(fObject['user-added'] == true && fObject['taxonomy_vocabulary_7']['und'][0]['tid'] == localStorage.roadside) {
+                  $("#sitevisists_details_location").html(fObject['ftritem_place']);
+                  mapctlr.initMap(fObject['field_ftritem_lat_long']['und'][0]['lat'], fObject['field_ftritem_lat_long']['und'][0]['lon'], state);
+                  mapctlr.resizeMapIfVisible();
+                  
+                }else if(fObject['user-added'] != true && fObject['taxonomy_vocabulary_7']['und'][0]['tid'] == localStorage.roadside) {
+                  $("#sitevisists_details_location").html("Roadside place name unavailble");
+                  mapctlr.initMap(fObject['field_ftritem_lat_long']['und'][0]['lat'], fObject['field_ftritem_lat_long']['und'][0]['lon'], state);
+                  mapctlr.resizeMapIfVisible();
+                  
+                }else{
+                  $("#sitevisists_details_location").html("Place Unavailable.");
+                  mapctlr.initMap(0.28316, 32.45168, state);
+                  mapctlr.resizeMapIfVisible();  
+                }
+                
               }
               
-            }
-            
-          });
+            }); 
+          }
           
         });
         
@@ -2168,6 +2257,7 @@ var controller = {
       
       var summarytextarea = $("#actionitem_followuptask").val();
       var summaryvalue = summarytextarea.substring(summarytextarea.lastIndexOf("<body>")+6, summarytextarea.lastIndexOf("</body>")).trim();
+      var reportType = localStorage.reportType;
       
       if ($("#form_add_actionitems").valid() && summaryvalue.length > 0) {
         //save added action items
@@ -2175,6 +2265,14 @@ var controller = {
         
         updates['user-added'] = true;
         updates['nid'] = 1;
+        
+        if(reportType.indexOf("oa") != -1) {
+          updates['has_location'] = false;  
+        }else{
+          updates['has_location'] = true;
+        }
+        
+        updates['fresh_nid'] = "";
         updates['field_actionitem_ftreportitem'] = {};
         updates['field_actionitem_ftreportitem']['und'] = [];
         updates['field_actionitem_ftreportitem']['und'][0] = {};
@@ -2184,12 +2282,12 @@ var controller = {
         updates['field_actionitem_due_date']['und'][0] = {};
         updates['field_actionitem_due_date']['und'][0]['value'] = {};
         
-        //todo: get value from database or server
+        //todo: get value from database or server - oecd
         updates['taxonomy_vocabulary_8'] = {};
         updates['taxonomy_vocabulary_8']['und'] = [];
         updates['taxonomy_vocabulary_8']['und'][0] = {};
         
-        //todo: get value from database or server
+        //todo: get value from database or server - district
         updates['taxonomy_vocabulary_6'] = {};
         updates['taxonomy_vocabulary_6']['und'] = [];
         updates['taxonomy_vocabulary_6']['und'][0] = {};
@@ -2224,10 +2322,11 @@ var controller = {
         updates['field_actionitem_status']['und'][0]['value'] = $("#actionitem_status").val();
         updates['field_actionitem_severity']['und'][0]['value'] = $("#actionitem_priority").val();
         updates['field_actionitem_responsible']['und'][0]['target_id'] = localStorage.realname+" ("+localStorage.uid+")";
-        updates['taxonomy_vocabulary_8']['und'][0]['tid'] = '328';
-        updates['taxonomy_vocabulary_6']['und'][0]['tid'] = '100';
-        updates['field_actionitem_ftreportitem']['und'][0]['target_id'] = localStorage.sitevisitname+" ("+localStorage.snid+")";
-        updates['field_actionitem_resp_place']['und'][0]['target_id'] = localStorage.respplacetitle+" ("+localStorage.respplaceid+")";
+        updates['taxonomy_vocabulary_8']['und'][0]['tid'] = $("#select_oecdobj :selected").val();
+        //updates['taxonomy_vocabulary_6']['und'][0]['tid'] = '32';
+        
+        updates['field_actionitem_ftreportitem']['und'][0]['target_id'] = localStorage.currentsnid;
+        updates['field_actionitem_resp_place']['und'][0]['target_id'] = localStorage.pnid;
         
         devtrac.indexedDB.open(function (db) {
           devtrac.indexedDB.getAllActionitems(db, function (actionitems) {
@@ -2437,6 +2536,7 @@ var controller = {
         updates['user-added'] = true;
         updates['nid'] = 1;
         
+        updates['fresh_nid'] = "";
         updates['title'] = $('#location_name').val();
         updates['status'] = 1;
         updates['type'] = 'place';
@@ -2528,19 +2628,13 @@ var controller = {
     //create sitevisit or human interest story
     createSitevisitfromlocation: function (pnid, title) {
       var ftritemtype = "";
-      
-      switch (localStorage.ftritemtype) {
-        case "209":
-          ftritemtype = "Site Visit";
-          break;
-        case "210":
-          ftritemtype = "Roadside Observation";
-          break;
-        case "211":
-          ftritemtype = "Human Interest Story";
-          break;
-        default:
-          break
+      var stringtype = localStorage.ftritem
+      if(stringtype.indexOf("oa") != -1){
+        ftritemtype = "Roadside Observation";
+      }else if(stringtype.indexOf("uman") != -1){
+        ftritemtype = "Human Interest Story";
+      }else if(stringtype.indexOf("ite") != -1){
+        ftritemtype = "Site Visit";
       }
       
       var updates = {};
@@ -2564,7 +2658,7 @@ var controller = {
       updates['taxonomy_vocabulary_7'] = {};
       updates['taxonomy_vocabulary_7']['und'] = [];
       updates['taxonomy_vocabulary_7']['und'][0] = {};
-      updates['taxonomy_vocabulary_7']['und'][0]['tid'] = '19'; //localStorage.ftritemtype;
+      updates['taxonomy_vocabulary_7']['und'][0]['tid'] = localStorage.ftritemtype;
       
       updates['field_ftritem_place'] = {};
       updates['field_ftritem_place']['und'] = [];
@@ -2650,6 +2744,7 @@ var controller = {
         updates['user-added'] = true;
         updates['nid'] = 1;
         
+        updates['fresh_nid'] = "";
         updates['title'] = $('#sitevisit_add_title').val();
         updates['status'] = 1;
         updates['type'] = 'ftritem';
@@ -2924,10 +3019,19 @@ var controller = {
         
       } 
       else {
+        //console.log("this page is "+$.mobile.activePage.attr('id'));
         
-        //create oecd codes optgroup
-        $('#select_oecds').empty().append(selectGroup).trigger('create');
-        $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
+        if($.mobile.activePage.attr('id') == "page_add_actionitems") {
+          //create oecd codes optgroup
+          $('#actionitems_oecds').empty().append(selectGroup).trigger('create');
+          $.mobile.changePage("#page_add_actionitems", "slide", true, false);
+        }else
+        {
+          //create oecd codes optgroup
+          $('#select_oecds').empty().append(selectGroup).trigger('create');
+          $.mobile.changePage("#page_sitevisit_add", "slide", true, false);
+          
+        }
       }
       
       
